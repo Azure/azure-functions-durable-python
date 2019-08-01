@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+service DurableRpc {
+    rpc ClientOperation (ClientRequest) returns (ClientResponse) {}
+}
+
+message ClientRequest {
+    enum Type {
+        Status = 0;
+        Create = 1;
+        SendEvent = 2;
+        Terminate = 3;
+        Rewind = 4;
+        Purge = 5;
+    }
+
+    // Type of client request.
+    Type type = 1;
+
+    // Request arguments
+    map<string, DurableTypedData> args = 2;
+
+	ClientConfig config = 3;
+}
+
+message ClientResponse {
+    enum Result {
+        Completed = 0;
+        Failed = 1;
+    }
+
+    // 
+    Result result = 1;
+
+    //
+    bytes error = 2;
+
+    // TODO: not bytes
+    DurableTypedData data = 3;
+}
+
+// Used to encapsulate data which could be a variety of types
+message DurableTypedData {
+    oneof data {
+        string string = 1;
+		string json = 2;
+        bytes bytes = 3;
+        bool bool = 4;
+        sint64 int = 5;
+        google.protobuf.Timestamp timestamp = 6;
+        StringCollection collection_string = 7;
+		StatusCollection collection_status = 8;
+    }
+}
+
+// Used to encapsulate collection string
+message StringCollection {
+    repeated string strings = 1;
+}
+
+message StatusCollection {
+    repeated RpcOrchestrationStatus statuses = 1;
+
+    string continuationToken = 2;
+}
+
+message RpcOrchestrationStatus {
+    string name = 1;
+
+    string id = 2;
+
+    google.protobuf.Timestamp createdTime = 3;
+
+    google.protobuf.Timestamp lastUpdatedTime = 4;
+
+    string input = 5;
+
+    string output = 6;
+
+    string runtime_status = 7;
+
+    string customStatus = 8;
+
+    repeated string history = 9;
+}
+
+// Information from the client binding
+message ClientConfig {
+	string task_hub = 1;
+
+	string connection = 2;
+}

@@ -1,0 +1,2 @@
+DEFAULT_LOCAL_HOST: str = "localhost:7071"
+DEFAULT_LOCAL_ORIGIN: str = f"http://{DEFAULT_LOCAL_HOST}"
