@@ -102,3 +102,19 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Visual Studio
+.vs/
+.vscode/
+
+# CSharp
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Pp]roperties/
+*.dll
+*.exe
+appsettings.json
+appsettings.*.json
+
+

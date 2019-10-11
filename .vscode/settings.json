@@ -1,3 +1,4 @@
 {
-    "workbench.colorCustomizations": {}
+    "workbench.colorCustomizations": {},
+    "python.pythonPath": "C:\\Users\\shbanerj\\.conda\\envs\\py-azurefunctions\\python.exe"
 }
