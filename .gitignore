@@ -117,4 +117,9 @@ venv.bak/
 appsettings.json
 appsettings.*.json
 
+# Certificate files
+*.cer
+*.pfx
+
+
 
