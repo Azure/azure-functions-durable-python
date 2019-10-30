@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29316.153
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetGrpcService", "DotNetGrpcService.csproj", "{6D265B48-69E0-4511-9E77-A8B6501AAB48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetGrpcClient", "..\DotNetGrpcClient\DotNetGrpcClient.csproj", "{3E1D7598-32EE-43DC-B9E6-22C3568742FF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6D265B48-69E0-4511-9E77-A8B6501AAB48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D265B48-69E0-4511-9E77-A8B6501AAB48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D265B48-69E0-4511-9E77-A8B6501AAB48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D265B48-69E0-4511-9E77-A8B6501AAB48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E1D7598-32EE-43DC-B9E6-22C3568742FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E1D7598-32EE-43DC-B9E6-22C3568742FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E1D7598-32EE-43DC-B9E6-22C3568742FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E1D7598-32EE-43DC-B9E6-22C3568742FF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {75B6A36C-EF88-4E3A-83FD-5BD41A270F0C}
+	EndGlobalSection
+EndGlobal
