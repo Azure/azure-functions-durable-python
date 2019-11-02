@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using DotNetGrpcService;
 using Grpc.Net.Client;
 
-namespace GrpcGreeterClient
+namespace DotNetGrpcClient
 {
-    class Program
+ class Program
     {
         static async Task Main(string[] args)
         {
@@ -18,9 +18,6 @@ namespace GrpcGreeterClient
             Console.WriteLine("Calling Python Endpoint...");
             await CallEndpoint("http://localhost:50051", true);
             
-
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
         }
 
         static GrpcChannel GetChannel(string grpcEndpointAddress, bool isInsecure = false)
@@ -35,8 +32,8 @@ namespace GrpcGreeterClient
             var client = new Greeter.GreeterClient(channel);
 
             var reply = await client.SayHelloAsync(
-                              new HelloRequest { Name = "GreeterClient" });
-            Console.WriteLine("Greeting: " + reply.Message);
+                              new HelloRequest { Name = "GreeterClient-DotNet" });
+            Console.WriteLine($"Response: {reply.Message}");
         }
     }
 }

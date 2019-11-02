@@ -1,0 +1,4 @@
+# Visual Studio - C#
+**/obj
+**/bin
+*.user
