@@ -1,0 +1,24 @@
+﻿syntax="proto3";
+
+option csharp_namespace="DurableTask.GRpc";
+
+package gRPCChannel;
+
+service DurableTaskService {
+	rpc StartNew (NewDurableTaskRequest) returns (NewDurableTaskResponse);
+}
+
+message NewDurableTaskRequest {
+	string functionName = 1;
+};
+
+message NewDurableTaskResponse {
+	string id = 1;
+	string StatusQueryGetUri = 2;
+	string SendEventPostUri = 3;
+	string TerminatePostUri = 4;
+	string RewindPostUri = 5;
+	string PurgeHistoryDeleteUri = 6;
+};
+
+
