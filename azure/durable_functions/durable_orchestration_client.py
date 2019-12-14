@@ -3,5 +3,6 @@ from .models import DurableOrchestrationClient
 
 
 def getClient(context) -> DurableOrchestrationClient:
-    logging.warn(str(context))
-    return DurableOrchestrationClient()
+    logging.warninging(str(context))
+
+    return DurableOrchestrationClient(context)

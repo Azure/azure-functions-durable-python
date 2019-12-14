@@ -121,5 +121,8 @@ appsettings.*.json
 *.cer
 *.pfx
 
+# pycharm
+.idea
+
 
 

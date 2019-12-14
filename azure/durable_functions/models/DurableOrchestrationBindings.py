@@ -1,11 +1,14 @@
+import json
 from typing import Dict
 
 
 class DurableOrchestrationBindings:
-    def __init__(self):
-        self.taskHubName: str
-        self.creationUrls: Dict[str, str]
-        self.managementUrls: Dict[str, str]
+    def __init__(self, client_data: str):
+        context = json.loads(str)
+        self.task_hub_name: str = context.get('taskHubNamed')
+        self.creation_urls: Dict[str, str] = context.get('creationUrls')
+        self.management_urls: Dict[str, str] = context.get('managementUrls')
+
 
 '''
 "taskHubName":"DurableFunctionsHub",

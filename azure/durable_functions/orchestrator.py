@@ -24,7 +24,7 @@ class Orchestrator:
 
     def handle(self, context_string: str):
         context: Dict[str, Any] = json.loads(context_string)
-        logging.warn(f"!!!Calling orchestrator handle {context}")
+        logging.warning(f"!!!Calling orchestrator handle {context}")
         context_histories: List[HistoryEvent] = context.get("history")
         context_input = context.get("input")
         context_instanceId = context.get("instanceId")
@@ -62,8 +62,8 @@ class Orchestrator:
                 gen_result = gen.send(None)
 
             while True:
-                logging.warn(f"!!!actions {actions}")
-                logging.warn(f"!!!Generator Execution {gen_result}")
+                logging.warning(f"!!!actions {actions}")
+                logging.warning(f"!!!Generator Execution {gen_result}")
 
                 partialResult = gen_result
 
@@ -75,7 +75,7 @@ class Orchestrator:
                     actions.append(partialResult.actions)
 
                 if self.shouldSuspend(partialResult):
-                    logging.warn(f"!!!Generator Suspended")
+                    logging.warning(f"!!!Generator Suspended")
                     response = OrchestratorState(
                         isDone=False,
                         output=None,
@@ -105,13 +105,13 @@ class Orchestrator:
                     activity_context.df.currentUtcDateTime = newTimestamp
                     self.currentTimestamp = newTimestamp
 
-                logging.warn(f"!!!Generator Execution {gen_result}")
+                logging.warning(f"!!!Generator Execution {gen_result}")
                 if partialResult is not None:
                     gen_result = gen.send(partialResult.result)
                 else:
                     gen_result = gen.send(None)
         except StopIteration as sie:
-            logging.warn(f"!!!Generator Termination StopIteration {sie}")
+            logging.warning(f"!!!Generator Termination StopIteration {sie}")
             response = OrchestratorState(
                 isDone=True,
                 output=sie.value,
@@ -120,7 +120,7 @@ class Orchestrator:
             return response.to_json_string()
         except Exception as e:
             e_string = traceback.format_exc()
-            logging.warn(f"!!!Generator Termination Exception {e_string}")
+            logging.warning(f"!!!Generator Termination Exception {e_string}")
             response = OrchestratorState(
                 isDone=False,
                 output=None,  # Should have no output, after generation range
@@ -133,7 +133,7 @@ class Orchestrator:
                      state: List[HistoryEvent],
                      name: str,
                      input: Any = None) -> Task:
-        logging.warn(f"!!!callActivity name={name} input={input}")
+        logging.warning(f"!!!callActivity name={name} input={input}")
         newAction = CallActivityAction(name, input)
 
         taskScheduled = self.findTaskScheduled(state, name)
@@ -142,7 +142,7 @@ class Orchestrator:
         self.setProcessed([taskScheduled, taskCompleted, taskFailed])
 
         if taskCompleted is not None:
-            logging.warn("!!!Task Completed")
+            logging.warning("!!!Task Completed")
             return Task(
                 isCompleted=True,
                 isFaulted=False,
@@ -152,7 +152,7 @@ class Orchestrator:
                 id=taskCompleted["TaskScheduledId"])
 
         if taskFailed is not None:
-            logging.warn("!!!Task Failed")
+            logging.warning("!!!Task Failed")
             return Task(
                 isCompleted=True,
                 isFaulted=True,
@@ -189,7 +189,7 @@ class Orchestrator:
                    and e["Name"] == name
                    and not e.get("IsProcessed"), state))
 
-        logging.warn(f"!!! findTaskScheduled {tasks}")
+        logging.warning(f"!!! findTaskScheduled {tasks}")
         if len(tasks) == 0:
             return None
 
@@ -226,10 +226,10 @@ class Orchestrator:
     def setProcessed(self, tasks):
         for task in tasks:
             if task is not None:
-                logging.warn(f"!!!task {task.get('IsProcessed')}"
+                logging.warning(f"!!!task {task.get('IsProcessed')}"
                              f"{task.get('Name')}")
                 task["IsProcessed"] = True
-                logging.warn(f"!!!aftertask {task.get('IsProcessed')}"
+                logging.warning(f"!!!aftertask {task.get('IsProcessed')}"
                              f"{task.get('Name')}")
 
     def parseHistoryEvent(self, directiveResult):
@@ -246,12 +246,12 @@ class Orchestrator:
         return None
 
     def shouldSuspend(self, partialResult) -> bool:  # old_name: shouldFinish
-        logging.warn("!!!shouldSuspend")
+        logging.warning("!!!shouldSuspend")
         return bool(partialResult is not None
                     and hasattr(partialResult, "isCompleted")
                     and not partialResult.isCompleted)
 
     @classmethod
     def create(cls, fn):
-        logging.warn("!!!Calling orchestrator create")
+        logging.warning("!!!Calling orchestrator create")
         return lambda context: Orchestrator(fn).handle(context)
