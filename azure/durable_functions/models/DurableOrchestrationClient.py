@@ -7,7 +7,7 @@ from azure.durable_functions.models import DurableOrchestrationBindings
 
 class DurableOrchestrationClient:
 
-    def __init__(self):
+    def __init__(self, context: str):
         self.taskHubName: str
 
         self.uniqueWebhookOrigins: List[str]
@@ -25,19 +25,17 @@ class DurableOrchestrationClient:
         self._showHistoryQueryKey: str = "showHistory"
         self._showHistoryOutputQueryKey: str = "showHistoryOutput"
         self._showInputQueryKey: str = "showInput"
-        self._orchestrationBindings: DurableOrchestrationBindings
+        self._orchestrationBindings: DurableOrchestrationBindings = DurableOrchestrationBindings(context)
 
-    def start_new(self, context,
+    def start_new(self,
                   orchestration_function_name: str,
                   instance_id: str,
                   client_input):
-
-        self._orchestrationBindings = DurableOrchestrationBindings(context)
-
         request_url = self._orchestrationBindings.creation_urls['createNewInstancePostUri']
         request_url = request_url.replace(self._functionNamePlaceholder, orchestration_function_name)
 
         request_url = request_url.replace(self._instanceIdPlaceholder,
                                           f'/{instance_id}' if instance_id is not None else '')
+
         result = requests.post(request_url, json=json.dumps(client_input) if client_input is not None else None)
         return result

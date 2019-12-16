@@ -4,7 +4,7 @@ from typing import Dict
 
 class DurableOrchestrationBindings:
     def __init__(self, client_data: str):
-        context = json.loads(str)
+        context = json.loads(client_data)
         self.task_hub_name: str = context.get('taskHubNamed')
         self.creation_urls: Dict[str, str] = context.get('creationUrls')
         self.management_urls: Dict[str, str] = context.get('managementUrls')

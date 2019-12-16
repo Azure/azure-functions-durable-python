@@ -6,6 +6,11 @@
       "type": "orchestrationTrigger",
       "direction": "in",
       "dataType": "string"
+    },
+    {
+      "name": "$return",
+      "direction": "out",
+      "type": "http"
     }
   ],
   "disabled": false

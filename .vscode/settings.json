@@ -1,4 +1,8 @@
 {
-    "workbench.colorCustomizations": {},
-    "python.pythonPath": "C:\\Users\\shbanerj\\.conda\\envs\\py-azurefunctions\\python.exe"
+  "azureFunctions.deploySubpath": ".",
+  "azureFunctions.scmDoBuildDuringDeployment": true,
+  "azureFunctions.projectLanguage": "Python",
+  "azureFunctions.projectRuntime": "~2",
+  "debug.internalConsoleOptions": "neverOpen",
+  "python.pythonPath": "C:\\source\\azure-functions-durable-python\\.refactor\\Scripts\\python.exe"
 }

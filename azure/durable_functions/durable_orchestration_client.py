@@ -2,7 +2,7 @@ import logging
 from .models import DurableOrchestrationClient
 
 
-def getClient(context) -> DurableOrchestrationClient:
-    logging.warninging(str(context))
+def get_client(context) -> DurableOrchestrationClient:
+    logging.warning(str(context))
 
     return DurableOrchestrationClient(context)
