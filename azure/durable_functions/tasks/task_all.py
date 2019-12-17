@@ -1,5 +1,4 @@
-from ..models import (
-    TaskSet)
+from ..models.TaskSet import TaskSet
 
 
 def task_all(state, tasks):

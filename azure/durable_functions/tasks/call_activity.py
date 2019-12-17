@@ -1,18 +1,18 @@
 import logging
 from typing import List, Any
 
-from ..models import (
+from ..models.Task import (
     Task)
-from ..models.actions import CallActivityAction
+from ..models.actions.CallActivityAction import CallActivityAction
 from ..models.history import HistoryEvent
 from .task_utilities import _find_task_completed, _find_task_failed, _find_task_scheduled, _set_processed, \
     _parse_history_event
 
 
 def call_activity(
-                 state: List[HistoryEvent],
-                 name: str,
-                 input_: Any = None) -> Task:
+        state: List[HistoryEvent],
+        name: str,
+        input_: Any = None) -> Task:
     logging.warning(f"!!!callActivity name={name} input={input_}")
     new_action = CallActivityAction(name, input_)
 
