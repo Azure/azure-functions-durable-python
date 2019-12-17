@@ -1,9 +1,9 @@
 import azure.functions as func
 
-from azure.durable_functions.durable_orchestration_client import get_client
+from azure.durable_functions import DurableOrchestrationClient
 
 
 def main(req: func.HttpRequest, starter: str, message):
-    client = get_client(starter)
+    client = DurableOrchestrationClient(starter)
     client.start_new('DurableFanoutOrchestrationTrigger', None, None)
     message.set(func.HttpResponse(status_code=200, body=starter))

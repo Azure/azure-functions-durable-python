@@ -1,7 +1,7 @@
 from .orchestrator import Orchestrator
-from .durable_orchestration_client import get_client
+from .models.DurableOrchestrationClient import DurableOrchestrationClient
 
 __all__ = [
     'Orchestrator',
-    'get_client'
+    'DurableOrchestrationClient'
 ]
