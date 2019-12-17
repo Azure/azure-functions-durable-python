@@ -27,11 +27,11 @@ class DurableOrchestrationContext:
             name=n,
             input_=i)
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
-        decision_started_event: HistoryEvent = list(filter(
+        self.decision_started_event: HistoryEvent = list(filter(
             # HistoryEventType.OrchestratorStarted
             lambda e_: e_["EventType"] == HistoryEventType.OrchestratorStarted,
             self.histories))[0]
-        self.currentUtcDateTime = dt_parse(decision_started_event["Timestamp"])
+        self.currentUtcDateTime = dt_parse(self.decision_started_event["Timestamp"])
         self.newGuidCounter = 0
         self.actions: List[List[IAction]] = []
         self.Task: ITaskMethods

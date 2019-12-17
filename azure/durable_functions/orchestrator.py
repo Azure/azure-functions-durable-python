@@ -21,85 +21,83 @@ class Orchestrator:
         self.customStatus: Any = None
 
     def handle(self, context_string: str):
-        durable_context = DurableOrchestrationContext(context_string)
-        activity_context = IFunctionContext(df=durable_context)
+        self.durable_context = DurableOrchestrationContext(context_string)
+        self.activity_context = IFunctionContext(df=self.durable_context)
 
-        gen = self.fn(activity_context)
-        partial_result: Union[Task, TaskSet] = None
-
+        self.generator = self.fn(self.activity_context)
+        orchestration_state = None
         try:
-            if partial_result is not None:
-                gen_result = gen.send(partial_result.result)
-            else:
-                gen_result = gen.send(None)
+            starting_state = self.generate_next(None)
 
-            while True:
-                logging.warning(f"!!!actions {activity_context.df.actions}")
-                logging.warning(f"!!!Generator Execution {gen_result}")
-
-                partial_result = gen_result
-
-                if (isinstance(partial_result, Task)
-                        and hasattr(partial_result, "action")):
-                    activity_context.df.actions.append([partial_result.action])
-                elif (isinstance(partial_result, TaskSet)
-                      and hasattr(partial_result, "actions")):
-                    activity_context.df.actions.append(partial_result.actions)
-
-                if should_suspend(partial_result):
-                    logging.warning(f"!!!Generator Suspended")
-                    response = OrchestratorState(
-                        isDone=False,
-                        output=None,
-                        actions=activity_context.df.actions,
-                        customStatus=self.customStatus)
-                    return response.to_json_string()
-
-                if (isinstance(partial_result, Task)
-                    or isinstance(partial_result, TaskSet)) and (
-                        partial_result.isFaulted):
-                    gen.throw(partial_result.exception)
-                    continue
-
-                last_timestamp = dt_parse(decision_started_event["Timestamp"])
-                decision_started_events = list(
-                    filter(lambda e_: (
-                            e_["EventType"] == HistoryEventType.OrchestratorStarted
-                            and dt_parse(e_["Timestamp"]) > last_timestamp),
-                           activity_context.df.histories))
-
-                if len(decision_started_events) == 0:
-                    activity_context.df.currentUtcDateTime = None
-                    activity_context.df.currentTimestamp = None
-                else:
-                    decision_started_event = decision_started_events[0]
-                    new_timestamp = dt_parse(decision_started_event["Timestamp"])
-                    activity_context.df.currentUtcDateTime = new_timestamp
-                    activity_context.df.currentTimestamp = new_timestamp
-
-                logging.warning(f"!!!Generator Execution {gen_result}")
-                if partial_result is not None:
-                    gen_result = gen.send(partial_result.result)
-                else:
-                    gen_result = gen.send(None)
+            orchestration_state = self.get_orchestration_state(starting_state)
         except StopIteration as sie:
             logging.warning(f"!!!Generator Termination StopIteration {sie}")
-            response = OrchestratorState(
+            orchestration_state = OrchestratorState(
                 isDone=True,
                 output=sie.value,
-                actions=activity_context.df.actions,
+                actions=self.durable_context.actions,
                 customStatus=self.customStatus)
-            return response.to_json_string()
         except Exception as e:
             e_string = traceback.format_exc()
             logging.warning(f"!!!Generator Termination Exception {e_string}")
-            response = OrchestratorState(
+            orchestration_state = OrchestratorState(
                 isDone=False,
                 output=None,  # Should have no output, after generation range
-                actions=activity_context.df.actions,
+                actions=self.durable_context.actions,
                 error=str(e),
                 customStatus=self.customStatus)
-            return response.to_json_string()
+
+        return orchestration_state.to_json_string()
+
+    def generate_next(self, partial_result):
+        if partial_result is not None:
+            gen_result = self.generator.send(partial_result.result)
+        else:
+            gen_result = self.generator.send(None)
+        return gen_result
+
+    def get_orchestration_state(self, generation_state):
+        logging.warning(f"!!!actions {self.durable_context.actions}")
+        logging.warning(f"!!!Generator Execution {generation_state}")
+
+        if (isinstance(generation_state, Task)
+                and hasattr(generation_state, "action")):
+            self.durable_context.actions.append([generation_state.action])
+        elif (isinstance(generation_state, TaskSet)
+              and hasattr(generation_state, "actions")):
+            self.durable_context.actions.append(generation_state.actions)
+
+        if should_suspend(generation_state):
+            logging.warning(f"!!!Generator Suspended")
+            return OrchestratorState(
+                isDone=False,
+                output=None,
+                actions=self.durable_context.actions,
+                customStatus=self.customStatus)
+
+        if (isinstance(generation_state, Task)
+            or isinstance(generation_state, TaskSet)) and (
+                generation_state.isFaulted):
+            return self.get_orchestration_state(self.generator.throw(generation_state.exception))
+
+        last_timestamp = dt_parse(self.durable_context.decision_started_event["Timestamp"])
+        decision_started_events = list(
+            filter(lambda e_: (
+                    e_["EventType"] == HistoryEventType.OrchestratorStarted
+                    and dt_parse(e_["Timestamp"]) > last_timestamp),
+                   self.durable_context.histories))
+
+        if len(decision_started_events) == 0:
+            self.durable_context.currentUtcDateTime = None
+            self.durable_context.currentTimestamp = None
+        else:
+            decision_started_event = decision_started_events[0]
+            new_timestamp = dt_parse(decision_started_event["Timestamp"])
+            self.durable_context.currentUtcDateTime = new_timestamp
+            self.durable_context.currentTimestamp = new_timestamp
+
+        logging.warning(f"!!!Generator Execution {generation_state}")
+        return self.get_orchestration_state(self.generate_next(generation_state))
 
     @classmethod
     def create(cls, fn):
