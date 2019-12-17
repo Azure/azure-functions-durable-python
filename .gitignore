@@ -123,6 +123,7 @@ appsettings.*.json
 
 # pycharm
 .idea
-.refactor
+.root-refactor
+.sample-refactor
 
 

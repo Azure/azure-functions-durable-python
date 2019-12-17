@@ -30,4 +30,5 @@ def main(context: str):
     result = orchestrate(context)
     logging.warning("!!!serialized json : " + result)
     logging.warning("!!!type(result) " + str(type(result)))
+
     return result
