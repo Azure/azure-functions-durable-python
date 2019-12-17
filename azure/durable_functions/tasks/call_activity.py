@@ -9,7 +9,7 @@ from .task_utilities import _find_task_completed, _find_task_failed, _find_task_
     _parse_history_event
 
 
-def call_activity(
+def call_activity_async(
         state: List[HistoryEvent],
         name: str,
         input_: Any = None) -> Task:
@@ -44,3 +44,11 @@ def call_activity(
         )
 
     return Task(isCompleted=False, isFaulted=False, action=new_action)
+
+
+def call_activity(
+        state: List[HistoryEvent],
+        name: str,
+        input_: Any = None) -> Task:
+    result = yield call_activity_async(state, name, input_)
+    return result

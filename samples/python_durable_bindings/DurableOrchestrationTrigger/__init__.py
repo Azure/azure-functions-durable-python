@@ -1,20 +1,14 @@
 import logging
-import azure.functions as func
+
 import azure.durable_functions as df
 
 
 def generator_function(context):
     outputs = []
 
-    task1 = yield context.df.callActivity("DurableActivity", "One")
-    logging.warning(f"!!!task1: {task1}")
-
-    task2 = yield context.df.callActivity("DurableActivity", "Two")
-    logging.warning(f"!!!task2: {task2}")
-
-    task3 = yield context.df.callActivity("DurableActivity", "Three")
-    logging.warning(f"!!!task3: {task3}")
-
+    task1 = yield context.df.callActivityAsync("DurableActivity", "One")
+    task2 = yield context.df.callActivityAsync("DurableActivity", "Two")
+    task3 = yield context.df.callActivityAsync("DurableActivity", "Three")
 
     outputs.append(task1)
     outputs.append(task2)

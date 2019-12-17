@@ -10,7 +10,7 @@ def generator_function(context):
         current_task = context.df.callActivityAsync("DurableActivity", str(i))
         tasks.append(current_task)
 
-    results = yield context.df.task_all(tasks)
+    results = context.df.task_all(tasks)
     logging.warning(f"!!! fanout results {results}")
     return results
 

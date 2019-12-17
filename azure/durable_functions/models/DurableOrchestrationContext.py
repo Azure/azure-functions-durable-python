@@ -9,7 +9,7 @@ from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..interfaces import ITaskMethods
 from ..models.Task import Task
-from ..tasks import call_activity, task_all
+from ..tasks import call_activity, call_activity_async, task_all
 
 
 class DurableOrchestrationContext:
@@ -23,6 +23,10 @@ class DurableOrchestrationContext:
         self.isReplaying = context.get("isReplaying")
         self.parentInstanceId = context.get("parentInstanceId")
         self.callActivity = lambda n, i: call_activity(
+            state=self.histories,
+            name=n,
+            input_=i)
+        self.callActivityAsync = lambda n, i: call_activity_async(
             state=self.histories,
             name=n,
             input_=i)
