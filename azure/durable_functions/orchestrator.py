@@ -1,17 +1,21 @@
-import logging
 import json
+import logging
 import traceback
-from typing import Callable, Iterator, List, Any, Union, Dict
 from datetime import datetime
-from dateutil.parser import parse as dtparse
+from typing import Callable, Iterator, List, Any, Union, Dict
+
+from dateutil.parser import parse as dt_parse
+
 from .interfaces import IFunctionContext, IAction
-from .models.actions import CallActivityAction
-from .models.history import HistoryEvent, HistoryEventType
 from .models import (
     DurableOrchestrationContext,
     Task,
     TaskSet,
     OrchestratorState)
+from .models.history import HistoryEvent, HistoryEventType
+from .tasks.call_activity import call_activity
+from .tasks.task_all import task_all
+from .tasks.task_utilities import should_suspend
 
 
 class Orchestrator:
@@ -26,38 +30,37 @@ class Orchestrator:
         context: Dict[str, Any] = json.loads(context_string)
         logging.warning(f"!!!Calling orchestrator handle {context}")
         context_histories: List[HistoryEvent] = context.get("history")
-        context_input = context.get("input")
-        context_instanceId = context.get("instanceId")
-        context_isReplaying = context.get("isReplaying")
-        context_parentInstanceId = context.get("parentInstanceId")
+        context_instance_id = context.get("instanceId")
+        context_is_replaying = context.get("isReplaying")
+        context_parent_instance_id = context.get("parentInstanceId")
 
-        decisionStartedEvent: HistoryEvent = list(filter(
+        decision_started_event: HistoryEvent = list(filter(
             # HistoryEventType.OrchestratorStarted
-            lambda e: e["EventType"] == HistoryEventType.OrchestratorStarted,
+            lambda e_: e_["EventType"] == HistoryEventType.OrchestratorStarted,
             context_histories))[0]
 
-        self.currentUtcDateTime = dtparse(decisionStartedEvent["Timestamp"])
+        self.currentUtcDateTime = dt_parse(decision_started_event["Timestamp"])
         self.newGuidCounter = 0
 
         durable_context = DurableOrchestrationContext(
-            instanceId=context_instanceId,
-            isReplaying=context_isReplaying,
-            parentInstanceId=context_parentInstanceId,
-            callActivity=lambda n, i: self.callActivity(
+            instanceId=context_instance_id,
+            isReplaying=context_is_replaying,
+            parentInstanceId=context_parent_instance_id,
+            callActivity=lambda n, i: call_activity(
                 state=context_histories,
                 name=n,
-                input=i),
-            task_all=lambda t: self.task_all(state=context_histories, tasks=t),
+                input_=i),
+            task_all=lambda t: task_all(state=context_histories, tasks=t),
             currentUtcDateTime=self.currentUtcDateTime)
         activity_context = IFunctionContext(df=durable_context)
 
         gen = self.fn(activity_context)
         actions: List[List[IAction]] = []
-        partialResult: Union[Task, TaskSet] = None
+        partial_result: Union[Task, TaskSet] = None
 
         try:
-            if partialResult is not None:
-                gen_result = gen.send(partialResult.result)
+            if partial_result is not None:
+                gen_result = gen.send(partial_result.result)
             else:
                 gen_result = gen.send(None)
 
@@ -65,16 +68,16 @@ class Orchestrator:
                 logging.warning(f"!!!actions {actions}")
                 logging.warning(f"!!!Generator Execution {gen_result}")
 
-                partialResult = gen_result
+                partial_result = gen_result
 
-                if (isinstance(partialResult, Task)
-                   and hasattr(partialResult, "action")):
-                    actions.append([partialResult.action])
-                elif (isinstance(partialResult, TaskSet)
-                      and hasattr(partialResult, "actions")):
-                    actions.append(partialResult.actions)
+                if (isinstance(partial_result, Task)
+                        and hasattr(partial_result, "action")):
+                    actions.append([partial_result.action])
+                elif (isinstance(partial_result, TaskSet)
+                      and hasattr(partial_result, "actions")):
+                    actions.append(partial_result.actions)
 
-                if self.shouldSuspend(partialResult):
+                if should_suspend(partial_result):
                     logging.warning(f"!!!Generator Suspended")
                     response = OrchestratorState(
                         isDone=False,
@@ -83,31 +86,31 @@ class Orchestrator:
                         customStatus=self.customStatus)
                     return response.to_json_string()
 
-                if (isinstance(partialResult, Task)
-                   or isinstance(partialResult, TaskSet)) and (
-                       partialResult.isFaulted):
-                    gen.throw(partialResult.exception)
+                if (isinstance(partial_result, Task)
+                    or isinstance(partial_result, TaskSet)) and (
+                        partial_result.isFaulted):
+                    gen.throw(partial_result.exception)
                     continue
 
-                lastTimestamp = dtparse(decisionStartedEvent["Timestamp"])
-                decisionStartedEvents = list(
-                    filter(lambda e: (
-                        e["EventType"] == HistoryEventType.OrchestratorStarted
-                        and dtparse(e["Timestamp"]) > lastTimestamp),
-                        context_histories))
+                last_timestamp = dt_parse(decision_started_event["Timestamp"])
+                decision_started_events = list(
+                    filter(lambda e_: (
+                            e_["EventType"] == HistoryEventType.OrchestratorStarted
+                            and dt_parse(e_["Timestamp"]) > last_timestamp),
+                           context_histories))
 
-                if len(decisionStartedEvents) == 0:
+                if len(decision_started_events) == 0:
                     activity_context.df.currentUtcDateTime = None
                     self.currentTimestamp = None
                 else:
-                    decisionStartedEvent = decisionStartedEvents[0]
-                    newTimestamp = dtparse(decisionStartedEvent["Timestamp"])
-                    activity_context.df.currentUtcDateTime = newTimestamp
-                    self.currentTimestamp = newTimestamp
+                    decision_started_event = decision_started_events[0]
+                    new_timestamp = dt_parse(decision_started_event["Timestamp"])
+                    activity_context.df.currentUtcDateTime = new_timestamp
+                    self.currentTimestamp = new_timestamp
 
                 logging.warning(f"!!!Generator Execution {gen_result}")
-                if partialResult is not None:
-                    gen_result = gen.send(partialResult.result)
+                if partial_result is not None:
+                    gen_result = gen.send(partial_result.result)
                 else:
                     gen_result = gen.send(None)
         except StopIteration as sie:
@@ -128,128 +131,6 @@ class Orchestrator:
                 error=str(e),
                 customStatus=self.customStatus)
             return response.to_json_string()
-
-    def callActivity(self,
-                     state: List[HistoryEvent],
-                     name: str,
-                     input: Any = None) -> Task:
-        logging.warning(f"!!!callActivity name={name} input={input}")
-        newAction = CallActivityAction(name, input)
-
-        taskScheduled = self.findTaskScheduled(state, name)
-        taskCompleted = self.findTaskCompleted(state, taskScheduled)
-        taskFailed = self.findTaskFailed(state, taskScheduled)
-        self.setProcessed([taskScheduled, taskCompleted, taskFailed])
-
-        if taskCompleted is not None:
-            logging.warning("!!!Task Completed")
-            return Task(
-                isCompleted=True,
-                isFaulted=False,
-                action=newAction,
-                result=self.parseHistoryEvent(taskCompleted),
-                timestamp=taskCompleted["Timestamp"],
-                id=taskCompleted["TaskScheduledId"])
-
-        if taskFailed is not None:
-            logging.warning("!!!Task Failed")
-            return Task(
-                isCompleted=True,
-                isFaulted=True,
-                action=newAction,
-                result=taskFailed["Reason"],
-                timestamp=taskFailed["Timestamp"],
-                id=taskFailed["TaskScheduledId"],
-                exc=Exception(f"TaskFailed {taskFailed['TaskScheduledId']}")
-            )
-
-        return Task(isCompleted=False, isFaulted=False, action=newAction)
-
-    def task_all(self, state, tasks):
-        allActions = []
-        results = []
-        isCompleted = True
-        for task in tasks:
-            allActions.append(task.action)
-            results.append(task.result)
-            if not task.isCompleted:
-                isCompleted = False
-
-        if isCompleted:
-            return TaskSet(isCompleted, allActions, results)
-        else:
-            return TaskSet(isCompleted, allActions, None)
-
-    def findTaskScheduled(self, state, name):
-        if not name:
-            raise ValueError("Name cannot be empty")
-
-        tasks = list(
-            filter(lambda e: e["EventType"] == HistoryEventType.TaskScheduled
-                   and e["Name"] == name
-                   and not e.get("IsProcessed"), state))
-
-        logging.warning(f"!!! findTaskScheduled {tasks}")
-        if len(tasks) == 0:
-            return None
-
-        return tasks[0]
-
-    def findTaskCompleted(self, state, scheduledTask):
-        if scheduledTask is None:
-            return None
-
-        tasks = list(
-            filter(lambda e: e["EventType"] == HistoryEventType.TaskCompleted
-                   and e.get("TaskScheduledId") == scheduledTask["EventId"],
-                   state))
-
-        if len(tasks) == 0:
-            return None
-
-        return tasks[0]
-
-    def findTaskFailed(self, state, scheduledTask):
-        if scheduledTask is None:
-            return None
-
-        tasks = list(
-            filter(lambda e: e["EventType"] == HistoryEventType.TaskFailed
-                   and e.get("TaskScheduledId") == scheduledTask["EventId"],
-                   state))
-
-        if len(tasks) == 0:
-            return None
-
-        return tasks[0]
-
-    def setProcessed(self, tasks):
-        for task in tasks:
-            if task is not None:
-                logging.warning(f"!!!task {task.get('IsProcessed')}"
-                             f"{task.get('Name')}")
-                task["IsProcessed"] = True
-                logging.warning(f"!!!aftertask {task.get('IsProcessed')}"
-                             f"{task.get('Name')}")
-
-    def parseHistoryEvent(self, directiveResult):
-        eventType = directiveResult.get("EventType")
-        if eventType is None:
-            raise ValueError("EventType is not found in task object")
-
-        if eventType == HistoryEventType.EventRaised:
-            return directiveResult["Input"]
-        if eventType == HistoryEventType.SubOrchestrationInstanceCreated:
-            return directiveResult["Result"]
-        if eventType == HistoryEventType.TaskCompleted:
-            return directiveResult["Result"]
-        return None
-
-    def shouldSuspend(self, partialResult) -> bool:  # old_name: shouldFinish
-        logging.warning("!!!shouldSuspend")
-        return bool(partialResult is not None
-                    and hasattr(partialResult, "isCompleted")
-                    and not partialResult.isCompleted)
 
     @classmethod
     def create(cls, fn):
