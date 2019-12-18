@@ -6,9 +6,9 @@ import azure.durable_functions as df
 def generator_function(context):
     outputs = []
 
-    task1 = yield context.df.callActivityAsync("DurableActivity", "One")
-    task2 = yield context.df.callActivityAsync("DurableActivity", "Two")
-    task3 = yield context.df.callActivityAsync("DurableActivity", "Three")
+    task1 = yield context.df.callActivity("DurableActivity", "One")
+    task2 = yield context.df.callActivity("DurableActivity", "Two")
+    task3 = yield context.df.callActivity("DurableActivity", "Three")
 
     outputs.append(task1)
     outputs.append(task2)

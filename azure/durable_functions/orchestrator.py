@@ -10,7 +10,7 @@ from .models import (
     Task,
     TaskSet,
     OrchestratorState)
-from .models.history import HistoryEventType, HistoryEvent
+from .models.history import HistoryEventType
 from .tasks import should_suspend
 
 
@@ -99,7 +99,7 @@ class Orchestrator:
         if len(decision_started_events) == 0:
             self.durable_context.currentUtcDateTime = None
         else:
-            self.durable_context.decision_started_event: HistoryEvent = decision_started_events[0]
+            self.durable_context.decision_started_event = decision_started_events[0]
             self.durable_context.currentUtcDateTime = dt_parse(self.durable_context.decision_started_event.Timestamp)
 
     @classmethod
