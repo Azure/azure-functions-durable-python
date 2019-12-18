@@ -3,6 +3,8 @@ from ..interfaces import IAction
 
 
 class Task:
+    action: IAction
+
     def __init__(self, isCompleted, isFaulted, action,
                  result=None, timestamp=None, id=None, exc=None):
         self.isCompleted: bool = isCompleted
