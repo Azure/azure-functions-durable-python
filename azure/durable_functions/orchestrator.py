@@ -90,7 +90,7 @@ class Orchestrator:
             self.durable_context.actions.append(generation_state.actions)
 
     def _reset_timestamp(self):
-        last_timestamp = dt_parse(self.durable_context.decision_started_event.Timestamp)
+        last_timestamp = dt_parse(self.durable_context.decision_started_event['Timestamp'])
         decision_started_events = list(
             filter(lambda e_: (
                     e_["EventType"] == HistoryEventType.OrchestratorStarted
@@ -100,7 +100,7 @@ class Orchestrator:
             self.durable_context.currentUtcDateTime = None
         else:
             self.durable_context.decision_started_event = decision_started_events[0]
-            self.durable_context.currentUtcDateTime = dt_parse(self.durable_context.decision_started_event.Timestamp)
+            self.durable_context.currentUtcDateTime = dt_parse(self.durable_context.decision_started_event['Timestamp'])
 
     @classmethod
     def create(cls, fn):

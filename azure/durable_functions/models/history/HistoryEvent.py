@@ -7,5 +7,5 @@ class HistoryEvent:
         self.EventType: HistoryEventType
         self.EventId: int
         self.IsPlayed: bool
-        self.Timestamp: datetime
+        self.Timestamp: str
         self.IsProcessed: bool = False
