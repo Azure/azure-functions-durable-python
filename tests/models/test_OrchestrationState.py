@@ -9,8 +9,7 @@ def test_empty_state_to_json_string():
     actions: List[List[IAction]] = []
     state = OrchestratorState(isDone=False, actions=actions, output=None, error=None, customStatus=None)
     result = state.to_json_string()
-    expected_result = ('{"isDone": false, "actions": [], "output": null, "error": null, '
-                       '"customStatus": null}')
+    expected_result = '{"isDone": false, "actions": []}'
     assert expected_result == result
 
 
@@ -21,5 +20,5 @@ def test_single_action_state_to_json_string():
     state = OrchestratorState(isDone=False, actions=actions, output=None, error=None, customStatus=None)
     result = state.to_json_string()
     expected_result = ('{"isDone": false, "actions": [[{"actionType": 0, "functionName": "MyFunction", "input": '
-                       '"AwesomeInput"}]], "output": null, "error": null, "customStatus": null}')
+                       '"AwesomeInput"}]]}')
     assert expected_result == result

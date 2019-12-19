@@ -29,12 +29,14 @@ class OrchestratorState:
                     action_dict['functionName'] = action_obj.functionName
                 if hasattr(action_obj, 'input'):
                     action_dict['input'] = action_obj.input
-
                 action_result_list.append(action_dict)
             json_dict['actions'].append(action_result_list)
-        json_dict['output'] = self.output
-        json_dict['error'] = self.error
-        json_dict['customStatus'] = self.customStatus
+        if self.output:
+            json_dict['output'] = self.output
+        if self.error:
+            json_dict['error'] = self.error
+        if self.customStatus:
+            json_dict['customStatus'] = self.customStatus
         return json_dict
 
     def to_json_string(self) -> str:
