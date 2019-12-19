@@ -26,13 +26,32 @@ class Orchestrator:
         activity_context = IFunctionContext(df=self.durable_context)
 
         self.generator = self.fn(activity_context)
-
+        suspended = False
         try:
-            starting_state = self._generate_next(None)
+            generation_state = self._generate_next(None)
 
-            orchestration_state = self._get_orchestration_state(starting_state)
+            while not suspended:
+                self._add_to_actions(generation_state)
+
+                if should_suspend(generation_state):
+                    orchestration_state = OrchestratorState(
+                        isDone=False,
+                        output=None,
+                        actions=self.durable_context.actions,
+                        customStatus=self.customStatus)
+                    suspended = True
+                    continue
+
+                if (isinstance(generation_state, Task)
+                    or isinstance(generation_state, TaskSet)) and (
+                        generation_state.isFaulted):
+                    generation_state = self.generator.throw(generation_state.exception)
+                    continue
+
+                self._reset_timestamp()
+                generation_state = self._generate_next(generation_state)
+
         except StopIteration as sie:
-            logging.warning(f"!!!Generator Termination StopIteration {sie}")
             orchestration_state = OrchestratorState(
                 isDone=True,
                 output=sie.value,
@@ -56,30 +75,6 @@ class Orchestrator:
         else:
             gen_result = self.generator.send(None)
         return gen_result
-
-    def _get_orchestration_state(self, generation_state):
-        logging.warning(f"!!!actions {self.durable_context.actions}")
-        logging.warning(f"!!!Generator Execution {generation_state}")
-
-        self._add_to_actions(generation_state)
-
-        if should_suspend(generation_state):
-            logging.warning(f"!!!Generator Suspended")
-            return OrchestratorState(
-                isDone=False,
-                output=None,
-                actions=self.durable_context.actions,
-                customStatus=self.customStatus)
-
-        if (isinstance(generation_state, Task)
-            or isinstance(generation_state, TaskSet)) and (
-                generation_state.isFaulted):
-            return self._get_orchestration_state(self.generator.throw(generation_state.exception))
-
-        self._reset_timestamp()
-
-        logging.warning(f"!!!Generator Execution {generation_state}")
-        return self._get_orchestration_state(self._generate_next(generation_state))
 
     def _add_to_actions(self, generation_state):
         if (isinstance(generation_state, Task)
