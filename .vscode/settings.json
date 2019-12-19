@@ -1,8 +1,0 @@
-{
-  "azureFunctions.deploySubpath": ".",
-  "azureFunctions.scmDoBuildDuringDeployment": true,
-  "azureFunctions.projectLanguage": "Python",
-  "azureFunctions.projectRuntime": "~2",
-  "debug.internalConsoleOptions": "neverOpen",
-  "python.pythonPath": "c:\\source\\azure-functions-durable-python\\.root-refactor\\Scripts\\python.exe"
-}

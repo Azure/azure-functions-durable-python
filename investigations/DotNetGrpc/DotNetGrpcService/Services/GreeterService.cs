@@ -19,7 +19,7 @@ namespace DotNetGrpcService
         {
             return Task.FromResult(new HelloReply
             {
-                Message = "Hello " + request.Name
+                Message = $"Hello {request.Name} from .NET gRPC Server"
             });
         }
     }
