@@ -36,10 +36,10 @@ def test_orchestration_state_output(context, output_state):
 
 
 def assert_attribute_equal(expected, result, attribute):
-    if hasattr(expected, attribute):
+    if attribute in expected:
         assert expected.get(attribute) == result.get(attribute)
     else:
-        assert not hasattr(result, attribute)
+        assert attribute not in result
 
 
 def assert_actions_are_equal(expected, result):
@@ -47,6 +47,8 @@ def assert_actions_are_equal(expected, result):
     result_actions = result.get("actions")
     assert len(expected_actions) == len(result_actions)
     for index in range(len(expected_actions)):
-        assert expected_actions[index][0]["functionName"] == result_actions[index][0]["functionName"]
-        assert expected_actions[index][0]["input"] == result_actions[index][0]["input"]
-        assert expected_actions[index][0]["actionType"] == result_actions[index][0]["actionType"]
+        expected_action = expected_actions[index][0]
+        result_action = result_actions[index][0]
+        assert_attribute_equal(expected_action, result_action, "functionName")
+        assert_attribute_equal(expected_action, result_action, "input")
+        assert_attribute_equal(expected_action, result_action, "actionType")
