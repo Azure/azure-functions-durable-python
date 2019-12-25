@@ -98,3 +98,7 @@ def generator_function(context):
 
     return outputs
 ```
+
+## GitHub Action
+
+Durable functions in Python runs continuous integration through GitHub actions workflow.
