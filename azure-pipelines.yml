@@ -27,7 +27,11 @@ steps:
 - script: |
     python setup.py build
   displayName: 'Autogenerate gRPC Python files'
-  
+
+- script: |
+    flake8 . --count --show-source --statistics --exit-zero 
+  displayName: 'Run lint test with flake8'
+
 - script: |
     pip install pytest pytest-azurepipelines
     pytest
