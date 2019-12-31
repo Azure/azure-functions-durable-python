@@ -11,16 +11,12 @@ import logging
 import azure.durable_functions.orchestrator as orchestrator
 
 def function_chain():
-    outputs = []
-    task1 = yield orchestrator.call_activity("DurableActivity", "One")
-    task2 = yield orchestrator.call_activity("DurableActivity", "Two")
-    task3 = yield orchestrator.call_activity("DurableActivity", "Three")
 
-    outputs.append(task1)
-    outputs.append(task2)
-    outputs.append(task3)
+    result1 = yield orchestrator.call_activity("DurableActivity", "One")
+    result2 = yield orchestrator.call_activity("DurableActivity", result1)
+    final_result = yield orchestrator.call_activity("DurableActivity", result2)
 
-    return outputs
+    return final_result
 
 def main():
     logging.info(“Durable functions orchestration started..”)
@@ -37,8 +33,10 @@ import azure.durable_functions.orchestrator as orchestrator
 my_vals=["Tokyo","Seattle","London"]
 
 def function_chain():
+    outputs = []
     for val in my_vals:
-        yield orchestrator.call_activity("DurableActivity",val)
+        outputs.append(yield orchestrator.call_activity("DurableActivity",val))
+    return outputs
         
 def main():
     logging.info(“Durable functions orchestration started..”)
@@ -59,8 +57,10 @@ my_vals=["Tokyo","Seattle","London"]
 genexpr = (call_activity("Hello",i) for i in my_vals)
 
 def function_chain():
+    outputs = []
     for val in my_vals:
-        next(genexpr)
+        outputs.append(next(genexpr))
+    return outputs
         
 def main():
     logging.info(“Durable functions orchestration started..”)
