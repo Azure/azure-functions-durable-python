@@ -1,0 +1,5 @@
+{
+  "extensions":[
+    { "name": "DurableTask", "typeName":"Microsoft.Azure.WebJobs.Extensions.DurableTask.DurableTaskWebJobsStartup, Microsoft.Azure.WebJobs.Extensions.DurableTask, Version=1.0.0.0, Culture=neutral, PublicKeyToken=014045d636e89289"}
+  ]
+}

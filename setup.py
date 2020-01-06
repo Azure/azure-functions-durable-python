@@ -58,18 +58,20 @@ class build(build.build, BuildGRPC):
 setup(
     name='azure-functions-durable',
     packages=find_packages(exclude=("tests","samples")),
-    version='1.0.1a1',
+    version='1.0.1ab',
     description='Durable Functions Support For Python Functionapp',
     license='MIT',
     setup_requires=[
-        'grpcio~=1.20.1',
-        'grpcio-tools~=1.20.1',
+        'grpcio~=1.22.0',
+        'grpcio-tools~=1.22.0',
         'python-dateutil==2.8.0',
+        'requests==2.22.0',
     ],
     install_requires=[
-        'grpcio~=1.20.1',
-        'grpcio-tools~=1.20.1',
+        'grpcio~=1.22.0',
+        'grpcio-tools~=1.22.0',
         'python-dateutil==2.8.0',
+        'requests==2.22.0',
     ],
     include_package_data=True,
     cmdclass={
