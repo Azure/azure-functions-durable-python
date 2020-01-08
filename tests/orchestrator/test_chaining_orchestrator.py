@@ -1,8 +1,8 @@
-import pytest
-import json
-
-from azure.durable_functions.orchestrator import Orchestrator
 from tests.orchestrator.chaining_context import *
+from .orchestrator_test_utils import *
+from tests.test_utils.ContextBuilder import ContextBuilder
+from azure.durable_functions.models.OrchestratorState import OrchestratorState
+from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction
 
 
 def generator_function(context):
@@ -19,36 +19,65 @@ def generator_function(context):
     return outputs
 
 
-@pytest.mark.parametrize("context, output_state",
-                         [(HANDLE_ONE, STATE_ONE),
-                          (HANDLE_TWO, STATE_TWO),
-                          (HANDLE_THREE, STATE_THREE),
-                          (HANDLE_FOUR, STATE_FOUR)])
-def test_orchestration_state_output(context, output_state):
-    orchestrator = Orchestrator(generator_function)
-    result = json.loads(orchestrator.handle(context))
-    expected = json.loads(output_state)
-    assert_attribute_equal(expected, result, "isDone")
-    assert_actions_are_equal(expected, result)
-    assert_attribute_equal(expected, result, "output")
-    assert_attribute_equal(expected, result, "error")
-    assert_attribute_equal(expected, result, "customStatus")
+def base_expected_state(output=None) -> OrchestratorState:
+    return OrchestratorState(isDone=False, actions=[], output=output)
 
 
-def assert_attribute_equal(expected, result, attribute):
-    if attribute in expected:
-        assert expected.get(attribute) == result.get(attribute)
-    else:
-        assert attribute not in result
+def add_hello_action(state: OrchestratorState, input_: str):
+    action = CallActivityAction(functionName='Hello', input=input_)
+    state.actions.append([action])
 
 
-def assert_actions_are_equal(expected, result):
-    expected_actions = expected.get("actions")
-    result_actions = result.get("actions")
-    assert len(expected_actions) == len(result_actions)
-    for index in range(len(expected_actions)):
-        expected_action = expected_actions[index][0]
-        result_action = result_actions[index][0]
-        assert_attribute_equal(expected_action, result_action, "functionName")
-        assert_attribute_equal(expected_action, result_action, "input")
-        assert_attribute_equal(expected_action, result_action, "actionType")
+def add_hello_completed_events(context_builder: ContextBuilder, id_: int, result: str):
+    context_builder.add_task_scheduled_event(name='Hello', id_=id_)
+    context_builder.add_orchestrator_completed_event()
+    context_builder.add_orchestrator_started_event()
+    context_builder.add_task_completed_event(id_=id_, result=result)
+
+
+def test_initial_orchestration_state():
+    context_builder = ContextBuilder('test_simple_function')
+    result = get_orchestration_state_result(context_builder, generator_function)
+    expected_state = base_expected_state()
+    add_hello_action(expected_state, 'Tokyo')
+    expected = expected_state.to_json()
+    assert_orchestration_state_equals(expected, result)
+
+
+def test_tokyo_state():
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_completed_events(context_builder, 0, 'Hello Tokyo!')
+    result = get_orchestration_state_result(context_builder, generator_function)
+    expected_state = base_expected_state()
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    expected = expected_state.to_json()
+    assert_orchestration_state_equals(expected, result)
+
+
+def test_tokyo_and_seattle_state():
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_completed_events(context_builder, 0, 'Hello Tokyo!')
+    add_hello_completed_events(context_builder, 1, 'Hello Seattle!')
+    result = get_orchestration_state_result(context_builder, generator_function)
+    expected_state = base_expected_state()
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    add_hello_action(expected_state, 'London')
+    expected = expected_state.to_json()
+    assert_orchestration_state_equals(expected, result)
+
+
+def test_tokyo_and_seattle_and_london_state():
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_completed_events(context_builder, 0, 'Hello Tokyo!')
+    add_hello_completed_events(context_builder, 1, 'Hello Seattle!')
+    add_hello_completed_events(context_builder, 2, 'Hello London!')
+    result = get_orchestration_state_result(context_builder, generator_function)
+    expected_state = base_expected_state(['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    add_hello_action(expected_state, 'London')
+    expected_state.isDone = True
+    expected = expected_state.to_json()
+    assert_orchestration_state_equals(expected, result)
