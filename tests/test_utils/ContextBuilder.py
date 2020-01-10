@@ -26,7 +26,7 @@ class ContextBuilder:
         event = HistoryEvent()
         event.EventId = id_
         event.EventType = event_type
-        event.IsPlayed = True
+        event.IsPlayed = False
         event.Timestamp = self.current_datetime.strftime(DATETIME_STRING_FORMAT)
         return event
 
@@ -51,10 +51,25 @@ class ContextBuilder:
         event.task_scheduled_id = id_
         self.history_events.append(event)
 
-    def add_task_failed_event(self, id_: int, reason):
-        event = self.get_base_event(HistoryEventType.TaskCompleted)
+    def add_task_failed_event(self, id_: int, reason: str, details: str):
+        event = self.get_base_event(HistoryEventType.TaskFailed)
         event.reason = reason
+        event.details = details
         event.task_scheduled_id = id_
+        self.history_events.append(event)
+
+    def add_timer_created_event(self, id_: int):
+        fire_at = self.current_datetime.strftime(DATETIME_STRING_FORMAT)
+        event = self.get_base_event(HistoryEventType.TimerCreated, id_=id_)
+        event.fire_at = fire_at
+        self.history_events.append(event)
+        return fire_at
+
+    def add_timer_fired_event(self, id_: int, fire_at: str):
+        event = self.get_base_event(HistoryEventType.TimerFired)
+        event.timer_id = id_
+        event.fire_at = fire_at
+        event.IsPlayed = True
         self.history_events.append(event)
 
     def add_execution_started_event(self, name: str, version: str = '', input_=None):
@@ -64,6 +79,7 @@ class ContextBuilder:
         event.name = name
         event.version = version
         event.input_ = input_
+        event.IsPlayed = True
         self.history_events.append(event)
 
     def to_json(self) -> Dict[str, Any]:
@@ -90,5 +106,5 @@ class ContextBuilder:
 
     def to_json_string(self) -> str:
         json_dict = self.to_json()
-        
+
         return json.dumps(json_dict)

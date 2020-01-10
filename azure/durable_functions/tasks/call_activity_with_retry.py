@@ -14,7 +14,7 @@ def call_activity_with_retry_task(
         name: str,
         input_: Any = None) -> Task:
     new_action = CallActivityWithRetryAction(function_name=name, retry_options=retry_options, input_=input_)
-    for attempt in range(retry_options.max_number_of_attempts):
+    for attempt in range(retry_options.max_number_of_attempts + 1):
         task_scheduled = find_task_scheduled(state, name)
         task_completed = find_task_completed(state, task_scheduled)
         task_failed = find_task_failed(state, task_scheduled)
@@ -44,7 +44,7 @@ def call_activity_with_retry_task(
                 result=task_failed["Reason"],
                 timestamp=task_failed["Timestamp"],
                 id=task_failed["TaskScheduledId"],
-                exc=Exception(f"TaskFailed {task_failed['TaskScheduledId']}")
+                exc=Exception(f"{task_failed['Reason']} \n {task_failed['Details']}")
             )
 
     return Task(isCompleted=False, isFaulted=False, action=new_action)

@@ -40,7 +40,7 @@ def call_activity_task(
             result=task_failed["Reason"],
             timestamp=task_failed["Timestamp"],
             id=task_failed["TaskScheduledId"],
-            exc=Exception(f"TaskFailed {task_failed['TaskScheduledId']}")
+            exc=Exception(f"{task_failed['Reason']} \n {task_failed['Details']}")
         )
 
     return Task(isCompleted=False, isFaulted=False, action=new_action)
