@@ -1,16 +1,20 @@
-from tests.orchestrator.chaining_context import *
 from .orchestrator_test_utils import *
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
-from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction
+from azure.durable_functions.models.RetryOptions import RetryOptions
+from azure.durable_functions.models.actions.CallActivityWithRetryAction import CallActivityWithRetryAction
+
+
+RETRY_OPTIONS = RetryOptions(5000, 3)
 
 
 def generator_function(context):
     outputs = []
 
-    task1 = yield context.df.callActivity("Hello", "Tokyo")
-    task2 = yield context.df.callActivity("Hello", "Seattle")
-    task3 = yield context.df.callActivity("Hello", "London")
+    retry_options = RETRY_OPTIONS
+    task1 = yield context.df.call_activity_with_retry("Hello", retry_options, "Tokyo")
+    task2 = yield context.df.call_activity_with_retry("Hello",  retry_options, "Seattle")
+    task3 = yield context.df.call_activity_with_retry("Hello",  retry_options, "London")
 
     outputs.append(task1)
     outputs.append(task2)
@@ -20,11 +24,12 @@ def generator_function(context):
 
 
 def base_expected_state(output=None) -> OrchestratorState:
-    return OrchestratorState(isDone=False, actions=[], output=output)
+    return OrchestratorState(is_done=False, actions=[], output=output)
 
 
 def add_hello_action(state: OrchestratorState, input_: str):
-    action = CallActivityAction(functionName='Hello', input=input_)
+    retry_options = RETRY_OPTIONS
+    action = CallActivityWithRetryAction(function_name='Hello', retry_options=retry_options, input_=input_)
     state.actions.append([action])
 
 
@@ -78,6 +83,6 @@ def test_tokyo_and_seattle_and_london_state():
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
     add_hello_action(expected_state, 'London')
-    expected_state.isDone = True
+    expected_state.is_done = True
     expected = expected_state.to_json()
     assert_orchestration_state_equals(expected, result)

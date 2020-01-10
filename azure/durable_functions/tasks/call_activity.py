@@ -5,21 +5,21 @@ from ..models.Task import (
     Task)
 from ..models.actions.CallActivityAction import CallActivityAction
 from ..models.history import HistoryEvent
-from .task_utilities import _find_task_completed, _find_task_failed, _find_task_scheduled, _set_processed, \
-    _parse_history_event
+from .task_utilities import find_task_completed, find_task_failed, find_task_scheduled, set_processed, \
+    parse_history_event
 
 
-def call_activity(
+def call_activity_task(
         state: List[HistoryEvent],
         name: str,
         input_: Any = None) -> Task:
-    logging.warning(f"!!!callActivity name={name} input={input_}")
+    logging.warning(f"!!!call_activity_task name={name} input={input_}")
     new_action = CallActivityAction(name, input_)
 
-    task_scheduled = _find_task_scheduled(state, name)
-    task_completed = _find_task_completed(state, task_scheduled)
-    task_failed = _find_task_failed(state, task_scheduled)
-    _set_processed([task_scheduled, task_completed, task_failed])
+    task_scheduled = find_task_scheduled(state, name)
+    task_completed = find_task_completed(state, task_scheduled)
+    task_failed = find_task_failed(state, task_scheduled)
+    set_processed([task_scheduled, task_completed, task_failed])
 
     if task_completed is not None:
         logging.warning("!!!Task Completed")
@@ -27,7 +27,7 @@ def call_activity(
             isCompleted=True,
             isFaulted=False,
             action=new_action,
-            result=_parse_history_event(task_completed),
+            result=parse_history_event(task_completed),
             timestamp=task_completed["Timestamp"],
             id=task_completed["TaskScheduledId"])
 

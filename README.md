@@ -92,9 +92,9 @@ The [Durable Functions samples](https://docs.microsoft.com/en-us/azure/azure-fun
 ```python
 def generator_function(context):
     outputs = []
-    task1 = yield context.df.callActivity("DurableActivity", "One")
-    task2 = yield context.df.callActivity("DurableActivity", "Two")
-    task3 = yield context.df.callActivity("DurableActivity", "Three")
+    task1 = yield context.df.call_activity_task("DurableActivity", "One")
+    task2 = yield context.df.call_activity_task("DurableActivity", "Two")
+    task3 = yield context.df.call_activity_task("DurableActivity", "Three")
 
     outputs.append(task1)
     outputs.append(task2)

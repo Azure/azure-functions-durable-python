@@ -10,7 +10,7 @@ def should_suspend(partial_result) -> bool:
                 and not partial_result.isCompleted)
 
 
-def _parse_history_event(directive_result):
+def parse_history_event(directive_result):
     event_type = directive_result.get("EventType")
     if event_type is None:
         raise ValueError("EventType is not found in task object")
@@ -24,7 +24,7 @@ def _parse_history_event(directive_result):
     return None
 
 
-def _find_task_scheduled(state, name):
+def find_task_scheduled(state, name):
     if not name:
         raise ValueError("Name cannot be empty")
 
@@ -40,7 +40,7 @@ def _find_task_scheduled(state, name):
     return tasks[0]
 
 
-def _find_task_completed(state, scheduled_task):
+def find_task_completed(state, scheduled_task):
     if scheduled_task is None:
         return None
 
@@ -55,7 +55,7 @@ def _find_task_completed(state, scheduled_task):
     return tasks[0]
 
 
-def _find_task_failed(state, scheduled_task):
+def find_task_failed(state, scheduled_task):
     if scheduled_task is None:
         return None
 
@@ -70,7 +70,37 @@ def _find_task_failed(state, scheduled_task):
     return tasks[0]
 
 
-def _set_processed(tasks):
+def find_task_retry_timer_created(state, failed_task):
+    if failed_task is None:
+        return None
+
+    tasks = list(
+        filter(lambda e: not (not (e["EventType"] == HistoryEventType.TimerCreated) or not (
+                e.get("EventId") == failed_task["TaskScheduledId"] + 1)),
+               state))
+
+    if len(tasks) == 0:
+        return None
+
+    return tasks[0]
+
+
+def find_task_retry_timer_fired(state, retry_timer_created):
+    if retry_timer_created is None:
+        return None
+
+    tasks = list(
+        filter(lambda e: not (not (e["EventType"] == HistoryEventType.TimerFired) or not (
+                e.get("TimerId") == retry_timer_created["EventId"])),
+               state))
+
+    if len(tasks) == 0:
+        return None
+
+    return tasks[0]
+
+
+def set_processed(tasks):
     for task in tasks:
         if task is not None:
             logging.warning(f"!!!task {task.get('IsProcessed')}"

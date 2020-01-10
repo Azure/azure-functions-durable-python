@@ -2,7 +2,7 @@ import json
 from typing import List
 
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
-from azure.durable_functions.tasks.call_activity import call_activity
+from azure.durable_functions.tasks.call_activity import call_activity_task
 from azure.durable_functions.models.actions.ActionType import ActionType
 from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction
 
@@ -16,12 +16,12 @@ def test_generates_schedule_task():
                        '"IsPlayed":false,"Timestamp":"2019-12-08T23:18:39.756132Z"}]'
 
     histories: List[HistoryEvent] = json.loads(histories_string)
-    result = call_activity(state=histories, name="Hello", input_="Tokyo")
+    result = call_activity_task(state=histories, name="Hello", input_="Tokyo")
     assert not result.isCompleted
     action: CallActivityAction = result.action
-    assert ActionType.CallActivity == action.actionType
-    assert "Hello" == action.functionName
-    assert "Tokyo" == action.input
+    assert ActionType.CallActivity == action.action_type
+    assert "Hello" == action.function_name
+    assert "Tokyo" == action.input_
 
 
 def test_generates_completed_task():
@@ -38,7 +38,7 @@ def test_generates_completed_task():
                        '"Timestamp":"2019-12-08T23:29:51.7873033Z"}]'
 
     histories: List[HistoryEvent] = json.loads(histories_string)
-    result = call_activity(state=histories, name="Hello", input_="Tokyo")
+    result = call_activity_task(state=histories, name="Hello", input_="Tokyo")
     assert result.isCompleted
 
 
@@ -57,13 +57,13 @@ def test_generates_schedule_task_for_second_activity():
                        '"Timestamp":"2019-12-08T23:29:51.7873033Z"}]'
 
     histories: List[HistoryEvent] = json.loads(histories_string)
-    call_activity(state=histories, name="Hello", input_="Tokyo")
-    result = call_activity(state=histories, name="Hello", input_="Seattle")
+    call_activity_task(state=histories, name="Hello", input_="Tokyo")
+    result = call_activity_task(state=histories, name="Hello", input_="Seattle")
     assert not result.isCompleted
     action: CallActivityAction = result.action
-    assert ActionType.CallActivity == action.actionType
-    assert "Hello" == action.functionName
-    assert "Seattle" == action.input
+    assert ActionType.CallActivity == action.action_type
+    assert "Hello" == action.function_name
+    assert "Seattle" == action.input_
 
 
 # noinspection PyTypeChecker
@@ -86,10 +86,10 @@ def test_generates_completed_task_for_second_activity():
                        '"IsPlayed":false,"Timestamp":"2019-12-08T23:34:12.561288Z"}] '
 
     histories: List[HistoryEvent] = json.loads(histories_string)
-    call_activity(state=histories, name="Hello", input_="Tokyo")
-    result = call_activity(state=histories, name="Hello", input_="Seattle")
+    call_activity_task(state=histories, name="Hello", input_="Tokyo")
+    result = call_activity_task(state=histories, name="Hello", input_="Seattle")
     assert result.isCompleted
     action: CallActivityAction = result.action
-    assert ActionType.CallActivity == action.actionType
-    assert "Hello" == action.functionName
-    assert "Seattle" == action.input
+    assert ActionType.CallActivity == action.action_type
+    assert "Hello" == action.function_name
+    assert "Seattle" == action.input_
