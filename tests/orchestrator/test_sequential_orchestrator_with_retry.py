@@ -128,6 +128,21 @@ def test_failed_tokyo_with_failed_retry_timer_added():
     assert_orchestration_state_equals(expected, result)
 
 
+def test_successful_tokyo_with_failed_retry_timer_added():
+    failed_reason = 'Reasons'
+    failed_details = 'Stuff and Things'
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
+    add_retry_timer_events(context_builder, 1)
+    add_hello_completed_events(context_builder, 2, 'Hello Tokyo!')
+    result = get_orchestration_state_result(context_builder, generator_function)
+    expected_state = base_expected_state()
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    expected = expected_state.to_json()
+    assert_orchestration_state_equals(expected, result)
+
+
 def test_failed_tokyo_hit_max_attempts():
     failed_reason = 'Reasons'
     failed_details = 'Stuff and Things'
