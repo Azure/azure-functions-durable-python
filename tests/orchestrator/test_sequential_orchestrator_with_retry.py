@@ -5,7 +5,7 @@ from azure.durable_functions.models.RetryOptions import RetryOptions
 from azure.durable_functions.models.actions.CallActivityWithRetryAction import CallActivityWithRetryAction
 
 
-RETRY_OPTIONS = RetryOptions(5000, 2)
+RETRY_OPTIONS = RetryOptions(5000, 3)
 
 
 def generator_function(context):
@@ -136,6 +136,8 @@ def test_failed_tokyo_hit_max_attempts():
     add_retry_timer_events(context_builder, 1)
     add_hello_failed_events(context_builder, 2, failed_reason, failed_details)
     add_retry_timer_events(context_builder, 3)
+    add_hello_failed_events(context_builder, 4, failed_reason, failed_details)
+    add_retry_timer_events(context_builder, 5)
     result = get_orchestration_state_result(context_builder, generator_function)
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
