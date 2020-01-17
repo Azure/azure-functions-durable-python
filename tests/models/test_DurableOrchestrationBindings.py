@@ -1,4 +1,4 @@
-from tests.fixtures import replace_stand_in_bits, TASK_HUB_NAME, binding_info
+from tests.conftest import replace_stand_in_bits, TASK_HUB_NAME
 
 
 def test_extracts_task_hub_name(binding_info):
