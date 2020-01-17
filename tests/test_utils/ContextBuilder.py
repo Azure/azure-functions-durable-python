@@ -1,10 +1,10 @@
 import uuid
 import json
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Any, Dict
 
-from .json_utils import *
-from .constants import *
+from .json_utils import convert_history_event_to_json_dict, add_attrib
+from .constants import DATETIME_STRING_FORMAT
 from tests.orchestrator.models.OrchestrationInstance import OrchestrationInstance
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
 from azure.durable_functions.models.history.HistoryEventType import HistoryEventType
