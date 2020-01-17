@@ -1,8 +1,12 @@
 [flake8]
+# delete D100~D107 for docstring checks
+# W503 contradicts with pep8
 ignore = W503, D100, D101, D102, D103, D104, D107
 max-line-length = 99
 exclude =
     .git,
+    env,
     __pycache__,
     build,
-    azure/durable_functions/grpc/protobuf/
+    azure/durable_functions/grpc/protobuf/,
+    investigations
