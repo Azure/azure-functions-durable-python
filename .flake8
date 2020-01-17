@@ -1,5 +1,5 @@
 [flake8]
 exclude = .git, __pycache__, build, dist, .eggs, .github, .local, docs/,
-    samples, .venv*, .env*, .vscode, .idea, investigations
+    samples, .venv*, .env*, .vscode, .idea, investigations, tests/*
 max-complexity = 10
 docstring-convention = numpy

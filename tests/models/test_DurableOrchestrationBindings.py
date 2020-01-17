@@ -1,11 +1,7 @@
-
 from tests.fixtures import TASK_HUB_NAME, replace_stand_in_bits, binding_info
 
 
 def test_extracts_task_hub_name(binding_info):
-    """
-    :param binding_info: Test fixture containing
-    """
     assert TASK_HUB_NAME == binding_info.task_hub_name
 
 

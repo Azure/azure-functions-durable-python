@@ -26,7 +26,7 @@ def base_expected_state(output=None) -> OrchestratorState:
 
 def add_hello_action(state: OrchestratorState, input_: str):
     action = CallActivityAction(function_name='Hello', input_=input_)
-    state.actions.append([action])
+    state._actions.append([action])
 
 
 def add_hello_completed_events(
@@ -78,7 +78,7 @@ def test_failed_tokyo_state():
         context_builder, generator_function)
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
-    expected_state.error = f'{failed_reason} \n {failed_details}'
+    expected_state._error = f'{failed_reason} \n {failed_details}'
     expected = expected_state.to_json()
     assert_orchestration_state_equals(expected, result)
 
@@ -109,6 +109,6 @@ def test_tokyo_and_seattle_and_london_state():
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
     add_hello_action(expected_state, 'London')
-    expected_state.is_done = True
+    expected_state._is_done = True
     expected = expected_state.to_json()
     assert_orchestration_state_equals(expected, result)
