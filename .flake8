@@ -1,3 +1,8 @@
 [flake8]
 ignore = W503, D100, D101, D102, D103, D104, D107
 max-line-length = 99
+exclude =
+    .git,
+    __pycache__,
+    build,
+    azure/durable_functions/grpc/protobuf/
