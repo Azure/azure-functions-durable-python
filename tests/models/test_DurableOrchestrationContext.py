@@ -23,17 +23,17 @@ def starting_context():
 
 
 def test_extracts_is_replaying(starting_context):
-    assert not starting_context.isReplaying
+    assert not starting_context.is_replaying
 
 
 def test_extracts_instance_id(starting_context):
-    assert "48d0f95957504c2fa579e810a390b938" == starting_context.instanceId
+    assert "48d0f95957504c2fa579e810a390b938" == starting_context.instance_id
 
 
 def test_sets_current_utc_datetime(starting_context):
     assert \
         dt_parse("2019-12-08T23:18:41.3240927Z") == \
-        starting_context.currentUtcDateTime
+        starting_context.current_utc_datetime
 
 
 def test_extracts_histories(starting_context):

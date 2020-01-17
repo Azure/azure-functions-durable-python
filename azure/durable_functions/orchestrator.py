@@ -28,7 +28,7 @@ class Orchestrator:
 
     def __init__(self,
                  activity_func: Callable[[IFunctionContext], Iterator[Any]]):
-        """Base constructor for class.
+        """Create a new orchestrator for the user defined generator.
 
         Responsible for orchestrating the execution of the user defined
         generator function.
@@ -39,6 +39,16 @@ class Orchestrator:
 
     # noinspection PyAttributeOutsideInit
     def handle(self, context_string: str):
+        """Handle the orchestration of the user defined generator function.
+
+        Called each time the durable extension executes an activity and needs
+        the client to handle the result.
+
+        :param context_string: the context of what has been executed by
+        the durable extension.
+        :return: the resulting orchestration state, with instructions back to
+        the durable extension.
+        """
         self.durable_context = DurableOrchestrationContext(context_string)
         activity_context = IFunctionContext(df=self.durable_context)
 
@@ -111,14 +121,18 @@ class Orchestrator:
                     and dt_parse(e_["Timestamp"]) > last_timestamp),
                    self.durable_context.histories))
         if len(decision_started_events) == 0:
-            self.durable_context.currentUtcDateTime = None
+            self.durable_context.current_utc_datetime = None
         else:
             self.durable_context.decision_started_event = \
                 decision_started_events[0]
-            self.durable_context.currentUtcDateTime = dt_parse(
+            self.durable_context.current_utc_datetime = dt_parse(
                 self.durable_context.decision_started_event['Timestamp'])
 
     @classmethod
     def create(cls, fn):
-        logging.warning("!!!Calling orchestrator create")
+        """Create an instance of the orchestration class.
+
+        :param fn: Generator function that needs orchestration
+        :return: Handle function of the newly created orchestration client
+        """
         return lambda context: Orchestrator(fn).handle(context)

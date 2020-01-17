@@ -8,6 +8,10 @@ AUTH_CODE = "GBgDKQriGLABxpY/m5qcPd3R2sNafdRPE3/LcUSZEnuvOzTA1qD3Tg=="
 
 
 def get_binding_string():
+    """
+
+    :return:
+    """
     binding_string = '{"taskHubName":"TASK_HUB_NAME","creationUrls":{' \
                      '"createNewInstancePostUri":"BASE_URL/orchestrators/{' \
                      'functionName}[/{' \
@@ -43,16 +47,29 @@ def get_binding_string():
 
 @pytest.fixture()
 def binding_string():
+    """
+
+    :return:
+    """
     return get_binding_string()
 
 
 @pytest.fixture()
 def binding_info():
+    """
+
+    :return:
+    """
     binding = DurableOrchestrationBindings(get_binding_string())
     return binding
 
 
 def replace_stand_in_bits(binding_string):
+    """
+
+    :param binding_string:
+    :return:
+    """
     binding_string = binding_string.replace("TASK_HUB_NAME", TASK_HUB_NAME)
     binding_string = binding_string.replace("BASE_URL", BASE_URL)
     binding_string = binding_string.replace("AUTH_CODE", AUTH_CODE)

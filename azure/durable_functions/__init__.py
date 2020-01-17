@@ -1,6 +1,6 @@
-"""
-Base module for the Python Durable functions, exposing the different API
-components intended for public consumption
+"""Base module for the Python Durable functions.
+
+Exposes the different API components intended for public consumption
 """
 from .orchestrator import Orchestrator
 from .models.DurableOrchestrationClient import DurableOrchestrationClient
