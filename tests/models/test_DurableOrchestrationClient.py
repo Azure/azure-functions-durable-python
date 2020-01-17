@@ -9,7 +9,8 @@ def test_get_start_new_url(binding_string):
     instance_id = "abc123"
     function_name = "myfunction"
     start_new_url = client.get_start_new_url(instance_id, function_name)
-    expected_url = replace_stand_in_bits(f"BASE_URL/orchestrators/{function_name}/{instance_id}?code=AUTH_CODE")
+    expected_url = replace_stand_in_bits(
+        f"BASE_URL/orchestrators/{function_name}/{instance_id}?code=AUTH_CODE")
     assert expected_url == start_new_url
 
 
