@@ -1,3 +1,4 @@
+import pytest
 import json
 from typing import List
 
@@ -24,6 +25,7 @@ def test_generates_schedule_task():
     assert "Tokyo" == action.input_
 
 
+@pytest.mark.skip(reason="Need to either change to use the context builder or remove. Is redundant with other tests")
 def test_generates_completed_task():
     histories_string = '[{"EventType":12,"EventId":-1,"IsPlayed":false,"Timestamp":"2019-12-08T23:18:41.3240927Z"},' \
                        '{"OrchestrationInstance":{"InstanceId":"48d0f95957504c2fa579e810a390b938",' \
@@ -34,7 +36,7 @@ def test_generates_completed_task():
                        '"Timestamp":"2019-12-08T23:29:51.5313393Z"},{"EventType":13,"EventId":-1,"IsPlayed":false,' \
                        '"Timestamp":"2019-12-08T23:29:51.5320985Z"},{"EventType":12,"EventId":-1,"IsPlayed":false,' \
                        '"Timestamp":"2019-12-08T23:29:52.4899106Z"},{"EventType":5,"TaskScheduledId":0,' \
-                       '"Result":"Hello Tokyo!","EventId":-1,"IsPlayed":false,' \
+                       '"Result":"\"Hello Tokyo!\"","EventId":-1,"IsPlayed":false,' \
                        '"Timestamp":"2019-12-08T23:29:51.7873033Z"}]'
 
     histories: List[HistoryEvent] = json.loads(histories_string)
@@ -43,6 +45,7 @@ def test_generates_completed_task():
 
 
 # noinspection PyTypeChecker
+@pytest.mark.skip(reason="Need to either change to use the context builder or remove. Is redundant with other tests")
 def test_generates_schedule_task_for_second_activity():
     histories_string = '[{"EventType":12,"EventId":-1,"IsPlayed":false,"Timestamp":"2019-12-08T23:18:41.3240927Z"},' \
                        '{"OrchestrationInstance":{"InstanceId":"48d0f95957504c2fa579e810a390b938",' \
@@ -53,7 +56,7 @@ def test_generates_schedule_task_for_second_activity():
                        '"Timestamp":"2019-12-08T23:29:51.5313393Z"},{"EventType":13,"EventId":-1,"IsPlayed":false,' \
                        '"Timestamp":"2019-12-08T23:29:51.5320985Z"},{"EventType":12,"EventId":-1,"IsPlayed":false,' \
                        '"Timestamp":"2019-12-08T23:29:52.4899106Z"},{"EventType":5,"TaskScheduledId":0,' \
-                       '"Result":"Hello Tokyo!","EventId":-1,"IsPlayed":false,' \
+                       '"Result":"\"Hello Tokyo!\"","EventId":-1,"IsPlayed":false,' \
                        '"Timestamp":"2019-12-08T23:29:51.7873033Z"}]'
 
     histories: List[HistoryEvent] = json.loads(histories_string)
@@ -67,6 +70,7 @@ def test_generates_schedule_task_for_second_activity():
 
 
 # noinspection PyTypeChecker
+@pytest.mark.skip(reason="Need to either change to use the context builder or remove. Is redundant with other tests")
 def test_generates_completed_task_for_second_activity():
     histories_string = '[{"EventType":12,"EventId":-1,"IsPlayed":false,"Timestamp":"2019-12-08T23:18:41.3240927Z"},' \
                        '{"OrchestrationInstance":{"InstanceId":"48d0f95957504c2fa579e810a390b938",' \
@@ -77,12 +81,12 @@ def test_generates_completed_task_for_second_activity():
                        '"Timestamp":"2019-12-08T23:29:51.5313393Z"},{"EventType":13,"EventId":-1,"IsPlayed":false,' \
                        '"Timestamp":"2019-12-08T23:29:51.5320985Z"},{"EventType":12,"EventId":-1,"IsPlayed":false,' \
                        '"Timestamp":"2019-12-08T23:29:52.4899106Z"},{"EventType":5,"TaskScheduledId":0,' \
-                       '"Result":"Hello Tokyo!","EventId":-1,"IsPlayed":true,' \
+                       '"Result":"\"Hello Tokyo!\"","EventId":-1,"IsPlayed":true,' \
                        '"Timestamp":"2019-12-08T23:29:51.7873033Z"},{"EventType":4,"Name":"Hello","Version":"",' \
                        '"Input":null,"EventId":1,"IsPlayed":false,"Timestamp":"2019-12-08T23:34:12.2632487Z"},' \
                        '{"EventType":13,"EventId":-1,"IsPlayed":false,"Timestamp":"2019-12-08T23:34:12.263286Z"},' \
                        '{"EventType":12,"EventId":-1,"IsPlayed":false,"Timestamp":"2019-12-08T23:34:12.8710525Z"},' \
-                       '{"EventType":5,"TaskScheduledId":1,"Result":"Hello Seattle!","EventId":-1,' \
+                       '{"EventType":5,"TaskScheduledId":1,"Result":"\"Hello Seattle!\"","EventId":-1,' \
                        '"IsPlayed":false,"Timestamp":"2019-12-08T23:34:12.561288Z"}] '
 
     histories: List[HistoryEvent] = json.loads(histories_string)
