@@ -1,4 +1,4 @@
-from tests.fixtures import TASK_HUB_NAME, replace_stand_in_bits
+from tests.fixtures import TASK_HUB_NAME, replace_stand_in_bits, binding_info
 
 
 def test_extracts_task_hub_name(binding_info):
@@ -23,8 +23,7 @@ def test_extracts_create_and_wait_on_new_instance_post_uri(binding_info):
 def test_extracts_status_query_get_uri(binding_info):
     expected_url = replace_stand_in_bits(
         "BASE_URL/instances/INSTANCEID?taskHub=TASK_HUB_NAME&connection"
-        "=Storage "
-        "&code=AUTH_CODE")
+        "=Storage&code=AUTH_CODE")
     assert expected_url == binding_info.management_urls["statusQueryGetUri"]
 
 
@@ -52,7 +51,6 @@ def test_extracts_rewind_post_uri(binding_info):
 def test_extracts_purge_history_delete_uri(binding_info):
     expected_url = replace_stand_in_bits(
         "BASE_URL/instances/INSTANCEID?taskHub=TASK_HUB_NAME&connection"
-        "=Storage&code "
-        "=AUTH_CODE")
+        "=Storage&code=AUTH_CODE")
     assert expected_url == binding_info.management_urls[
         "purgeHistoryDeleteUri"]

@@ -1,3 +1,8 @@
+"""Durable Orchestrator.
+
+Responsible for orchestrating the execution of the user defined generator
+function.
+"""
 import logging
 import traceback
 from typing import Callable, Iterator, Any
@@ -15,8 +20,20 @@ from .tasks import should_suspend
 
 
 class Orchestrator:
+    """Durable Orchestration Class.
+
+    Responsible for orchestrating the execution of the user defined generator
+    function.
+    """
+
     def __init__(self,
                  activity_func: Callable[[IFunctionContext], Iterator[Any]]):
+        """Base constructor for class.
+
+        Responsible for orchestrating the execution of the user defined
+        generator function.
+        :param activity_func: Generator function to orchestrate.
+        """
         self.fn: Callable[[IFunctionContext], Iterator[Any]] = activity_func
         self.customStatus: Any = None
 
