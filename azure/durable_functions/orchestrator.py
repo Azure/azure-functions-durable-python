@@ -45,7 +45,8 @@ class Orchestrator:
                 if (isinstance(generation_state, Task)
                     or isinstance(generation_state, TaskSet)) and (
                         generation_state.isFaulted):
-                    generation_state = self.generator.throw(generation_state.exception)
+                    generation_state = self.generator.throw(
+                        generation_state.exception)
                     continue
 
                 self._reset_timestamp()
@@ -85,7 +86,8 @@ class Orchestrator:
             self.durable_context.actions.append(generation_state.actions)
 
     def _reset_timestamp(self):
-        last_timestamp = dt_parse(self.durable_context.decision_started_event['Timestamp'])
+        last_timestamp = dt_parse(
+            self.durable_context.decision_started_event['Timestamp'])
         decision_started_events = list(
             filter(lambda e_: (
                     e_["EventType"] == HistoryEventType.OrchestratorStarted
@@ -94,8 +96,10 @@ class Orchestrator:
         if len(decision_started_events) == 0:
             self.durable_context.currentUtcDateTime = None
         else:
-            self.durable_context.decision_started_event = decision_started_events[0]
-            self.durable_context.currentUtcDateTime = dt_parse(self.durable_context.decision_started_event['Timestamp'])
+            self.durable_context.decision_started_event = \
+                decision_started_events[0]
+            self.durable_context.currentUtcDateTime = dt_parse(
+                self.durable_context.decision_started_event['Timestamp'])
 
     @classmethod
     def create(cls, fn):

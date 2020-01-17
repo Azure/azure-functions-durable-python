@@ -26,17 +26,18 @@ class DurableOrchestrationContext:
             state=self.histories,
             name=n,
             input_=i)
-        self.call_activity_with_retry = lambda n, o, i: call_activity_with_retry_task(
-            state=self.histories,
-            retry_options=o,
-            name=n,
-            input_=i)
+        self.call_activity_with_retry = \
+            lambda n, o, i: call_activity_with_retry_task(
+                state=self.histories,
+                retry_options=o,
+                name=n,
+                input_=i)
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
         self.decision_started_event: HistoryEvent = list(filter(
-            # HistoryEventType.OrchestratorStarted
             lambda e_: e_["EventType"] == HistoryEventType.OrchestratorStarted,
             self.histories))[0]
-        self.currentUtcDateTime = dt_parse(self.decision_started_event["Timestamp"])
+        self.currentUtcDateTime = \
+            dt_parse(self.decision_started_event["Timestamp"])
         self.newGuidCounter = 0
         self.actions: List[List[IAction]] = []
         self.Task: ITaskMethods
@@ -48,8 +49,8 @@ class DurableOrchestrationContext:
                 name: str, retry_options: RetryOptions, input_=None) -> Task:
             raise NotImplementedError("This is a placeholder.")
 
-        def callSubOrchestrator(
-                name: str, input=None, instanceId: str = None) -> Task:
+        def call_sub_orchestrator(
+                name: str, input_=None, instance_id: str = None) -> Task:
             raise NotImplementedError("This is a placeholder.")
 
         # TODO: more to port over

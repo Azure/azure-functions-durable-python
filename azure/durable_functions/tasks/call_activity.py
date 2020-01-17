@@ -5,8 +5,8 @@ from ..models.Task import (
     Task)
 from ..models.actions.CallActivityAction import CallActivityAction
 from ..models.history import HistoryEvent
-from .task_utilities import find_task_completed, find_task_failed, find_task_scheduled, set_processed, \
-    parse_history_event
+from .task_utilities import find_task_completed, find_task_failed, \
+    find_task_scheduled, set_processed, parse_history_event
 
 
 def call_activity_task(
@@ -40,7 +40,8 @@ def call_activity_task(
             result=task_failed["Reason"],
             timestamp=task_failed["Timestamp"],
             id=task_failed["TaskScheduledId"],
-            exc=Exception(f"{task_failed['Reason']} \n {task_failed['Details']}")
+            exc=Exception(
+                f"{task_failed['Reason']} \n {task_failed['Details']}")
         )
 
     return Task(isCompleted=False, isFaulted=False, action=new_action)
