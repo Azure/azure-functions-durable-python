@@ -26,7 +26,7 @@ def base_expected_state(output=None) -> OrchestratorState:
 
 def add_hello_action(state: OrchestratorState, input_: str):
     action = CallActivityAction(function_name='Hello', input_=input_)
-    state._actions.append([action])
+    state.actions.append([action])
 
 
 def add_hello_completed_events(

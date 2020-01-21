@@ -1,4 +1,3 @@
-"""Define the Retry Options class."""
 from typing import Any, Dict
 
 from .utils.json_utils import add_attrib

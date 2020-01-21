@@ -1,4 +1,3 @@
-"""Durable Orchestration Client class definition."""
 import requests
 import json
 from typing import List
@@ -14,11 +13,6 @@ class DurableOrchestrationClient:
     """
 
     def __init__(self, context: str):
-        """Create a new Orchestration Client.
-
-        :param context: The object representing the orchestrationClient input
-        binding of the Azure function that will use this client.
-        """
         self.task_hub_name: str
         self._uniqueWebHookOrigins: List[str]
         self._event_name_placeholder: str = "{eventName}"
@@ -65,9 +59,7 @@ class DurableOrchestrationClient:
         return json.dumps(client_input) if client_input is not None else None
 
     def _get_start_new_url(self, instance_id, orchestration_function_name):
-        request_url = self._orchestration_bindings.creation_urls[
-                'createNewInstancePostUri'
-        ]
+        request_url = self._orchestration_bindings.creation_urls['createNewInstancePostUri']
         request_url = request_url.replace(self._function_name_placeholder,
                                           orchestration_function_name)
         request_url = request_url.replace(self._instance_id_placeholder,

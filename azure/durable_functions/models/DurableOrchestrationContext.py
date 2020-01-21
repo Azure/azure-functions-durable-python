@@ -1,4 +1,3 @@
-"""Defines the Durable Orchestration Context Class Object."""
 import json
 import logging
 import datetime

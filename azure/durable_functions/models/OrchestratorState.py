@@ -1,4 +1,3 @@
-"""Defines the Orchestration State Class structure."""
 import json
 from typing import List, Any, Dict
 
@@ -23,6 +22,40 @@ class OrchestratorState:
         self._output: Any = output
         self._error: str = error
         self._custom_status: Any = custom_status
+
+    @property
+    def actions(self) -> List[List[Any]]:
+        """Get the ordered list of async actions the orchestrator function should perform.
+
+        This list is append-only; it must contain all scheduled async actions up to the latest
+        requested work, even actions that have already been completed.
+
+        Actions are grouped by execution. Each subsequent orchestrator execution should add a
+        new array of action objects to the collection.
+        """
+        return self._actions
+
+    @property
+    def is_done(self) -> bool:
+        """Get indicator of whether this is the last execution of this orchestrator instance.
+
+        When this value is true, the Durable Functions extension will consider the orchestration
+        instance completed and will attempt to return the output value.
+        """
+        return self._is_done
+
+    @property
+    def output(self):
+        """Get the JSON-serializable value returned by the orchestrator instance completion.
+
+        Optional.
+        """
+        return self._output
+
+    @property
+    def custom_status(self):
+        """Get the JSON-serializable value used by DurableOrchestrationContext.SetCustomStatus."""
+        return self._custom_status
 
     def to_json(self) -> Dict[str, Any]:
         """Convert object into a json dictionary.

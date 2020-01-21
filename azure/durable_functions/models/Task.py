@@ -14,7 +14,6 @@ class Task:
     are useful for parallelization and timeout operations in conjunction with
     Task.all and Task.any.
     """
-    _action: IAction
 
     def __init__(self, is_completed, is_faulted, action,
                  result=None, timestamp=None, id_=None, exc=None):
@@ -37,7 +36,6 @@ class Task:
     @property
     def is_faulted(self) -> bool:
         """Get indicator whether the task faulted in some way due to error."""
-
         return self._is_faulted
 
     @property
