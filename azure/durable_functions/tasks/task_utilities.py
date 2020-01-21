@@ -1,5 +1,4 @@
 import json
-
 from ..models.history import HistoryEventType
 
 
