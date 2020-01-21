@@ -1,28 +1,40 @@
 import logging
-
 import azure.durable_functions as df
 
 
 def generator_function(context):
+    """This function provides the core function chaining orchestration logic
+        
+    Arguments:
+        context {DurableOrchestrationContext} -- This context has the past history 
+        and the durable orchestration API's to chain a set of functions
+    
+    Returns:
+        final_result {str} -- Returns the final result after the chain completes
+    
+    Yields:
+        call_activity {str} -- Yields at every step of the function chain orchestration logic
+    """    
     outputs = []
 
-    task1 = yield context.df.callActivity("DurableActivity", "One")
-    task2 = yield context.df.callActivity("DurableActivity", "Two")
-    task3 = yield context.df.callActivity("DurableActivity", "Three")
+    r1 = yield context.df.call_activity("DurableActivity", "One")
+    r2 = yield context.df.call_activity("DurableActivity", r1)
+    final_result = yield context.df.call_activity("DurableActivity", r2)
 
-    outputs.append(task1)
-    outputs.append(task2)
-    outputs.append(task3)
-
-    return outputs
+    return final_result
 
 
 def main(context: str):
-    logging.warning("Durable Orchestration Trigger: " + context)
+    """This function creates the orchestration and provides
+    the durable framework with the core orchestration logic
+    
+    Arguments:
+        context {str} -- Function context containing the orchestration API's 
+        and current context of the long running workflow.
+    
+    Returns:
+        OrchestratorState - State of current orchestration
+    """
     orchestrate = df.Orchestrator.create(generator_function)
-    logging.warning("!!!type(orchestrate) " + str(type(orchestrate)))
     result = orchestrate(context)
-    logging.warning("!!!serialized json : " + result)
-    logging.warning("!!!type(result) " + str(type(result)))
-
     return result

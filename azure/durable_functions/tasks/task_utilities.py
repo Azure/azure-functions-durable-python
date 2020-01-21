@@ -1,5 +1,5 @@
 import logging
-
+import json
 from ..models.history import HistoryEventType
 
 
@@ -16,11 +16,11 @@ def parse_history_event(directive_result):
         raise ValueError("EventType is not found in task object")
 
     if event_type == HistoryEventType.EventRaised:
-        return directive_result["Input"]
+        return json.loads(directive_result["Input"])
     if event_type == HistoryEventType.SubOrchestrationInstanceCreated:
-        return directive_result["Result"]
+        return json.loads(directive_result["Result"])
     if event_type == HistoryEventType.TaskCompleted:
-        return directive_result["Result"]
+        return json.loads(directive_result["Result"])
     return None
 
 
