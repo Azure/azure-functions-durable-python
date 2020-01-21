@@ -32,7 +32,8 @@ def assert_actions_are_equal(expected, result):
         assert_attribute_equal(expected_action, result_action, "actionType")
 
 
-def get_orchestration_state_result(context_builder, activity_func: Callable[[IFunctionContext], Iterator[Any]]):
+def get_orchestration_state_result(context_builder, activity_func: Callable[[IFunctionContext],
+                                                                            Iterator[Any]]):
     context_as_string = context_builder.to_json_string()
     orchestrator = Orchestrator(activity_func)
     result_of_handle = orchestrator.handle(context_as_string)

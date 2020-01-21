@@ -1,8 +1,10 @@
-from .orchestrator_test_utils import *
+from .orchestrator_test_utils import assert_orchestration_state_equals, \
+    get_orchestration_state_result
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.RetryOptions import RetryOptions
-from azure.durable_functions.models.actions.CallActivityWithRetryAction import CallActivityWithRetryAction
+from azure.durable_functions.models.actions.CallActivityWithRetryAction import \
+    CallActivityWithRetryAction
 
 
 RETRY_OPTIONS = RetryOptions(5000, 3)
@@ -13,8 +15,8 @@ def generator_function(context):
 
     retry_options = RETRY_OPTIONS
     task1 = yield context.df.call_activity_with_retry("Hello", retry_options, "Tokyo")
-    task2 = yield context.df.call_activity_with_retry("Hello",  retry_options, "Seattle")
-    task3 = yield context.df.call_activity_with_retry("Hello",  retry_options, "London")
+    task2 = yield context.df.call_activity_with_retry("Hello", retry_options, "Seattle")
+    task3 = yield context.df.call_activity_with_retry("Hello", retry_options, "London")
 
     outputs.append(task1)
     outputs.append(task2)
@@ -29,7 +31,8 @@ def base_expected_state(output=None) -> OrchestratorState:
 
 def add_hello_action(state: OrchestratorState, input_: str):
     retry_options = RETRY_OPTIONS
-    action = CallActivityWithRetryAction(function_name='Hello', retry_options=retry_options, input_=input_)
+    action = CallActivityWithRetryAction(function_name='Hello',
+                                         retry_options=retry_options, input_=input_)
     state.actions.append([action])
 
 

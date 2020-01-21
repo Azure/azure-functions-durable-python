@@ -1,4 +1,5 @@
-from .orchestrator_test_utils import *
+from .orchestrator_test_utils import assert_orchestration_state_equals, \
+    get_orchestration_state_result
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction

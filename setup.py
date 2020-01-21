@@ -5,7 +5,7 @@ import subprocess
 import sys
 import glob
 
-from setuptools import setup,find_packages
+from setuptools import setup, find_packages
 from distutils.command import build
 
 
@@ -57,7 +57,7 @@ class build(build.build, BuildGRPC):
 
 setup(
     name='azure-functions-durable',
-    packages=find_packages(exclude=("tests","samples")),
+    packages=find_packages(exclude=("tests", "samples")),
     version='1.0.1ab',
     description='Durable Functions Support For Python Functionapp',
     license='MIT',

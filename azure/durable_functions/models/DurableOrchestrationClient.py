@@ -25,7 +25,8 @@ class DurableOrchestrationClient:
         self._showHistoryQueryKey: str = "showHistory"
         self._showHistoryOutputQueryKey: str = "showHistoryOutput"
         self._showInputQueryKey: str = "showInput"
-        self._orchestrationBindings: DurableOrchestrationBindings = DurableOrchestrationBindings(context)
+        self._orchestrationBindings: DurableOrchestrationBindings = \
+            DurableOrchestrationBindings(context)
 
     def start_new(self,
                   orchestration_function_name: str,
@@ -42,7 +43,8 @@ class DurableOrchestrationClient:
 
     def get_start_new_url(self, instance_id, orchestration_function_name):
         request_url = self._orchestrationBindings.creation_urls['createNewInstancePostUri']
-        request_url = request_url.replace(self._functionNamePlaceholder, orchestration_function_name)
+        request_url = request_url.replace(self._functionNamePlaceholder,
+                                          orchestration_function_name)
         request_url = request_url.replace(self._instanceIdPlaceholder,
                                           f'/{instance_id}' if instance_id is not None else '')
         return request_url
