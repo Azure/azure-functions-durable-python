@@ -9,7 +9,7 @@ from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..interfaces import ITaskMethods
 from ..models.Task import Task
-from ..tasks import call_activity, task_all
+from ..tasks import call_activity_task, task_all, call_activity_with_retry_task
 
 
 class DurableOrchestrationContext:
@@ -22,8 +22,13 @@ class DurableOrchestrationContext:
         self.instanceId = context.get("instanceId")
         self.isReplaying = context.get("isReplaying")
         self.parentInstanceId = context.get("parentInstanceId")
-        self.callActivity = lambda n, i: call_activity(
+        self.call_activity = lambda n, i: call_activity_task(
             state=self.histories,
+            name=n,
+            input_=i)
+        self.call_activity_with_retry = lambda n, o, i: call_activity_with_retry_task(
+            state=self.histories,
+            retry_options=o,
             name=n,
             input_=i)
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
@@ -36,11 +41,11 @@ class DurableOrchestrationContext:
         self.actions: List[List[IAction]] = []
         self.Task: ITaskMethods
 
-        def callActivity(name: str, input_=None) -> Task:
+        def call_activity(name: str, input_=None) -> Task:
             raise NotImplementedError("This is a placeholder.")
 
-        def callActivityWithRetry(
-                name: str, retryOptions: RetryOptions, input=None) -> Task:
+        def call_activity_with_retry(
+                name: str, retry_options: RetryOptions, input_=None) -> Task:
             raise NotImplementedError("This is a placeholder.")
 
         def callSubOrchestrator(

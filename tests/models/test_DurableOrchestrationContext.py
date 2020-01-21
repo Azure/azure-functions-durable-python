@@ -7,11 +7,13 @@ from azure.durable_functions.models.DurableOrchestrationContext import DurableOr
 @pytest.fixture
 def starting_context():
     context = DurableOrchestrationContext(
-        '{"history":[{"EventType":12,"EventId":-1,"IsPlayed":false,"Timestamp":"2019-12-08T23:18:41.3240927Z"},'
-        '{"OrchestrationInstance":{"InstanceId":"48d0f95957504c2fa579e810a390b938",'
-        '"ExecutionId":"fd183ee02e4b4fd18c95b773cfb5452b"},"EventType":0,"ParentInstance":null,'
-        '"Name":"DurableOrchestratorTrigger","Version":"","Input":"null","Tags":null,"EventId":-1,"IsPlayed":false,'
-        '"Timestamp":"2019-12-08T23:18:39.756132Z"}],"input":null,"instanceId":"48d0f95957504c2fa579e810a390b938",'
+        '{"history":[{"EventType":12,"EventId":-1,"IsPlayed":false,'
+        '"Timestamp":"2019-12-08T23:18:41.3240927Z"},{"OrchestrationInstance":'
+        '{"InstanceId":"48d0f95957504c2fa579e810a390b938","ExecutionId":'
+        '"fd183ee02e4b4fd18c95b773cfb5452b"},"EventType":0,"ParentInstance":null,'
+        '"Name":"DurableOrchestratorTrigger","Version":"","Input":"null","Tags":null,'
+        '"EventId":-1,"IsPlayed":false,"Timestamp":"2019-12-08T23:18:39.756132Z"}],'
+        '"input":null,"instanceId":"48d0f95957504c2fa579e810a390b938",'
         '"isReplaying":false,"parentInstanceId":null} ')
     return context
 

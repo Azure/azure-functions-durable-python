@@ -1,33 +1,11 @@
-import pytest
 import json
+from typing import Callable, Iterator, Any
 
 from azure.durable_functions.orchestrator import Orchestrator
-from tests.orchestrator.chaining_context import *
+from azure.durable_functions.interfaces.IFunctionContext import IFunctionContext
 
 
-def generator_function(context):
-    outputs = []
-
-    task1 = yield context.df.callActivity("Hello", "Tokyo")
-    task2 = yield context.df.callActivity("Hello", "Seattle")
-    task3 = yield context.df.callActivity("Hello", "London")
-
-    outputs.append(task1)
-    outputs.append(task2)
-    outputs.append(task3)
-
-    return outputs
-
-
-@pytest.mark.parametrize("context, output_state",
-                         [(HANDLE_ONE, STATE_ONE),
-                          (HANDLE_TWO, STATE_TWO),
-                          (HANDLE_THREE, STATE_THREE),
-                          (HANDLE_FOUR, STATE_FOUR)])
-def test_orchestration_state_output(context, output_state):
-    orchestrator = Orchestrator(generator_function)
-    result = json.loads(orchestrator.handle(context))
-    expected = json.loads(output_state)
+def assert_orchestration_state_equals(expected, result):
     assert_attribute_equal(expected, result, "isDone")
     assert_actions_are_equal(expected, result)
     assert_attribute_equal(expected, result, "output")
@@ -37,7 +15,7 @@ def test_orchestration_state_output(context, output_state):
 
 def assert_attribute_equal(expected, result, attribute):
     if attribute in expected:
-        assert expected.get(attribute) == result.get(attribute)
+        assert result.get(attribute) == expected.get(attribute)
     else:
         assert attribute not in result
 
@@ -52,3 +30,13 @@ def assert_actions_are_equal(expected, result):
         assert_attribute_equal(expected_action, result_action, "functionName")
         assert_attribute_equal(expected_action, result_action, "input")
         assert_attribute_equal(expected_action, result_action, "actionType")
+
+
+def get_orchestration_state_result(context_builder, activity_func: Callable[[IFunctionContext],
+                                                                            Iterator[Any]]):
+    context_as_string = context_builder.to_json_string()
+    orchestrator = Orchestrator(activity_func)
+    result_of_handle = orchestrator.handle(context_as_string)
+    result = json.loads(result_of_handle)
+
+    return result

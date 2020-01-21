@@ -35,10 +35,10 @@ class Orchestrator:
 
                 if should_suspend(generation_state):
                     orchestration_state = OrchestratorState(
-                        isDone=False,
+                        is_done=False,
                         output=None,
                         actions=self.durable_context.actions,
-                        customStatus=self.customStatus)
+                        custom_status=self.customStatus)
                     suspended = True
                     continue
 
@@ -53,19 +53,19 @@ class Orchestrator:
 
         except StopIteration as sie:
             orchestration_state = OrchestratorState(
-                isDone=True,
+                is_done=True,
                 output=sie.value,
                 actions=self.durable_context.actions,
-                customStatus=self.customStatus)
+                custom_status=self.customStatus)
         except Exception as e:
             e_string = traceback.format_exc()
             logging.warning(f"!!!Generator Termination Exception {e_string}")
             orchestration_state = OrchestratorState(
-                isDone=False,
+                is_done=False,
                 output=None,  # Should have no output, after generation range
                 actions=self.durable_context.actions,
                 error=str(e),
-                customStatus=self.customStatus)
+                custom_status=self.customStatus)
 
         return orchestration_state.to_json_string()
 
@@ -88,14 +88,15 @@ class Orchestrator:
         last_timestamp = dt_parse(self.durable_context.decision_started_event['Timestamp'])
         decision_started_events = list(
             filter(lambda e_: (
-                    e_["EventType"] == HistoryEventType.OrchestratorStarted
-                    and dt_parse(e_["Timestamp"]) > last_timestamp),
-                   self.durable_context.histories))
+                e_["EventType"] == HistoryEventType.OrchestratorStarted
+                and dt_parse(e_["Timestamp"]) > last_timestamp),
+                self.durable_context.histories))
         if len(decision_started_events) == 0:
             self.durable_context.currentUtcDateTime = None
         else:
             self.durable_context.decision_started_event = decision_started_events[0]
-            self.durable_context.currentUtcDateTime = dt_parse(self.durable_context.decision_started_event['Timestamp'])
+            self.durable_context.currentUtcDateTime = \
+                dt_parse(self.durable_context.decision_started_event['Timestamp'])
 
     @classmethod
     def create(cls, fn):
