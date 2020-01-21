@@ -1,5 +1,8 @@
 [flake8]
-exclude = .git, __pycache__, build, dist, .eggs, .github, .local, docs/,
-    samples, .venv*, .env*, .vscode, .idea, investigations, tests/*
-max-complexity = 10
-docstring-convention = numpy
+# delete D100~D107 for docstring checks
+# W503 contradicts with pep8 and will soon be fixed by flake8
+ignore = W503, D100, D101, D102, D103, D104, D107
+max-line-length = 99
+exclude =
+    __pycache__,
+    azure/durable_functions/grpc/protobuf/

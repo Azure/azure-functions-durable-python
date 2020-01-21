@@ -117,9 +117,9 @@ class Orchestrator:
             self.durable_context.decision_started_event['Timestamp'])
         decision_started_events = list(
             filter(lambda e_: (
-                    e_["EventType"] == HistoryEventType.OrchestratorStarted
-                    and dt_parse(e_["Timestamp"]) > last_timestamp),
-                   self.durable_context.histories))
+                e_["EventType"] == HistoryEventType.OrchestratorStarted
+                and dt_parse(e_["Timestamp"]) > last_timestamp),
+                self.durable_context.histories))
         if len(decision_started_events) == 0:
             self.durable_context.current_utc_datetime = None
         else:
