@@ -6,7 +6,7 @@ from ..utils.json_utils import add_attrib
 
 class CallActivityAction:
     def __init__(self, function_name: str, input_=None):
-        self.action_type: ActionType = ActionType.CallActivity
+        self.action_type: ActionType = ActionType.CALL_ACTIVITY
         self.function_name: str = function_name
         self.input_ = input_
 

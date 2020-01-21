@@ -8,7 +8,7 @@ from ..utils.json_utils import add_attrib, add_json_attrib
 class CallActivityWithRetryAction:
     def __init__(self, function_name: str,
                  retry_options: RetryOptions, input_=None):
-        self.action_type: ActionType = ActionType.CallActivityWithRetry
+        self.action_type: ActionType = ActionType.CALL_ACTIVITY_WITH_RETRY
         self.function_name: str = function_name
         self.retry_options: RetryOptions = retry_options
         self.input_ = input_
