@@ -25,8 +25,8 @@ def test_generates_schedule_task():
 
     histories: List[HistoryEvent] = json.loads(histories_string)
     result = call_activity_task(state=histories, name="Hello", input_="Tokyo")
-    assert not result.isCompleted
-    action: CallActivityAction = result.action
+    assert not result._is_completed
+    action: CallActivityAction = result._action
     assert ActionType.CallActivity == action.action_type
     assert "Hello" == action.function_name
     assert "Tokyo" == action.input_
@@ -61,7 +61,7 @@ def test_generates_completed_task():
 
     histories: List[HistoryEvent] = json.loads(histories_string)
     result = call_activity_task(state=histories, name="Hello", input_="Tokyo")
-    assert result.isCompleted
+    assert result._is_completed
 
 
 # noinspection PyTypeChecker
@@ -96,8 +96,8 @@ def test_generates_schedule_task_for_second_activity():
     call_activity_task(state=histories, name="Hello", input_="Tokyo")
     result = call_activity_task(state=histories, name="Hello",
                                 input_="Seattle")
-    assert not result.isCompleted
-    action: CallActivityAction = result.action
+    assert not result._is_completed
+    action: CallActivityAction = result._action
     assert ActionType.CallActivity == action.action_type
     assert "Hello" == action.function_name
     assert "Seattle" == action.input_
@@ -147,8 +147,8 @@ def test_generates_completed_task_for_second_activity():
     call_activity_task(state=histories, name="Hello", input_="Tokyo")
     result = call_activity_task(state=histories, name="Hello",
                                 input_="Seattle")
-    assert result.isCompleted
-    action: CallActivityAction = result.action
+    assert result._is_completed
+    action: CallActivityAction = result._action
     assert ActionType.CallActivity == action.action_type
     assert "Hello" == action.function_name
     assert "Seattle" == action.input_

@@ -107,7 +107,7 @@ class Orchestrator:
     def _add_to_actions(self, generation_state):
         if (isinstance(generation_state, Task)
                 and hasattr(generation_state, "action")):
-            self.durable_context.actions.append([generation_state.action])
+            self.durable_context.actions.append([generation_state._action])
         elif (isinstance(generation_state, TaskSet)
               and hasattr(generation_state, "actions")):
             self.durable_context.actions.append(generation_state.actions)
