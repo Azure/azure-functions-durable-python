@@ -39,7 +39,7 @@ class DurableOrchestrationContext:
                 input_=i)
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
         self.decision_started_event: HistoryEvent = list(filter(
-            lambda e_: e_["EventType"] == HistoryEventType.OrchestratorStarted,
+            lambda e_: e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED,
             self.histories))[0]
         self._current_utc_datetime = \
             dt_parse(self.decision_started_event["Timestamp"])
