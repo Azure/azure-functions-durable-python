@@ -2,7 +2,7 @@ import json
 
 from azure.durable_functions.models.DurableOrchestrationClient \
     import DurableOrchestrationClient
-from tests.fixtures import replace_stand_in_bits, binding_string
+from tests.conftest import replace_stand_in_bits, binding_string
 
 
 def test_get_start_new_url(binding_string):

@@ -1,14 +1,12 @@
-import logging
 import json
 
 from ..models.history import HistoryEventType
 
 
 def should_suspend(partial_result) -> bool:
-    logging.warning("!!!shouldSuspend")
     return bool(partial_result is not None
-                and hasattr(partial_result, "isCompleted")
-                and not partial_result.isCompleted)
+                and hasattr(partial_result, "is_completed")
+                and not partial_result.is_completed)
 
 
 def parse_history_event(directive_result):
@@ -36,7 +34,6 @@ def find_task_scheduled(state, name):
                  not (e["Name"] == name))
                 or e.get("IsProcessed")), state))
 
-    logging.warning(f"!!! findTaskScheduled {tasks}")
     if len(tasks) == 0:
         return None
 
@@ -114,8 +111,4 @@ def find_task_retry_timer_fired(state, retry_timer_created):
 def set_processed(tasks):
     for task in tasks:
         if task is not None:
-            logging.warning(f"!!!task {task.get('IsProcessed')}"
-                            f"{task.get('Name')}")
             task["IsProcessed"] = True
-            logging.warning(f"!!!after_task {task.get('IsProcessed')}"
-                            f"{task.get('Name')}")

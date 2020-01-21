@@ -1,4 +1,3 @@
-import logging
 from typing import List, Any
 
 from ..models.Task import (
@@ -13,7 +12,6 @@ def call_activity_task(
         state: List[HistoryEvent],
         name: str,
         input_: Any = None) -> Task:
-    logging.warning(f"!!!call_activity_task name={name} input={input_}")
     new_action = CallActivityAction(name, input_)
 
     task_scheduled = find_task_scheduled(state, name)
@@ -22,7 +20,6 @@ def call_activity_task(
     set_processed([task_scheduled, task_completed, task_failed])
 
     if task_completed is not None:
-        logging.warning("!!!Task Completed")
         return Task(
             is_completed=True,
             is_faulted=False,
@@ -32,7 +29,6 @@ def call_activity_task(
             id_=task_completed["TaskScheduledId"])
 
     if task_failed is not None:
-        logging.warning("!!!Task Failed")
         return Task(
             is_completed=True,
             is_faulted=True,

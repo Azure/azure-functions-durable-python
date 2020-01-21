@@ -61,7 +61,7 @@ class DurableOrchestrationClient:
         return result
 
     @staticmethod
-    def _get_json_input(client_input):
+    def _get_json_input(client_input: object) -> object:
         return json.dumps(client_input) if client_input is not None else None
 
     def _get_start_new_url(self, instance_id, orchestration_function_name):
