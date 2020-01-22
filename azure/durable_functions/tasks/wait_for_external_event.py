@@ -9,7 +9,7 @@ from .task_utilities import find_task_completed, find_task_failed, find_task_sch
     set_processed, parse_history_event, find_event_raised
 
 
-def  wait_for_external_event_task(
+def wait_for_external_event_task(
         state: List[HistoryEvent],
         name: str) -> Task:
     logging.warning(f"!!!wait_for_external_event_task name={name}")
@@ -22,8 +22,8 @@ def  wait_for_external_event_task(
             isFaulted=False,
             action=new_action,
             result=parse_history_event(eventRaised),
-            timestamp=eventRaised.timestamp, ##rewrite this
-            id=eventRaised.event_id)##rewrite this
+            timestamp=eventRaised["Timestamp"],
+            id=eventRaised["EventId"])
     
     else:
         return Task(isCompleted=False, isFaulted=False, action=new_action)
