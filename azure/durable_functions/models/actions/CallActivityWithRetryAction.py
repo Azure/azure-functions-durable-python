@@ -6,8 +6,14 @@ from ..utils.json_utils import add_attrib, add_json_attrib
 
 
 class CallActivityWithRetryAction:
-    def __init__(self, function_name: str, retry_options: RetryOptions, input_=None):
-        self.action_type: ActionType = ActionType.CallActivityWithRetry
+    """Defines the structure of the Call Activity With Retry object.
+
+    Provides the information needed by the durable extension to be able to schedule the activity.
+    """
+
+    def __init__(self, function_name: str,
+                 retry_options: RetryOptions, input_=None):
+        self.action_type: ActionType = ActionType.CALL_ACTIVITY_WITH_RETRY
         self.function_name: str = function_name
         self.retry_options: RetryOptions = retry_options
         self.input_ = input_
@@ -16,6 +22,10 @@ class CallActivityWithRetryAction:
             raise ValueError("function_name cannot be empty")
 
     def to_json(self) -> Dict[str, Any]:
+        """Convert object into a json dictionary.
+
+        :return: The instance of the class converted into a json dictionary
+        """
         json_dict = {}
 
         add_attrib(json_dict, self, 'action_type', 'actionType')

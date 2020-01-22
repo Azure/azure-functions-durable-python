@@ -2,22 +2,24 @@ from enum import IntEnum
 
 
 class HistoryEventType(IntEnum):
-    ExecutionStarted = 0
-    ExecutionCompleted = 1
-    ExecutionFailed = 2
-    ExecutionTerminated = 3
-    TaskScheduled = 4
-    TaskCompleted = 5
-    TaskFailed = 6
-    SubOrchestrationInstanceCreated = 7
-    SubOrchestrationInstanceCompleted = 8
-    SubOrchestrationInstanceFailed = 9
-    TimerCreated = 10
-    TimerFired = 11
-    OrchestratorStarted = 12
-    OrchestratorCompleted = 13
-    EventSent = 14
-    EventRaised = 15
-    ContinueAsNew = 16
-    GenericEvent = 17
-    HistoryState = 18
+    """Defines the different types of history events being communicated."""
+
+    EXECUTION_STARTED = 0
+    EXECUTION_COMPLETED = 1
+    EXECUTION_FAILED = 2
+    EXECUTION_TERMINATED = 3
+    TASK_SCHEDULED = 4
+    TASK_COMPLETED = 5
+    TASK_FAILED = 6
+    SUB_ORCHESTRATION_INSTANCE_CREATED = 7
+    SUB_ORCHESTRATION_INSTANCE_COMPLETED = 8
+    SUB_ORCHESTRATION_INSTANCE_FAILED = 9
+    TIMER_CREATED = 10
+    TIMER_FIRED = 11
+    ORCHESTRATOR_STARTED = 12
+    ORCHESTRATOR_COMPLETED = 13
+    EVENT_SENT = 14
+    EVENT_RAISED = 15
+    CONTINUE_AS_NEW = 16
+    GENERIC_EVENT = 17
+    HISTORY_STATE = 18

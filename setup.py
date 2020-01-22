@@ -1,3 +1,4 @@
+"""Setup for the durable function module."""
 import pathlib
 import os
 import shutil
@@ -9,49 +10,54 @@ from setuptools import setup, find_packages
 from distutils.command import build
 
 
-class BuildGRPC:
-    """Generate gRPC bindings."""
+def _gen_grpc():
+    root = pathlib.Path(os.path.abspath(os.path.dirname(__file__)))
+    proto_root_dir = \
+        root / 'azure' / 'durable_functions' / 'grpc' / 'protobuf'
+    proto_src_dir = proto_root_dir
+    staging_root_dir = root / 'build' / 'protos'
+    staging_dir = staging_root_dir
+    build_dir = staging_dir
 
-    def _gen_grpc(self):
-        root = pathlib.Path(os.path.abspath(os.path.dirname(__file__)))
-        proto_root_dir = root / 'azure' / 'durable_functions' / 'grpc' / 'protobuf'
-        proto_src_dir = proto_root_dir
-        staging_root_dir = root / 'build' / 'protos'
-        staging_dir = staging_root_dir
-        build_dir = staging_dir
+    if os.path.exists(build_dir):
+        shutil.rmtree(build_dir)
 
-        if os.path.exists(build_dir):
-            shutil.rmtree(build_dir)
+    shutil.copytree(proto_src_dir, build_dir)
 
-        shutil.copytree(proto_src_dir, build_dir)
+    subprocess.run([
+        sys.executable, '-m', 'grpc_tools.protoc',
+        '-I', str(proto_src_dir),
+        '--python_out', str(staging_root_dir),
+        '--grpc_python_out', str(staging_root_dir),
+        os.sep.join((str(proto_src_dir),
+                     'DurableRpc.proto')),
+    ], check=True, stdout=sys.stdout, stderr=sys.stderr,
+        cwd=staging_root_dir)
 
-        subprocess.run([
-            sys.executable, '-m', 'grpc_tools.protoc',
-            '-I', str(proto_src_dir),
-            '--python_out', str(staging_root_dir),
-            '--grpc_python_out', str(staging_root_dir),
-            os.sep.join((str(proto_src_dir),
-                         'DurableRpc.proto')),
-        ], check=True, stdout=sys.stdout, stderr=sys.stderr,
-            cwd=staging_root_dir)
+    compiled = glob.glob(str(staging_dir / '*.py'))
 
-        compiled = glob.glob(str(staging_dir / '*.py'))
+    if not compiled:
+        print('grpc_tools.protoc produced no Python files',
+              file=sys.stderr)
+        sys.exit(1)
 
-        if not compiled:
-            print('grpc_tools.protoc produced no Python files',
-                  file=sys.stderr)
-            sys.exit(1)
-
-        # Not sure if we need this line that will copy both the proto and py generated
-        # files in the proto root dir
-        for f in compiled:
-            shutil.copy(f, proto_root_dir)
+    # Not sure if we need this line that will copy both the
+    # proto and py generated
+    # files in the proto root dir
+    for f in compiled:
+        shutil.copy(f, proto_root_dir)
 
 
-class build(build.build, BuildGRPC):
+class BuildModule(build.build):
+    """Used to build the module."""
 
     def run(self, *args, **kwargs):
-        self._gen_grpc()
+        """Execute the build.
+
+        :param args:
+        :param kwargs:
+        """
+        _gen_grpc()
         super().run(*args, **kwargs)
 
 
@@ -75,7 +81,7 @@ setup(
     ],
     include_package_data=True,
     cmdclass={
-        'build': build
+        'build': BuildModule
     },
     test_suite='tests'
 )
