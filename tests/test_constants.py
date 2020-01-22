@@ -1,3 +1,4 @@
+""" Validates the constants are set correctly."""
 import unittest
 from azure.durable_functions.constants import (
     DEFAULT_LOCAL_HOST,
