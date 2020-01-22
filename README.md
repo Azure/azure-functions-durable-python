@@ -1,6 +1,7 @@
 |Branch|Status|
 |---|---|
 |master|[![Build Status](https://csefy19.visualstudio.com/Durable%20Functions%20Python%20OSS/_apis/build/status/Azure.azure-functions-durable-python?branchName=master)](https://csefy19.visualstudio.com/Durable%20Functions%20Python%20OSS/_build/latest?definitionId=39&branchName=master)|
+|dev|[![Build Status](https://csefy19.visualstudio.com/Durable%20Functions%20Python%20OSS/_apis/build/status/Azure.azure-functions-durable-python?branchName=dev)](https://csefy19.visualstudio.com/Durable%20Functions%20Python%20OSS/_build/latest?definitionId=39&branchName=dev)|
 
 # Durable Functions for Python
 
