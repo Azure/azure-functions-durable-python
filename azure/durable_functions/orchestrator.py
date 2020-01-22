@@ -1,3 +1,8 @@
+"""Durable Orchestrator.
+
+Responsible for orchestrating the execution of the user defined generator
+function.
+"""
 import logging
 import traceback
 from typing import Callable, Iterator, Any
@@ -15,13 +20,35 @@ from .tasks import should_suspend
 
 
 class Orchestrator:
+    """Durable Orchestration Class.
+
+    Responsible for orchestrating the execution of the user defined generator
+    function.
+    """
+
     def __init__(self,
                  activity_func: Callable[[IFunctionContext], Iterator[Any]]):
+        """Create a new orchestrator for the user defined generator.
+
+        Responsible for orchestrating the execution of the user defined
+        generator function.
+        :param activity_func: Generator function to orchestrate.
+        """
         self.fn: Callable[[IFunctionContext], Iterator[Any]] = activity_func
         self.customStatus: Any = None
 
     # noinspection PyAttributeOutsideInit
     def handle(self, context_string: str):
+        """Handle the orchestration of the user defined generator function.
+
+        Called each time the durable extension executes an activity and needs
+        the client to handle the result.
+
+        :param context_string: the context of what has been executed by
+        the durable extension.
+        :return: the resulting orchestration state, with instructions back to
+        the durable extension.
+        """
         self.durable_context = DurableOrchestrationContext(context_string)
         activity_context = IFunctionContext(df=self.durable_context)
 
@@ -44,8 +71,9 @@ class Orchestrator:
 
                 if (isinstance(generation_state, Task)
                     or isinstance(generation_state, TaskSet)) and (
-                        generation_state.isFaulted):
-                    generation_state = self.generator.throw(generation_state.exception)
+                        generation_state.is_faulted):
+                    generation_state = self.generator.throw(
+                        generation_state.exception)
                     continue
 
                 self._reset_timestamp()
@@ -85,20 +113,26 @@ class Orchestrator:
             self.durable_context.actions.append(generation_state.actions)
 
     def _reset_timestamp(self):
-        last_timestamp = dt_parse(self.durable_context.decision_started_event['Timestamp'])
+        last_timestamp = dt_parse(
+            self.durable_context.decision_started_event['Timestamp'])
         decision_started_events = list(
             filter(lambda e_: (
-                e_["EventType"] == HistoryEventType.OrchestratorStarted
+                e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED
                 and dt_parse(e_["Timestamp"]) > last_timestamp),
                 self.durable_context.histories))
         if len(decision_started_events) == 0:
-            self.durable_context.currentUtcDateTime = None
+            self.durable_context.current_utc_datetime = None
         else:
-            self.durable_context.decision_started_event = decision_started_events[0]
-            self.durable_context.currentUtcDateTime = \
-                dt_parse(self.durable_context.decision_started_event['Timestamp'])
+            self.durable_context.decision_started_event = \
+                decision_started_events[0]
+            self.durable_context.current_utc_datetime = dt_parse(
+                self.durable_context.decision_started_event['Timestamp'])
 
     @classmethod
     def create(cls, fn):
-        logging.warning("!!!Calling orchestrator create")
+        """Create an instance of the orchestration class.
+
+        :param fn: Generator function that needs orchestration
+        :return: Handle function of the newly created orchestration client
+        """
         return lambda context: Orchestrator(fn).handle(context)

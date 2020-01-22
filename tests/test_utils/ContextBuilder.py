@@ -1,13 +1,15 @@
 import uuid
 import json
 from datetime import datetime, timedelta
-from typing import List, Any, Dict
+from typing import List, Dict, Any
 
-from .json_utils import convert_history_event_to_json_dict, add_attrib
+from .json_utils import add_attrib, convert_history_event_to_json_dict
 from .constants import DATETIME_STRING_FORMAT
-from tests.orchestrator.models.OrchestrationInstance import OrchestrationInstance
+from tests.orchestrator.models.OrchestrationInstance \
+    import OrchestrationInstance
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
-from azure.durable_functions.models.history.HistoryEventType import HistoryEventType
+from azure.durable_functions.models.history.HistoryEventType \
+    import HistoryEventType
 
 
 class ContextBuilder:
@@ -21,38 +23,41 @@ class ContextBuilder:
         self.add_orchestrator_started_event()
         self.add_execution_started_event(name)
 
-    def get_base_event(self, event_type: HistoryEventType, id_: int = -1) -> HistoryEvent:
+    def get_base_event(
+            self, event_type: HistoryEventType, id_: int = -1) -> HistoryEvent:
         self.current_datetime = self.current_datetime + timedelta(seconds=1)
         event = HistoryEvent()
         event.EventId = id_
         event.EventType = event_type
         event.IsPlayed = False
-        event.Timestamp = self.current_datetime.strftime(DATETIME_STRING_FORMAT)
+        event.Timestamp = \
+            self.current_datetime.strftime(DATETIME_STRING_FORMAT)
         return event
 
     def add_orchestrator_started_event(self):
-        event = self.get_base_event(HistoryEventType.OrchestratorStarted)
+        event = self.get_base_event(HistoryEventType.ORCHESTRATOR_STARTED)
         self.history_events.append(event)
 
     def add_orchestrator_completed_event(self):
-        event = self.get_base_event(HistoryEventType.OrchestratorCompleted)
+        event = self.get_base_event(HistoryEventType.ORCHESTRATOR_COMPLETED)
         self.history_events.append(event)
 
-    def add_task_scheduled_event(self, name: str, id_: int, version: str = '', input_=None):
-        event = self.get_base_event(HistoryEventType.TaskScheduled, id_=id_)
+    def add_task_scheduled_event(
+            self, name: str, id_: int, version: str = '', input_=None):
+        event = self.get_base_event(HistoryEventType.TASK_SCHEDULED, id_=id_)
         event.name = name
         event.version = version
         event.input_ = input_
         self.history_events.append(event)
 
     def add_task_completed_event(self, id_: int, result):
-        event = self.get_base_event(HistoryEventType.TaskCompleted)
+        event = self.get_base_event(HistoryEventType.TASK_COMPLETED)
         event.result = result
         event.task_scheduled_id = id_
         self.history_events.append(event)
 
     def add_task_failed_event(self, id_: int, reason: str, details: str):
-        event = self.get_base_event(HistoryEventType.TaskFailed)
+        event = self.get_base_event(HistoryEventType.TASK_FAILED)
         event.reason = reason
         event.details = details
         event.task_scheduled_id = id_
@@ -60,20 +65,21 @@ class ContextBuilder:
 
     def add_timer_created_event(self, id_: int):
         fire_at = self.current_datetime.strftime(DATETIME_STRING_FORMAT)
-        event = self.get_base_event(HistoryEventType.TimerCreated, id_=id_)
+        event = self.get_base_event(HistoryEventType.TIMER_CREATED, id_=id_)
         event.fire_at = fire_at
         self.history_events.append(event)
         return fire_at
 
     def add_timer_fired_event(self, id_: int, fire_at: str):
-        event = self.get_base_event(HistoryEventType.TimerFired)
+        event = self.get_base_event(HistoryEventType.TIMER_FIRED)
         event.timer_id = id_
         event.fire_at = fire_at
         event.IsPlayed = True
         self.history_events.append(event)
 
-    def add_execution_started_event(self, name: str, version: str = '', input_=None):
-        event = self.get_base_event(HistoryEventType.ExecutionStarted)
+    def add_execution_started_event(
+            self, name: str, version: str = '', input_=None):
+        event = self.get_base_event(HistoryEventType.EXECUTION_STARTED)
         event.orchestration_instance = OrchestrationInstance()
         self.instance_id = event.orchestration_instance.instance_id
         event.name = name

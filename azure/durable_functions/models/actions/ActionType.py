@@ -2,10 +2,12 @@ from enum import IntEnum
 
 
 class ActionType(IntEnum):
-    CallActivity: int = 0
-    CallActivityWithRetry: int = 1
-    CallSubOrchestrator: int = 2
-    CallSubOrchestratorWithRetry: int = 3
-    ContinueAsNew: int = 4
-    CreateTimer: int = 5
-    WaitForExternalEvent: int = 6
+    """Defines the values associated to the types of activities that can be scheduled."""
+
+    CALL_ACTIVITY: int = 0
+    CALL_ACTIVITY_WITH_RETRY: int = 1
+    CALL_SUB_ORCHESTRATOR: int = 2
+    CALL_SUB_ORCHESTRATOR_WITH_RETRY: int = 3
+    CONTINUE_AS_NEW: int = 4
+    CREATE_TIMER: int = 5
+    WAIT_FOR_EXTERNAL_EVENT: int = 6

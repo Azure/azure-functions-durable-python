@@ -1,40 +1,44 @@
-import logging
 import json
 from ..models.history import HistoryEventType
 
 
 def should_suspend(partial_result) -> bool:
-    logging.warning("!!!shouldSuspend")
+    """Check the state of the result to determine if the orchestration should suspend."""
     return bool(partial_result is not None
-                and hasattr(partial_result, "isCompleted")
-                and not partial_result.isCompleted)
+                and hasattr(partial_result, "is_completed")
+                and not partial_result.is_completed)
 
 
 def parse_history_event(directive_result):
+    """Based on the type of event, parse the JSON.serializable portion of the event."""
     event_type = directive_result.get("EventType")
     if event_type is None:
         raise ValueError("EventType is not found in task object")
 
-    if event_type == HistoryEventType.EventRaised:
+    if event_type == HistoryEventType.EVENT_RAISED:
         return json.loads(directive_result["Input"])
-    if event_type == HistoryEventType.SubOrchestrationInstanceCreated:
+    if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_CREATED:
         return json.loads(directive_result["Result"])
-    if event_type == HistoryEventType.TaskCompleted:
+    if event_type == HistoryEventType.TASK_COMPLETED:
         return json.loads(directive_result["Result"])
     return None
 
 
 def find_task_scheduled(state, name):
+    """Locate the Scheduled Task.
+
+    Within the state passed, search for an event that has hasn't been processed
+    and has the the name provided.
+    """
     if not name:
         raise ValueError("Name cannot be empty")
 
     tasks = list(
-        filter(lambda e: not (
-                (not (e["EventType"] == HistoryEventType.TaskScheduled)
-                    or not (e["Name"] == name))
-            or e.get("IsProcessed")), state))
+        filter(lambda e:
+               not ((not ((e["EventType"] == HistoryEventType.TASK_SCHEDULED) and (
+                    e["Name"] == name))) or e.get("IsProcessed")),
+               state))
 
-    logging.warning(f"!!! findTaskScheduled {tasks}")
     if len(tasks) == 0:
         return None
 
@@ -42,12 +46,20 @@ def find_task_scheduled(state, name):
 
 
 def find_task_completed(state, scheduled_task):
+    """Locate the Completed Task.
+
+    Within the state passed, search for an event that has hasn't been processed,
+    is a completed task type,
+    and has the a scheduled id that equals the EventId of the provided scheduled task.
+    """
     if scheduled_task is None:
         return None
 
     tasks = list(
-        filter(lambda e: not (not (e["EventType"] == HistoryEventType.TaskCompleted) or not (
-            e.get("TaskScheduledId") == scheduled_task["EventId"])), state))
+        filter(lambda e:
+               not (not (e["EventType"] == HistoryEventType.TASK_COMPLETED) or not (
+                    e.get("TaskScheduledId") == scheduled_task["EventId"])),
+               state))
 
     if len(tasks) == 0:
         return None
@@ -56,12 +68,19 @@ def find_task_completed(state, scheduled_task):
 
 
 def find_task_failed(state, scheduled_task):
+    """Locate the Failed Task.
+
+    Within the state passed, search for an event that has hasn't been processed,
+    is a failed task type,
+    and has the a scheduled id that equals the EventId of the provided scheduled task.
+    """
     if scheduled_task is None:
         return None
 
     tasks = list(
-        filter(lambda e: not (not (e["EventType"] == HistoryEventType.TaskFailed) or not (
-            e.get("TaskScheduledId") == scheduled_task["EventId"])), state))
+        filter(lambda e:
+               not (not (e["EventType"] == HistoryEventType.TASK_FAILED) or not (
+                    e.get("TaskScheduledId") == scheduled_task["EventId"])), state))
 
     if len(tasks) == 0:
         return None
@@ -70,12 +89,21 @@ def find_task_failed(state, scheduled_task):
 
 
 def find_task_retry_timer_created(state, failed_task):
+    """Locate the Timer Created Task.
+
+    Within the state passed, search for an event that has hasn't been processed,
+    is a timer created task type,
+    and has the an event id that is one higher then Scheduled Id of the provided
+    failed task provided.
+    """
     if failed_task is None:
         return None
 
     tasks = list(
-        filter(lambda e: not (not (e["EventType"] == HistoryEventType.TimerCreated) or not (
-            e.get("EventId") == failed_task["TaskScheduledId"] + 1)), state))
+        filter(lambda e:
+               not (not (e["EventType"] == HistoryEventType.TIMER_CREATED) or not (
+                    e.get("EventId") == failed_task["TaskScheduledId"] + 1)),
+               state))
 
     if len(tasks) == 0:
         return None
@@ -84,12 +112,21 @@ def find_task_retry_timer_created(state, failed_task):
 
 
 def find_task_retry_timer_fired(state, retry_timer_created):
+    """Locate the Timer Fired Task.
+
+    Within the state passed, search for an event that has hasn't been processed,
+    is a timer fired task type,
+    and has the an timer id that is equal to the EventId of the provided
+    timer created task provided.
+    """
     if retry_timer_created is None:
         return None
 
     tasks = list(
-        filter(lambda e: not (not (e["EventType"] == HistoryEventType.TimerFired) or not (
-            e.get("TimerId") == retry_timer_created["EventId"])), state))
+        filter(lambda e: not (
+               not (e["EventType"] == HistoryEventType.TIMER_FIRED)
+               or not (e.get("TimerId") == retry_timer_created["EventId"])),
+               state))
 
     if len(tasks) == 0:
         return None
@@ -98,10 +135,11 @@ def find_task_retry_timer_fired(state, retry_timer_created):
 
 
 def set_processed(tasks):
+    """Set the isProcessed attribute of all of the tasks to true.
+
+    This provides the ability to not look at events that have already been processed within
+    searching the history of events.
+    """
     for task in tasks:
         if task is not None:
-            logging.warning(f"!!!task {task.get('IsProcessed')}"
-                            f"{task.get('Name')}")
             task["IsProcessed"] = True
-            logging.warning(f"!!!after_task {task.get('IsProcessed')}"
-                            f"{task.get('Name')}")
