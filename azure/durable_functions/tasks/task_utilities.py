@@ -23,6 +23,22 @@ def parse_history_event(directive_result):
         return json.loads(directive_result["Result"])
     return None
 
+def find_event_raised(state, name):
+    if not name:
+        raise ValueError("Name cannot be empty")
+
+    tasks = list(
+    filter(lambda e: not (
+            (not (e["EventType"] == HistoryEventType.EventRaised)
+                or not (e["Name"] == name))
+        or e.get("IsProcessed")), state))
+
+    logging.warning(f"!!! findTaskScheduled {tasks}")
+    if len(tasks) == 0:
+        return None
+
+    return tasks[0]
+    
 
 def find_task_scheduled(state, name):
     if not name:

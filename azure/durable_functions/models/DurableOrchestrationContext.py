@@ -31,6 +31,10 @@ class DurableOrchestrationContext:
             retry_options=o,
             name=n,
             input_=i)
+        self.wait_for_external_event  = lambda n, i: wait_for_external_event_task(
+            state=self.histories,
+            name=n,
+            input_=i)
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
         self.decision_started_event: HistoryEvent = list(filter(
             # HistoryEventType.OrchestratorStarted
