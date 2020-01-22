@@ -22,6 +22,8 @@ def generator_function(context):
     """
     outputs = []
 
+    # Chained functions - output of a function is passed as 
+    # input to the next function in the chain
     r1 = yield context.df.call_activity("DurableActivity", "One")
     r2 = yield context.df.call_activity("DurableActivity", r1)
     final_result = yield context.df.call_activity("DurableActivity", r2)
