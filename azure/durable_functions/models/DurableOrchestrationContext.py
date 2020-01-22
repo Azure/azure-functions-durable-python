@@ -9,8 +9,12 @@ from . import (RetryOptions)
 from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..models.Task import Task
+<<<<<<< HEAD
 from ..tasks import \
     call_activity_task, task_all,call_activity_with_retry_task,create_timer_task
+=======
+from ..tasks import call_activity_task, task_all, call_activity_with_retry_task, wait_for_external_event_task
+>>>>>>> fix bugs to make waitForExternalEvent working
 
 
 class DurableOrchestrationContext:
@@ -33,6 +37,7 @@ class DurableOrchestrationContext:
             state=self.histories,
             name=n,
             input_=i)
+<<<<<<< HEAD
         self.call_activity_with_retry = \
             lambda n, o, i: call_activity_with_retry_task(
                 state=self.histories,
@@ -40,6 +45,16 @@ class DurableOrchestrationContext:
                 name=n,
                 input_=i)
         self.create_timer = lambda d: create_timer_task(state=self.histories,fire_at=d)
+=======
+        self.call_activity_with_retry = lambda n, o, i: call_activity_with_retry_task(
+            state=self.histories,
+            retry_options=o,
+            name=n,
+            input_=i)
+        self.wait_for_external_event  = lambda n: wait_for_external_event_task(
+            state=self.histories,
+            name=n)
+>>>>>>> fix bugs to make waitForExternalEvent working
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
         self.decision_started_event: HistoryEvent = list(filter(
             lambda e_: e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED,
