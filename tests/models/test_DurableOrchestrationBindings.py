@@ -9,7 +9,7 @@ def test_extracts_create_new_instance_post_uri(binding_info):
     expected_url = replace_stand_in_bits(
         "BASE_URL/orchestrators/{functionName}[/{instanceId}]?code=AUTH_CODE")
     assert \
-        expected_url == binding_info.creation_urls["createNewInstancePostUri"]
+        expected_url == binding_info.creation_urls["reateNewInstancePostUri"]
 
 
 def test_extracts_create_and_wait_on_new_instance_post_uri(binding_info):
