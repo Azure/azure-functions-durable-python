@@ -9,7 +9,7 @@ from . import (RetryOptions)
 from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..models.Task import Task
-from ..tasks import call_activity_task, task_all, call_activity_with_retry_task, \
+from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
     wait_for_external_event_task
 
 
@@ -41,6 +41,7 @@ class DurableOrchestrationContext:
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories,
             name=n)
+        self.task_any = lambda t: task_any(state=self.histories, tasks=t)
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
         self.decision_started_event: HistoryEvent = list(filter(
             lambda e_: e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED,
