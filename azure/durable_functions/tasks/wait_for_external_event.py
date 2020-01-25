@@ -14,16 +14,16 @@ def wait_for_external_event_task(
         name: str) -> Task:
     logging.warning(f"!!!wait_for_external_event_task name={name}")
     new_action = WaitForExternalEventAction(name)
-    eventRaised = find_event_raised(state, name)
-    set_processed([eventRaised])
-    if (eventRaised):
+    event_raised = find_event_raised(state, name)
+    set_processed([event_raised])
+    if (event_raised):
             return Task(
             isCompleted=True,
             isFaulted=False,
             action=new_action,
-            result=parse_history_event(eventRaised),
-            timestamp=eventRaised["Timestamp"],
-            id=eventRaised["EventId"])
+            result=parse_history_event(event_raised),
+            timestamp=event_raised["Timestamp"],
+            id=event_raised["EventId"])
     
     else:
         return Task(isCompleted=False, isFaulted=False, action=new_action)
