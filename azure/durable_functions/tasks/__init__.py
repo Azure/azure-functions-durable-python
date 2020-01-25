@@ -1,3 +1,4 @@
+"""Contains the definitions for the functions that enable scheduling of activities."""
 from .call_activity import call_activity_task
 from .call_activity_with_retry import call_activity_with_retry_task
 from .task_all import task_all

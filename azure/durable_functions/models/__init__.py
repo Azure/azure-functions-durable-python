@@ -1,3 +1,4 @@
+"""Model definitions for Durable Functions."""
 from .DurableOrchestrationBindings import DurableOrchestrationBindings
 from .DurableOrchestrationClient import DurableOrchestrationClient
 from .DurableOrchestrationContext import DurableOrchestrationContext
