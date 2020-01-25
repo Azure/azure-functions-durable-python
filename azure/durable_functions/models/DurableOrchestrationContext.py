@@ -11,6 +11,7 @@ from ..interfaces import IAction
 from ..models.Task import Task
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 from ..tasks import \
     call_activity_task, task_all,call_activity_with_retry_task,create_timer_task
 =======
@@ -18,6 +19,9 @@ from ..tasks import call_activity_task, task_all, call_activity_with_retry_task,
 >>>>>>> fix bugs to make waitForExternalEvent working
 =======
 from ..tasks import call_activity_task, task_all, call_activity_with_retry_task, \
+=======
+from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
+>>>>>>> implement task_any function
     wait_for_external_event_task
 >>>>>>> flake8 fixes
 
@@ -59,7 +63,11 @@ class DurableOrchestrationContext:
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories,
             name=n)
+<<<<<<< HEAD
 >>>>>>> fix bugs to make waitForExternalEvent working
+=======
+        self.task_any = lambda t: task_any(state=self.histories, tasks=t)
+>>>>>>> implement task_any function
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
         self.decision_started_event: HistoryEvent = list(filter(
             lambda e_: e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED,
