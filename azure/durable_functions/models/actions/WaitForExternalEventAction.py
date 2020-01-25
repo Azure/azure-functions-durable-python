@@ -8,7 +8,7 @@ class WaitForExternalEventAction:
     def __init__(self, external_event_name: str):
         self.action_type: ActionType = ActionType.WaitForExternalEvent
         self.external_event_name: str = external_event_name
-        self.reason= "ExternalEvent"
+        self.reason = "ExternalEvent"
 
         if not self.external_event_name:
             raise ValueError("external_event_name cannot be empty")
@@ -20,4 +20,3 @@ class WaitForExternalEventAction:
         add_attrib(json_dict, self, 'external_event_name', 'externalEventName')
         add_attrib(json_dict, self, 'reason', 'reason')
         return json_dict
-
