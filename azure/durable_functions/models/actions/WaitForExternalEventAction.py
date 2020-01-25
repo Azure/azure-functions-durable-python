@@ -5,6 +5,8 @@ from ..utils.json_utils import add_attrib
 
 
 class WaitForExternalEventAction:
+    """Defines the structure of Wait for External Event object.
+    """
     def __init__(self, external_event_name: str):
         self.action_type: ActionType = ActionType.WaitForExternalEvent
         self.external_event_name: str = external_event_name
