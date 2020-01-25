@@ -9,7 +9,6 @@ class WaitForExternalEventAction:
         self.action_type: ActionType = ActionType.WaitForExternalEvent
         self.external_event_name: str = external_event_name
         self.reason= "ExternalEvent"
-        # reason = classes_1.ExternalEventType.ExternalEvent
 
         if not self.external_event_name:
             raise ValueError("external_event_name cannot be empty")
