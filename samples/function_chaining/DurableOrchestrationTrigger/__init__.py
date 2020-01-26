@@ -20,7 +20,6 @@ def generator_function(context):
     call_activity: str
         Yields at every step of the function chain orchestration logic
     """
-    outputs = []
 
     # Chained functions - output of a function is passed as 
     # input to the next function in the chain
