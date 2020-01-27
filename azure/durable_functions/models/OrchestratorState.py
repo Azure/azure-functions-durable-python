@@ -53,6 +53,14 @@ class OrchestratorState:
         return self._output
 
     @property
+    def error(self):
+        """Get the error received when running the orchestration.
+
+        Optional.
+        """
+        return self._error
+
+    @property
     def custom_status(self):
         """Get the JSON-serializable value used by DurableOrchestrationContext.SetCustomStatus."""
         return self._custom_status

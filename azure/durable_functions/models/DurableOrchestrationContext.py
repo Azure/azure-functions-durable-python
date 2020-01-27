@@ -36,7 +36,6 @@ class DurableOrchestrationContext:
     def __init__(self,
                  context_string: str):
         context: Dict[str, Any] = json.loads(context_string)
-        logging.warning(f"!!!Calling orchestrator handle {context}")
         self._histories: List[HistoryEvent] = context.get("history")
         self._instance_id = context.get("instanceId")
         self._is_replaying = context.get("isReplaying")
@@ -57,6 +56,7 @@ class DurableOrchestrationContext:
                 retry_options=o,
                 name=n,
                 input_=i)
+<<<<<<< HEAD
         self.create_timer = lambda d: create_timer_task(state=self.histories,fire_at=d)
 =======
         self.call_activity_with_retry = lambda n, o, i: call_activity_with_retry_task(
@@ -73,6 +73,9 @@ class DurableOrchestrationContext:
         self.task_any = lambda t: task_any(state=self.histories, tasks=t)
 >>>>>>> implement task_any function
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
+=======
+        self.task_all = lambda t: task_all(tasks=t)
+>>>>>>> test failed scenario
         self.decision_started_event: HistoryEvent = list(filter(
             lambda e_: e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED,
             self.histories))[0]
