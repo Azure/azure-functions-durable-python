@@ -26,11 +26,17 @@ def assert_actions_are_equal(expected, result):
     result_actions = result.get("actions")
     assert len(expected_actions) == len(result_actions)
     for index in range(len(expected_actions)):
-        expected_action = expected_actions[index][0]
-        result_action = result_actions[index][0]
-        assert_attribute_equal(expected_action, result_action, "functionName")
-        assert_attribute_equal(expected_action, result_action, "input")
-        assert_attribute_equal(expected_action, result_action, "actionType")
+        assert len(expected_actions[index]) == len(result_actions[index])
+        for action_index in range(len(expected_actions[index])):
+            expected_action = expected_actions[index][action_index]
+            result_action = result_actions[index][action_index]
+            assert_action_is_equal(expected_action, result_action)
+
+
+def assert_action_is_equal(expected_action, result_action):
+    assert_attribute_equal(expected_action, result_action, "functionName")
+    assert_attribute_equal(expected_action, result_action, "input")
+    assert_attribute_equal(expected_action, result_action, "actionType")
 
 
 def get_orchestration_state_result(

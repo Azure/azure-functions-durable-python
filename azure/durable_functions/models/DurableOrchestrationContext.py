@@ -41,14 +41,18 @@ class DurableOrchestrationContext:
         self._instance_id = context.get("instanceId")
         self._is_replaying = context.get("isReplaying")
         self._parent_instance_id = context.get("parentInstanceId")
+<<<<<<< HEAD
         self.input:str = context.get("input")
         self.call_activity = lambda n, i: call_activity_task(
+=======
+        self.call_activity = lambda n, i=None: call_activity_task(
+>>>>>>> Base implementation of tests
             state=self.histories,
             name=n,
             input_=i)
 <<<<<<< HEAD
         self.call_activity_with_retry = \
-            lambda n, o, i: call_activity_with_retry_task(
+            lambda n, o, i=None: call_activity_with_retry_task(
                 state=self.histories,
                 retry_options=o,
                 name=n,
