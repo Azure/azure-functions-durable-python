@@ -6,7 +6,7 @@ def task_any(state, tasks):
 
     :param state: The list of history events.
     :param tasks: The tasks to evaluate their current state.
-    :return: 
+    :return:
         Returns a completed Durable Task Set if any of the tasks is completed.
         Returns a not completed Durable Task Set if none of the tasks are completed.
     """
@@ -17,9 +17,9 @@ def task_any(state, tasks):
         all_actions.append(task.action)
         if task.is_completed:
             completed_tasks.append(task)
-    
+
     completed_tasks.sort(key=lambda t: t.timestamp)
-    
+
     if len(completed_tasks) != 0:
         return TaskSet(True, all_actions, completed_tasks[0])
     else:

@@ -5,8 +5,8 @@ from ..utils.json_utils import add_attrib
 
 
 class WaitForExternalEventAction:
-    """Defines the structure of Wait for External Event object.
-    """
+    """Defines the structure of Wait for External Event object."""
+
     def __init__(self, external_event_name: str):
         self.action_type: ActionType = ActionType.WAIT_FOR_EXTERNAL_EVENT
         self.external_event_name: str = external_event_name
@@ -16,6 +16,10 @@ class WaitForExternalEventAction:
             raise ValueError("external_event_name cannot be empty")
 
     def to_json(self) -> Dict[str, Any]:
+        """Convert object into a json dictionary.
+
+        :return: The instance of the class converted into a json dictionary
+        """
         json_dict = {}
 
         add_attrib(json_dict, self, 'action_type', 'actionType')

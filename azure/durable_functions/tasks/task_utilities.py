@@ -27,20 +27,20 @@ def parse_history_event(directive_result):
 
 def find_event_raised(state, name):
     """Find if the event with the given event name is raised.
-    
+
     Parameters
     ----------
     state : List[HistoryEvent]
         List of histories to search from
     name : str
         Name of the event to search for
-    
+
     Returns
     -------
     HistoryEvent
         The raised event with the given event name that has not yet been processed.
         Returns None if no event with the given conditions was found.
-    
+
     Raises
     ------
     ValueError
