@@ -78,7 +78,7 @@ def test_get_activity_count_success():
     assert_orchestration_state_equals(expected, result)
 
 
-def test_get_parrot_value_success():
+def test_parrot_value_success():
     activity_count = 5
     context_builder = ContextBuilder('test_fan_out_fan_in_function')
     add_completed_event(context_builder, 0, 'GetActivityCount', activity_count)
@@ -94,6 +94,37 @@ def test_get_parrot_value_success():
     for i in range(activity_count):
         results.append(i)
     add_single_action(expected_state, function_name='ShowMeTheSum', input_=results)
+    expected = expected_state.to_json()
+
+    assert_orchestration_state_equals(expected, result)
+
+
+def test_show_me_the_sum_success():
+    activity_count = 5
+    sum_ = 0
+    for i in range(activity_count):
+        sum_ += i
+
+    sum_results = f"Well that's nice {sum_}!"
+
+    context_builder = ContextBuilder('test_fan_out_fan_in_function')
+    add_completed_event(context_builder, 0, 'GetActivityCount', activity_count)
+    add_completed_task_set_events(context_builder, 1, 'ParrotValue', activity_count)
+    add_completed_event(
+        context_builder, activity_count + 1, 'ShowMeTheSum', sum_results)
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function)
+
+    expected_state = base_expected_state()
+    add_single_action(expected_state, function_name='GetActivityCount', input_=None)
+    add_multi_actions(expected_state, function_name='ParrotValue', volume=activity_count)
+    results = []
+    for i in range(activity_count):
+        results.append(i)
+    add_single_action(expected_state, function_name='ShowMeTheSum', input_=results)
+    expected_state._is_done = True
+    expected_state._output = sum_results
     expected = expected_state.to_json()
 
     assert_orchestration_state_equals(expected, result)
