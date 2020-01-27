@@ -1,5 +1,4 @@
 from typing import List, Any
-import logging
 
 from .task_utilities import find_task_scheduled, \
     find_task_retry_timer_created, set_processed, parse_history_event, \
@@ -44,7 +43,6 @@ def call_activity_with_retry_task(
             break
 
         if task_completed:
-            logging.warning("!!!Task Completed")
             return Task(
                 is_completed=True,
                 is_faulted=False,
@@ -55,7 +53,6 @@ def call_activity_with_retry_task(
 
         if task_failed and task_retry_timer and attempt + 1 >= \
                 retry_options.max_number_of_attempts:
-            logging.warning("!!!Task Failed")
             return Task(
                 is_completed=True,
                 is_faulted=True,

@@ -1,7 +1,7 @@
 from ..models.TaskSet import TaskSet
 
 
-def task_all(state, tasks):
+def task_all(tasks):
     """Determine the state of scheduling the activities for execution with retry options.
 
     :param state: The list of history events to search to determine the current
@@ -12,12 +12,17 @@ def task_all(state, tasks):
     all_actions = []
     results = []
     is_completed = True
+    faulted = []
     for task in tasks:
         all_actions.append(task.action)
         results.append(task.result)
+        if task.is_faulted:
+            faulted.append(task.exception)
         if not task.is_completed:
             is_completed = False
 
+    if len(faulted) > 0:
+        return TaskSet(is_completed, all_actions, results, is_faulted=True, exception=faulted[0])
     if is_completed:
         return TaskSet(is_completed, all_actions, results)
     else:

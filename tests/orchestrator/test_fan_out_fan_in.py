@@ -18,8 +18,8 @@ def generator_function(context):
     return results
 
 
-def base_expected_state(output=None) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output)
+def base_expected_state(output=None, error=None) -> OrchestratorState:
+    return OrchestratorState(is_done=False, actions=[], output=output, error=error)
 
 
 def add_completed_event(
@@ -30,10 +30,23 @@ def add_completed_event(
     context_builder.add_task_completed_event(id_=id_, result=json.dumps(result))
 
 
+def add_failed_event(
+        context_builder: ContextBuilder, id_: int, name: str, reason: str, details: str):
+    context_builder.add_task_scheduled_event(name=name, id_=id_)
+    context_builder.add_orchestrator_completed_event()
+    context_builder.add_orchestrator_started_event()
+    context_builder.add_task_failed_event(
+        id_=id_, reason=reason, details=details)
+
+
 def add_completed_task_set_events(
-        context_builder: ContextBuilder, start_id: int, name: str, volume: int):
+        context_builder: ContextBuilder, start_id: int, name: str, volume: int,
+        failed_index: int = -1, failed_reason: str = '', failed_details: str = ''):
     for i in range(volume):
-        add_completed_event(context_builder, start_id + i, name, i)
+        if i != failed_index:
+            add_completed_event(context_builder, start_id + i, name, i)
+        else:
+            add_failed_event(context_builder, start_id + i, name, failed_reason, failed_details)
 
 
 def add_single_action(state: OrchestratorState, function_name: str, input_):
@@ -116,7 +129,7 @@ def test_show_me_the_sum_success():
     result = get_orchestration_state_result(
         context_builder, generator_function)
 
-    expected_state = base_expected_state()
+    expected_state = base_expected_state(sum_results)
     add_single_action(expected_state, function_name='GetActivityCount', input_=None)
     add_multi_actions(expected_state, function_name='ParrotValue', volume=activity_count)
     results = []
@@ -124,7 +137,27 @@ def test_show_me_the_sum_success():
         results.append(i)
     add_single_action(expected_state, function_name='ShowMeTheSum', input_=results)
     expected_state._is_done = True
-    expected_state._output = sum_results
+
+    expected = expected_state.to_json()
+
+    assert_orchestration_state_equals(expected, result)
+
+
+def test_failed_parrot_value():
+    failed_reason = 'Reasons'
+    failed_details = 'Stuff and Things'
+    activity_count = 5
+    context_builder = ContextBuilder('test_fan_out_fan_in_function')
+    add_completed_event(context_builder, 0, 'GetActivityCount', activity_count)
+    add_completed_task_set_events(context_builder, 1, 'ParrotValue', activity_count,
+                                  2, failed_reason, failed_details)
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function)
+
+    expected_state = base_expected_state(error=f'{failed_reason} \n {failed_details}')
+    add_single_action(expected_state, function_name='GetActivityCount', input_=None)
+    add_multi_actions(expected_state, function_name='ParrotValue', volume=activity_count)
     expected = expected_state.to_json()
 
     assert_orchestration_state_equals(expected, result)
