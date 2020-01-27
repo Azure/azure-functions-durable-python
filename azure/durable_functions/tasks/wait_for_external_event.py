@@ -12,7 +12,7 @@ def wait_for_external_event_task(
         state: List[HistoryEvent],
         name: str) -> Task:
     """Determine the state of a task that is waiting for an event to occur.
-    
+
     Parameters
     ----------
     state : List[HistoryEvent]
@@ -20,7 +20,7 @@ def wait_for_external_event_task(
     state of the task.
     name : str
         The event name of the event that the task is waiting for.
-    
+
     Returns
     -------
     Task
