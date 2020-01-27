@@ -15,7 +15,7 @@ def task_all(state, tasks):
     for task in tasks:
         all_actions.append(task.action)
         results.append(task.result)
-        if not task.isCompleted:
+        if not task.is_completed:
             is_completed = False
 
     if is_completed:

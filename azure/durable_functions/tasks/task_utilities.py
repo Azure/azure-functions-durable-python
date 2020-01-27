@@ -51,11 +51,10 @@ def find_event_raised(state, name):
 
     tasks = list(
         filter(lambda e: not (
-                (not (e["EventType"] == HistoryEventType.EventRaised)
+                (not (e["EventType"] == HistoryEventType.EVENT_RAISED)
                     or not (e["Name"] == name))
             or e.get("IsProcessed")), state))
 
-    logging.warning(f"!!! findTaskScheduled {tasks}")
     if len(tasks) == 0:
         return None
 
