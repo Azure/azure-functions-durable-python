@@ -15,10 +15,10 @@ def task_any(state, tasks):
 
     for task in tasks:
         all_actions.append(task.action)
-        if task.isCompleted:
+        if task.is_completed:
             completed_tasks.append(task)
     
-    completed_tasks.sort(key=lambda t:t["timestamp"])
+    completed_tasks.sort(key=lambda t: t.timestamp)
     
     if len(completed_tasks) != 0:
         return TaskSet(True, all_actions, completed_tasks[0])

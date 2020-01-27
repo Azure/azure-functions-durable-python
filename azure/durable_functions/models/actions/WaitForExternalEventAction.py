@@ -8,7 +8,7 @@ class WaitForExternalEventAction:
     """Defines the structure of Wait for External Event object.
     """
     def __init__(self, external_event_name: str):
-        self.action_type: ActionType = ActionType.WaitForExternalEvent
+        self.action_type: ActionType = ActionType.WAIT_FOR_EXTERNAL_EVENT
         self.external_event_name: str = external_event_name
         self.reason = "ExternalEvent"
 
