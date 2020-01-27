@@ -88,6 +88,13 @@ class ContextBuilder:
         event.IsPlayed = True
         self.history_events.append(event)
 
+    def add_event_raised_event(self, name: str, id_: int, input_=None, timestamp=None):
+        event = self.get_base_event(HistoryEventType.EVENT_RAISED, id_=id_)
+        event.name = name
+        event.input_ = input_ 
+        event.Timestamp = timestamp
+        self.history_events.append(event)
+
     def to_json(self) -> Dict[str, Any]:
         json_dict = {}
 
