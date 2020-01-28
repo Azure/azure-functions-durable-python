@@ -72,8 +72,8 @@ def find_task_scheduled(state, name):
 
     tasks = list(
         filter(lambda e:
-               not ((not ((e.event_type == HistoryEventType.TASK_SCHEDULED) and (
-                       e.Name == name))) or e.is_processed),
+               not ((not ((e.event_type == HistoryEventType.TASK_SCHEDULED) and (e.Name == name)))
+                    or e.is_processed),
                state))
 
     if len(tasks) == 0:
@@ -94,8 +94,8 @@ def find_task_completed(state, scheduled_task):
 
     tasks = list(
         filter(lambda e:
-               not (not (e.event_type == HistoryEventType.TASK_COMPLETED) or not (
-                       e.TaskScheduledId == scheduled_task.event_id)),
+               not (not (e.event_type == HistoryEventType.TASK_COMPLETED)
+                    or not (e.TaskScheduledId == scheduled_task.event_id)),
                state))
 
     if len(tasks) == 0:
@@ -116,8 +116,8 @@ def find_task_failed(state, scheduled_task):
 
     tasks = list(
         filter(lambda e:
-               not (not (e.event_type == HistoryEventType.TASK_FAILED) or not (
-                       e.TaskScheduledId == scheduled_task.event_id)), state))
+               not (not (e.event_type == HistoryEventType.TASK_FAILED)
+                    or not (e.TaskScheduledId == scheduled_task.event_id)), state))
 
     if len(tasks) == 0:
         return None
@@ -138,8 +138,8 @@ def find_task_retry_timer_created(state, failed_task):
 
     tasks = list(
         filter(lambda e:
-               not (not (e.event_type == HistoryEventType.TIMER_CREATED) or not (
-                       e.event_id == failed_task.TaskScheduledId + 1)),
+               not (not (e.event_type == HistoryEventType.TIMER_CREATED)
+                    or not (e.event_id == failed_task.TaskScheduledId + 1)),
                state))
 
     if len(tasks) == 0:
@@ -160,10 +160,8 @@ def find_task_retry_timer_fired(state, retry_timer_created):
         return None
 
     tasks = list(
-        filter(lambda e: not (
-                not (e.event_type == HistoryEventType.TIMER_FIRED)
-                or not (e.TimerId == retry_timer_created.event_id)),
-               state))
+        filter(lambda e: not (not (e.event_type == HistoryEventType.TIMER_FIRED)
+                              or not (e.TimerId == retry_timer_created.event_id)), state))
 
     if len(tasks) == 0:
         return None
