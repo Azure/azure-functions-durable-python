@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from tests.test_utils.constants import DATETIME_STRING_FORMAT
 from ..interfaces import IAction
 
 
@@ -55,6 +57,9 @@ class Task:
     def timestamp(self) -> datetime:
         """Get the timestamp of the task."""
         return self._timestamp
+
+    def timestamp_as_string(self):
+        return self._timestamp.strftime(DATETIME_STRING_FORMAT)
 
     @property
     def id(self):

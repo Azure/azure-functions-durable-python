@@ -3,13 +3,9 @@
 Responsible for orchestrating the execution of the user defined generator
 function.
 """
-import logging
-import traceback
 from typing import Callable, Iterator, Any
 
-from dateutil.parser import parse as dt_parse
-
-from .interfaces import IFunctionContext
+from .interfaces.IFunctionContext import IFunctionContext
 from .models import (
     DurableOrchestrationContext,
     Task,
@@ -37,7 +33,7 @@ class Orchestrator:
         self.fn: Callable[[IFunctionContext], Iterator[Any]] = activity_func
         self.customStatus: Any = None
 
-    # noinspection PyAttributeOutsideInit
+    # noinspection PyAttributeOutsideInit,PyUnboundLocalVariable
     def handle(self, context_string: str):
         """Handle the orchestration of the user defined generator function.
 
@@ -86,8 +82,6 @@ class Orchestrator:
                 actions=self.durable_context.actions,
                 custom_status=self.customStatus)
         except Exception as e:
-            e_string = traceback.format_exc()
-            logging.warning(f"!!!Generator Termination Exception {e_string}")
             orchestration_state = OrchestratorState(
                 is_done=False,
                 output=None,  # Should have no output, after generation range
@@ -113,20 +107,19 @@ class Orchestrator:
             self.durable_context.actions.append(generation_state.actions)
 
     def _reset_timestamp(self):
-        last_timestamp = dt_parse(
-            self.durable_context.decision_started_event['Timestamp'])
+        last_timestamp = self.durable_context.decision_started_event.timestamp
         decision_started_events = list(
             filter(lambda e_: (
-                e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED
-                and dt_parse(e_["Timestamp"]) > last_timestamp),
+                e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED
+                and e_.timestamp > last_timestamp),
                 self.durable_context.histories))
         if len(decision_started_events) == 0:
             self.durable_context.current_utc_datetime = None
         else:
             self.durable_context.decision_started_event = \
                 decision_started_events[0]
-            self.durable_context.current_utc_datetime = dt_parse(
-                self.durable_context.decision_started_event['Timestamp'])
+            self.durable_context.current_utc_datetime = \
+                self.durable_context.decision_started_event.timestamp
 
     @classmethod
     def create(cls, fn):
