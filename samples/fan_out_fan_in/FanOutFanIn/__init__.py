@@ -21,18 +21,3 @@ def main(context: str):
     result = orchestrate(context)
 
     return result
-
-
-
-class HistoryEvent:
-    """Used to communicate state relevant information from the durable extension to the client."""
-
-    # noinspection PyPep8Naming
-    def __init__(self, EventType: HistoryEventType, EventId: str, IsPlayed: bool, Timestamp: str):
-        self._event_type: HistoryEventType = EventType
-        self._event_id: int = EventId
-        self._is_played: bool = IsPlayed
-        self._timestamp: datetime = dt_parse(Timestamp)
-        self._is_processed: bool = False
-      
-
