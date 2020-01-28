@@ -37,7 +37,7 @@ def binding_string():
 
 @pytest.fixture()
 def binding_info():
-    binding = DurableOrchestrationBindings(get_binding_string())
+    binding = DurableOrchestrationBindings.from_json(get_binding_string())
     return binding
 
 

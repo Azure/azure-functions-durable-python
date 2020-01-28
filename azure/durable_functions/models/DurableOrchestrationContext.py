@@ -30,7 +30,10 @@ class DurableOrchestrationContext:
     function-based activities.
     """
 
+    # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
+    # noinspection PyPep8Naming
     def __init__(self,
+<<<<<<< HEAD
                  context_string: str):
         context: Dict[str, Any] = json.loads(context_string)
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in context.get("history")]
@@ -41,6 +44,14 @@ class DurableOrchestrationContext:
         self.input:str = context.get("input")
         self.call_activity = lambda n, i: call_activity_task(
 =======
+=======
+                 history: Dict[Any, Any], instanceId: str, isReplaying: bool,
+                 parentInstanceId: str, **kwargs):
+        self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
+        self._instance_id: str = instanceId
+        self._is_replaying: bool = isReplaying
+        self._parent_instance_id: str = parentInstanceId
+>>>>>>> Refactor json conversion
         self.call_activity = lambda n, i=None: call_activity_task(
 >>>>>>> Base implementation of tests
             state=self.histories,
@@ -85,6 +96,7 @@ class DurableOrchestrationContext:
 >>>>>>> Refactoring HistoryEvent
         self.new_guid_counter = 0
         self.actions: List[List[IAction]] = []
+<<<<<<< HEAD
     
     
     def get_input(input: Any) -> Any:
@@ -95,6 +107,16 @@ class DurableOrchestrationContext:
             Returns the input parameters obtained in the context of a Azure Function call
         """
         return input
+=======
+        if kwargs is not None:
+            for key, value in kwargs.items():
+                self.__setattr__(key, value)
+
+    @classmethod
+    def from_json(cls, json_string):
+        json_dict = json.loads(json_string)
+        return cls(**json_dict)
+>>>>>>> Refactor json conversion
 
     def call_activity(self, name: str, input_=None) -> Task:
         """Schedule an activity for execution.
