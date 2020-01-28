@@ -42,11 +42,17 @@ class WaitForExternalEventAction:
         return json_dict
 
     def __eq__(self, other):
+        """Override the default __eq__ method.
+
+        Returns
+        -------
+        Bool
+            Returns True if two class instances has same values at all properties,
+            and returns False otherwise.
+        """
         if not isinstance(other, WaitForExternalEventAction):
             return False
         else:
             return self.action_type == other.action_type \
                 and self.external_event_name == other.external_event_name \
                 and self.reason == other.reason
-
-
