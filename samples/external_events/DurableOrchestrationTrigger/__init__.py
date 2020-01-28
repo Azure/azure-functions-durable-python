@@ -15,7 +15,7 @@ def generator_function(context):
     Yields:
         wait_for_external_event {str} -- Yields at every step of the WaitForExternalEvent logic
     """
-    approved = yield context.df.wait_for_external_event("A")
+    approved = yield context.df.wait_for_external_event("Approval")
 
     if approved:
         return "approved"
