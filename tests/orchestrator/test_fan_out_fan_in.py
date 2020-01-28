@@ -117,7 +117,6 @@ def test_show_me_the_sum_success():
     sum_ = 0
     for i in range(activity_count):
         sum_ += i
-
     sum_results = f"Well that's nice {sum_}!"
 
     context_builder = ContextBuilder('test_fan_out_fan_in_function')

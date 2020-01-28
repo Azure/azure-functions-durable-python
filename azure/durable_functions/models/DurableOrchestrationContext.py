@@ -1,9 +1,6 @@
 import json
-import logging
 import datetime
 from typing import List, Any, Dict
-
-from dateutil.parser import parse as dt_parse
 
 from . import (RetryOptions)
 from .history import HistoryEvent, HistoryEventType
@@ -36,7 +33,7 @@ class DurableOrchestrationContext:
     def __init__(self,
                  context_string: str):
         context: Dict[str, Any] = json.loads(context_string)
-        self._histories: List[HistoryEvent] = context.get("history")
+        self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in context.get("history")]
         self._instance_id = context.get("instanceId")
         self._is_replaying = context.get("isReplaying")
         self._parent_instance_id = context.get("parentInstanceId")
@@ -77,11 +74,15 @@ class DurableOrchestrationContext:
         self.task_all = lambda t: task_all(tasks=t)
 >>>>>>> test failed scenario
         self.decision_started_event: HistoryEvent = list(filter(
-            lambda e_: e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED,
+            lambda e_: e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED,
             self.histories))[0]
         self._current_utc_datetime = \
+<<<<<<< HEAD
             dt_parse(self.decision_started_event["Timestamp"])
         self._custom_status = None
+=======
+            self.decision_started_event.timestamp
+>>>>>>> Refactoring HistoryEvent
         self.new_guid_counter = 0
         self.actions: List[List[IAction]] = []
     

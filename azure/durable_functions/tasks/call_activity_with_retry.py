@@ -48,8 +48,8 @@ def call_activity_with_retry_task(
                 is_faulted=False,
                 action=new_action,
                 result=parse_history_event(task_completed),
-                timestamp=task_completed["Timestamp"],
-                id_=task_completed["TaskScheduledId"])
+                timestamp=task_completed.timestamp,
+                id_=task_completed.TaskScheduledId)
 
         if task_failed and task_retry_timer and attempt + 1 >= \
                 retry_options.max_number_of_attempts:
@@ -57,11 +57,10 @@ def call_activity_with_retry_task(
                 is_completed=True,
                 is_faulted=True,
                 action=new_action,
-                result=task_failed["Reason"],
-                timestamp=task_failed["Timestamp"],
-                id_=task_failed["TaskScheduledId"],
+                timestamp=task_failed.timestamp,
+                id_=task_failed.TaskScheduledId,
                 exc=Exception(
-                    f"{task_failed['Reason']} \n {task_failed['Details']}")
+                    f"{task_failed.Reason} \n {task_failed.Details}")
             )
 
     return Task(is_completed=False, is_faulted=False, action=new_action)

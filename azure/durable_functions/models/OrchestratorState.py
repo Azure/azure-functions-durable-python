@@ -2,6 +2,7 @@ import json
 from typing import List, Any, Dict
 
 from .utils.json_utils import add_attrib
+from ..interfaces.IAction import IAction
 
 
 class OrchestratorState:
@@ -13,7 +14,7 @@ class OrchestratorState:
 
     def __init__(self,
                  is_done: bool,
-                 actions: List[List[Any]],
+                 actions: List[List[IAction]],
                  output: Any,
                  error: str = None,
                  custom_status: Any = None):
@@ -24,7 +25,7 @@ class OrchestratorState:
         self._custom_status: Any = custom_status
 
     @property
-    def actions(self) -> List[List[Any]]:
+    def actions(self) -> List[List[IAction]]:
         """Get the ordered list of async actions the orchestrator function should perform.
 
         This list is append-only; it must contain all scheduled async actions up to the latest

@@ -12,16 +12,16 @@ def should_suspend(partial_result) -> bool:
 
 def parse_history_event(directive_result):
     """Based on the type of event, parse the JSON.serializable portion of the event."""
-    event_type = directive_result.get("EventType")
+    event_type = directive_result.event_type
     if event_type is None:
         raise ValueError("EventType is not found in task object")
 
     if event_type == HistoryEventType.EVENT_RAISED:
-        return json.loads(directive_result["Input"])
+        return json.loads(directive_result.Input)
     if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_CREATED:
-        return json.loads(directive_result["Result"])
+        return json.loads(directive_result.Result)
     if event_type == HistoryEventType.TASK_COMPLETED:
-        return json.loads(directive_result["Result"])
+        return json.loads(directive_result.Result)
     return None
 
 
@@ -72,8 +72,8 @@ def find_task_scheduled(state, name):
 
     tasks = list(
         filter(lambda e:
-               not ((not ((e["EventType"] == HistoryEventType.TASK_SCHEDULED) and (
-                    e["Name"] == name))) or e.get("IsProcessed")),
+               not ((not ((e.event_type == HistoryEventType.TASK_SCHEDULED) and (
+                       e.Name == name))) or e.is_processed),
                state))
 
     if len(tasks) == 0:
@@ -94,8 +94,8 @@ def find_task_completed(state, scheduled_task):
 
     tasks = list(
         filter(lambda e:
-               not (not (e["EventType"] == HistoryEventType.TASK_COMPLETED) or not (
-                    e.get("TaskScheduledId") == scheduled_task["EventId"])),
+               not (not (e.event_type == HistoryEventType.TASK_COMPLETED) or not (
+                       e.TaskScheduledId == scheduled_task.event_id)),
                state))
 
     if len(tasks) == 0:
@@ -116,8 +116,8 @@ def find_task_failed(state, scheduled_task):
 
     tasks = list(
         filter(lambda e:
-               not (not (e["EventType"] == HistoryEventType.TASK_FAILED) or not (
-                    e.get("TaskScheduledId") == scheduled_task["EventId"])), state))
+               not (not (e.event_type == HistoryEventType.TASK_FAILED) or not (
+                       e.TaskScheduledId == scheduled_task.event_id)), state))
 
     if len(tasks) == 0:
         return None
@@ -138,8 +138,8 @@ def find_task_retry_timer_created(state, failed_task):
 
     tasks = list(
         filter(lambda e:
-               not (not (e["EventType"] == HistoryEventType.TIMER_CREATED) or not (
-                    e.get("EventId") == failed_task["TaskScheduledId"] + 1)),
+               not (not (e.event_type == HistoryEventType.TIMER_CREATED) or not (
+                       e.event_id == failed_task.TaskScheduledId + 1)),
                state))
 
     if len(tasks) == 0:
@@ -161,8 +161,8 @@ def find_task_retry_timer_fired(state, retry_timer_created):
 
     tasks = list(
         filter(lambda e: not (
-               not (e["EventType"] == HistoryEventType.TIMER_FIRED)
-               or not (e.get("TimerId") == retry_timer_created["EventId"])),
+                not (e.event_type == HistoryEventType.TIMER_FIRED)
+                or not (e.TimerId == retry_timer_created.event_id)),
                state))
 
     if len(tasks) == 0:
@@ -218,3 +218,4 @@ def find_timer_fired(state ,created_timer):
         return None
 
     return tasks[0]
+            task.is_processed = True
