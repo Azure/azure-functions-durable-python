@@ -6,6 +6,7 @@ from .HistoryEventType import HistoryEventType
 class HistoryEvent:
     """Used to communicate state relevant information from the durable extension to the client."""
 
+    # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     # noinspection PyPep8Naming
     def __init__(self, EventType: HistoryEventType, EventId: int, IsPlayed: bool, Timestamp: str,
                  **kwargs):
@@ -15,35 +16,65 @@ class HistoryEvent:
         self._timestamp: datetime = dt_parse(Timestamp)
         self._is_processed: bool = False
         if kwargs is not None:
-            [self.__setattr__(key, value) for key, value in kwargs.items()]
+            for key, value in kwargs.items():
+                self.__setattr__(key, value)
 
     @property
     def event_type(self) -> HistoryEventType:
-        """Get the history event type
+        """Get the history event type property
 
         Returns
         ----------
         HistoryEventType: The type of history event
-
         """
         return self._event_type
 
     @property
     def event_id(self) -> int:
+        """Get the event ID property
+
+        Returns
+        -------
+        int: value that represents the event sequence
+        """
         return self._event_id
 
     @property
     def is_played(self) -> bool:
+        """Get the is played property
+
+        Returns
+        -------
+        bool: Value indicating
+        """
         return self._is_played
 
     @property
     def is_processed(self) -> bool:
+        """Get the is process property
+
+        Returns
+        -------
+        bool: Value indicating whether the orchestrator has processed the event
+        """
         return self._is_processed
 
     @is_processed.setter
     def is_processed(self, value: bool):
+        """Set the is processed property
+
+        Parameters
+        ----------
+        value: value to set the property to
+        """
         self._is_processed = value
 
     @property
     def timestamp(self) -> datetime:
+        """Get the timestamp property
+
+        Returns
+        -------
+        datetime: Value indicating the the time the event occurred
+        """
         return self._timestamp
