@@ -1,0 +1,1 @@
+"""Interfaces for durable functions."""

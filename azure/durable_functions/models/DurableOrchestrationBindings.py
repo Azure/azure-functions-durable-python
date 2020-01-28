@@ -22,5 +22,17 @@ class DurableOrchestrationBindings:
 
     @classmethod
     def from_json(cls, json_string):
+        """Convert the value passed into a new instance of the class.
+
+        Parameters
+        ----------
+        json_string: Context passed a JSON serializable value to be converted into an
+        instance of the class
+
+        Returns
+        -------
+        DurableOrchestrationBindings: new instance of the durable orchestration binding class
+
+        """
         json_dict = json.loads(json_string)
         return cls(**json_dict)

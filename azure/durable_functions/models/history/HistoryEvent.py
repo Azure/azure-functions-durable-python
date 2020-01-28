@@ -21,17 +21,17 @@ class HistoryEvent:
 
     @property
     def event_type(self) -> HistoryEventType:
-        """Get the history event type property
+        """Get the history event type property.
 
         Returns
-        ----------
+        -------
         HistoryEventType: The type of history event
         """
         return self._event_type
 
     @property
     def event_id(self) -> int:
-        """Get the event ID property
+        """Get the event ID property.
 
         Returns
         -------
@@ -41,7 +41,7 @@ class HistoryEvent:
 
     @property
     def is_played(self) -> bool:
-        """Get the is played property
+        """Get the is played property.
 
         Returns
         -------
@@ -51,7 +51,7 @@ class HistoryEvent:
 
     @property
     def is_processed(self) -> bool:
-        """Get the is process property
+        """Get the is process property.
 
         Returns
         -------
@@ -61,7 +61,7 @@ class HistoryEvent:
 
     @is_processed.setter
     def is_processed(self, value: bool):
-        """Set the is processed property
+        """Set the is processed property.
 
         Parameters
         ----------
@@ -71,7 +71,7 @@ class HistoryEvent:
 
     @property
     def timestamp(self) -> datetime:
-        """Get the timestamp property
+        """Get the timestamp property.
 
         Returns
         -------
