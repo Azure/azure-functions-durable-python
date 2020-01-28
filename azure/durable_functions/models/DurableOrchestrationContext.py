@@ -16,13 +16,15 @@ class DurableOrchestrationContext:
     function-based activities.
     """
 
+    # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
+    # noinspection PyPep8Naming
     def __init__(self,
-                 context_string: str):
-        context: Dict[str, Any] = json.loads(context_string)
-        self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in context.get("history")]
-        self._instance_id = context.get("instanceId")
-        self._is_replaying = context.get("isReplaying")
-        self._parent_instance_id = context.get("parentInstanceId")
+                 history: Dict[Any, Any], instanceId: str, isReplaying: bool,
+                 parentInstanceId: str, **kwargs):
+        self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
+        self._instance_id: str = instanceId
+        self._is_replaying: bool = isReplaying
+        self._parent_instance_id: str = parentInstanceId
         self.call_activity = lambda n, i=None: call_activity_task(
             state=self.histories,
             name=n,
@@ -41,6 +43,14 @@ class DurableOrchestrationContext:
             self.decision_started_event.timestamp
         self.new_guid_counter = 0
         self.actions: List[List[IAction]] = []
+        if kwargs is not None:
+            for key, value in kwargs.items():
+                self.__setattr__(key, value)
+
+    @classmethod
+    def from_json(cls, json_string):
+        json_dict = json.loads(json_string)
+        return cls(**json_dict)
 
     def call_activity(self, name: str, input_=None) -> Task:
         """Schedule an activity for execution.

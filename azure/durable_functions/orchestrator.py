@@ -45,7 +45,7 @@ class Orchestrator:
         :return: the resulting orchestration state, with instructions back to
         the durable extension.
         """
-        self.durable_context = DurableOrchestrationContext(context_string)
+        self.durable_context = DurableOrchestrationContext.from_json(context_string)
         activity_context = IFunctionContext(df=self.durable_context)
 
         self.generator = self.fn(activity_context)

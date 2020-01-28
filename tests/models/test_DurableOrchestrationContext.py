@@ -7,7 +7,7 @@ from azure.durable_functions.models.DurableOrchestrationContext \
 
 @pytest.fixture
 def starting_context():
-    context = DurableOrchestrationContext(
+    context = DurableOrchestrationContext.from_json(
         '{"history":[{"EventType":12,"EventId":-1,"IsPlayed":false,'
         '"Timestamp":"2019-12-08T23:18:41.3240927Z"}, '
         '{"OrchestrationInstance":{'
