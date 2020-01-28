@@ -5,7 +5,18 @@ from ..utils.json_utils import add_attrib
 
 
 class WaitForExternalEventAction:
-    """Defines the structure of Wait for External Event object."""
+    """Defines the structure of Wait for External Event object.
+
+    Returns
+    -------
+    WaitForExternalEventAction
+        Returns a WaitForExternalEventAction Class.
+
+    Raises
+    ------
+    ValueError
+        Raises error if external_event_name is not defined.
+    """
 
     def __init__(self, external_event_name: str):
         self.action_type: ActionType = ActionType.WAIT_FOR_EXTERNAL_EVENT
@@ -18,7 +29,10 @@ class WaitForExternalEventAction:
     def to_json(self) -> Dict[str, Any]:
         """Convert object into a json dictionary.
 
-        :return: The instance of the class converted into a json dictionary
+        Returns
+        -------
+        Dict[str, Any]
+            The instance of the class converted into a json dictionary
         """
         json_dict = {}
 

@@ -4,9 +4,16 @@ from ..models.TaskSet import TaskSet
 def task_any(state, tasks):
     """Determine whether any of the given tasks is completed.
 
-    :param state: The list of history events.
-    :param tasks: The tasks to evaluate their current state.
-    :return:
+    Parameters
+    ----------
+    state : List[HistoryEvent]
+        The list of history events.
+    tasks : Task
+        The tasks to evaluate their current state.
+
+    Returns
+    -------
+    TaskSet
         Returns a completed Durable Task Set if any of the tasks is completed.
         Returns a not completed Durable Task Set if none of the tasks are completed.
     """
