@@ -33,11 +33,9 @@ def find_task_scheduled(state, name):
     if not name:
         raise ValueError("Name cannot be empty")
 
-    tasks = list(
-        filter(lambda e:
-               e.event_type == HistoryEventType.TASK_SCHEDULED and e.Name == name
-               and not e.is_processed,
-               state))
+    tasks = [e for e in state
+             if e.event_type == HistoryEventType.TASK_SCHEDULED
+             and e.Name == name and not e.is_processed]
 
     if len(tasks) == 0:
         return None
@@ -55,11 +53,8 @@ def find_task_completed(state, scheduled_task):
     if scheduled_task is None:
         return None
 
-    tasks = list(
-        filter(lambda e:
-               (e.event_type == HistoryEventType.TASK_COMPLETED)
-               and (e.TaskScheduledId == scheduled_task.event_id),
-               state))
+    tasks = [e for e in state if e.event_type == HistoryEventType.TASK_COMPLETED
+             and e.TaskScheduledId == scheduled_task.event_id]
 
     if len(tasks) == 0:
         return None
@@ -77,10 +72,8 @@ def find_task_failed(state, scheduled_task):
     if scheduled_task is None:
         return None
 
-    tasks = list(
-        filter(lambda e:
-               e.event_type == HistoryEventType.TASK_FAILED
-               and e.TaskScheduledId == scheduled_task.event_id, state))
+    tasks = [e for e in state if e.event_type == HistoryEventType.TASK_FAILED
+             and e.TaskScheduledId == scheduled_task.event_id]
 
     if len(tasks) == 0:
         return None
@@ -99,11 +92,8 @@ def find_task_retry_timer_created(state, failed_task):
     if failed_task is None:
         return None
 
-    tasks = list(
-        filter(lambda e:
-               e.event_type == HistoryEventType.TIMER_CREATED
-               and e.event_id == failed_task.TaskScheduledId + 1,
-               state))
+    tasks = [e for e in state if e.event_type == HistoryEventType.TIMER_CREATED
+             and e.event_id == failed_task.TaskScheduledId + 1]
 
     if len(tasks) == 0:
         return None
@@ -122,10 +112,8 @@ def find_task_retry_timer_fired(state, retry_timer_created):
     if retry_timer_created is None:
         return None
 
-    tasks = list(
-        filter(lambda e: e.event_type == HistoryEventType.TIMER_FIRED
-                         and e.TimerId == retry_timer_created.event_id,
-               state))
+    tasks = [e for e in state if e.event_type == HistoryEventType.TIMER_FIRED
+             and e.TimerId == retry_timer_created.event_id]
 
     if len(tasks) == 0:
         return None
