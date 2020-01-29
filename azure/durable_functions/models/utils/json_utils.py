@@ -1,7 +1,7 @@
 from typing import Dict, Any
 from tests.test_utils.constants import DATETIME_STRING_FORMAT
 
-from tests.test_utils.constants import DATETIME_STRING_FORMAT
+from ...constants import DATETIME_STRING_FORMAT
 
 
 def add_attrib(json_dict: Dict[str, Any], object_,
