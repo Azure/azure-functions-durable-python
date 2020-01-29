@@ -32,3 +32,27 @@ def test_has_no_completed_task():
     expected_taskset = TaskSet(is_completed=False, actions=all_actions, result=None)
 
     assert_taskset_equal(expected_taskset, returned_taskset)
+
+def test_all_faulted_task_should_fail():
+    all_actions = [WaitForExternalEventAction("C"), WaitForExternalEventAction("A"), WaitForExternalEventAction("B")]
+    task1 = Task(is_completed=False, is_faulted=True, action=all_actions[0], timestamp=date(2000,1,1))
+    task2 = Task(is_completed=False, is_faulted=True, action=all_actions[1],timestamp=date(2000,2,1))
+    task3 = Task(is_completed=False, is_faulted=True, action=all_actions[2],timestamp=date(2000,1,1))
+
+    tasks = [task1, task2, task3]
+    returned_taskset = task_any(tasks)
+    expected_taskset = TaskSet(is_completed=False, actions=all_actions, result=None, is_faulted=True)
+
+    assert_taskset_equal(expected_taskset, returned_taskset)
+
+def test_one_faulted_task_should_still_proceed():
+    all_actions = [WaitForExternalEventAction("C"), WaitForExternalEventAction("A"), WaitForExternalEventAction("B")]
+    task1 = Task(is_completed=False, is_faulted=True, action=all_actions[0], timestamp=date(2000,1,1))
+    task2 = Task(is_completed=False, is_faulted=False, action=all_actions[1],timestamp=date(2000,2,1))
+    task3 = Task(is_completed=False, is_faulted=False, action=all_actions[2],timestamp=date(2000,1,1))
+
+    tasks = [task1, task2, task3]
+    returned_taskset = task_any(tasks)
+    expected_taskset = TaskSet(is_completed=False, actions=all_actions, result=None)
+
+    assert_taskset_equal(expected_taskset, returned_taskset)
