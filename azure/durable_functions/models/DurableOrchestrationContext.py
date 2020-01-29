@@ -76,10 +76,14 @@ class DurableOrchestrationContext:
             state=self.histories,
             name=n)
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> fix bugs to make waitForExternalEvent working
 =======
         self.task_any = lambda t: task_any(state=self.histories, tasks=t)
 >>>>>>> implement task_any function
+=======
+        self.task_any = lambda t: task_any(tasks=t)
+>>>>>>> remove state in task_any
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
 =======
         self.task_all = lambda t: task_all(tasks=t)

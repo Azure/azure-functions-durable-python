@@ -1,7 +1,7 @@
 from ..models.TaskSet import TaskSet
 
 
-def task_any(state, tasks):
+def task_any(tasks):
     """Determine whether any of the given tasks is completed.
 
     Parameters
