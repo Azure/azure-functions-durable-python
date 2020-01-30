@@ -108,11 +108,9 @@ class Orchestrator:
 
     def _reset_timestamp(self):
         last_timestamp = self.durable_context.decision_started_event.timestamp
-        decision_started_events = list(
-            filter(lambda e_: (
-                e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED
-                and e_.timestamp > last_timestamp),
-                self.durable_context.histories))
+        decision_started_events = [e_ for e_ in self.durable_context.histories
+                                   if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED
+                                   and e_.timestamp > last_timestamp]
         if len(decision_started_events) == 0:
             self.durable_context.current_utc_datetime = None
         else:
