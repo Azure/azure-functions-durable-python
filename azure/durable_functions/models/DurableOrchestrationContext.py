@@ -77,11 +77,17 @@ class DurableOrchestrationContext:
             name=n)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> fix bugs to make waitForExternalEvent working
 =======
         self.task_any = lambda t: task_any(state=self.histories, tasks=t)
 >>>>>>> implement task_any function
 =======
+=======
+        self.create_timer = lambda d: create_timer_task(
+            state=self.histories,
+            fire_at=d)
+>>>>>>> create timer first pass
         self.task_any = lambda t: task_any(tasks=t)
 >>>>>>> remove state in task_any
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
@@ -137,7 +143,19 @@ class DurableOrchestrationContext:
         """
         json_dict = json.loads(json_string)
         return cls(**json_dict)
+<<<<<<< HEAD
 >>>>>>> Refactor json conversion
+=======
+    
+    def get_input(input: Any) -> Any:
+        """        
+        Returns
+        -------
+        str
+            Returns the input parameters obtained in the context of a Azure Function call
+        """
+        return input
+>>>>>>> create timer first pass
 
     def call_activity(self, name: str, input_=None) -> Task:
         """Schedule an activity for execution.

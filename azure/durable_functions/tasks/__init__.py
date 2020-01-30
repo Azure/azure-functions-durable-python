@@ -6,6 +6,7 @@ from .task_any import task_any
 from .task_utilities import should_suspend
 from .create_timer import create_timer_task
 from .wait_for_external_event import wait_for_external_event_task
+from .create_timer import create_timer_task
 
 __all__ = [
     'call_activity_task',
@@ -15,4 +16,6 @@ __all__ = [
     'should_suspend',
     'create_timer_task'
     'wait_for_external_event_task'
+    'should_suspend',
+    'create_timer_task'
 ]

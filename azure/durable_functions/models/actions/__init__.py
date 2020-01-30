@@ -7,7 +7,12 @@ from .CreateTimerAction import CreateTimerAction
 
 =======
 from .WaitForExternalEventAction import WaitForExternalEventAction
+<<<<<<< HEAD
 >>>>>>> fix bugs after merging dev
+=======
+from .CreateTimerAction import CreateTimerAction
+
+>>>>>>> create timer first pass
 __all__ = [
     'ActionType',
     'CallActivityAction',
@@ -16,5 +21,9 @@ __all__ = [
     'CreateTimerAction'
 =======
     'WaitForExternalEventAction'
+<<<<<<< HEAD
 >>>>>>> fix bugs after merging dev
+=======
+    'CreateTimerAction'
+>>>>>>> create timer first pass
 ]
