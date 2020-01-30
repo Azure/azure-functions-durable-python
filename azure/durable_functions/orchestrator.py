@@ -34,18 +34,18 @@ class Orchestrator:
         self.customStatus: Any = None
 
     # noinspection PyAttributeOutsideInit,PyUnboundLocalVariable
-    def handle(self, context_string: str):
+    def handle(self, context: DurableOrchestrationContext):
         """Handle the orchestration of the user defined generator function.
 
         Called each time the durable extension executes an activity and needs
         the client to handle the result.
 
-        :param context_string: the context of what has been executed by
+        :param context: the context of what has been executed by
         the durable extension.
         :return: the resulting orchestration state, with instructions back to
         the durable extension.
         """
-        self.durable_context = DurableOrchestrationContext.from_json(context_string)
+        self.durable_context = context
         activity_context = IFunctionContext(df=self.durable_context)
 
         self.generator = self.fn(activity_context)
@@ -126,4 +126,5 @@ class Orchestrator:
         :param fn: Generator function that needs orchestration
         :return: Handle function of the newly created orchestration client
         """
-        return lambda context: Orchestrator(fn).handle(context)
+        return lambda context: \
+            Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context))
