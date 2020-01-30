@@ -78,7 +78,10 @@ class OrchestratorState:
         for action_list in self._actions:
             action_result_list = []
             for action_obj in action_list:
-                action_result_list.append(action_obj.to_json())
+                if type(action_obj) is tuple:
+                    action_result_list.append(action_obj[0].to_json())
+                else:
+                    action_result_list.append(action_obj.to_json())
             json_dict['actions'].append(action_result_list)
 
     def to_json_string(self) -> str:

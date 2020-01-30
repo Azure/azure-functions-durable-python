@@ -5,8 +5,7 @@ from ..interfaces import IAction
 class Task:
     """Represents some pending action.
 
-    Similar to a native JavaScript promise in
-    that it acts as a placeholder for outstanding asynchronous work, but has
+    Acts as a placeholder for outstanding asynchronous work, but has
     a synchronous implementation and is specific to Durable Functions.
 
     Tasks are only returned to an orchestration function when a

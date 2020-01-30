@@ -9,7 +9,8 @@ from . import (RetryOptions)
 from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..models.Task import Task
-from ..tasks import call_activity_task, task_all, call_activity_with_retry_task
+from ..tasks import \
+    call_activity_task, task_all,call_activity_with_retry_task,create_timer_task
 
 
 class DurableOrchestrationContext:
@@ -27,6 +28,7 @@ class DurableOrchestrationContext:
         self._instance_id = context.get("instanceId")
         self._is_replaying = context.get("isReplaying")
         self._parent_instance_id = context.get("parentInstanceId")
+        self.input:str = context.get("input")
         self.call_activity = lambda n, i: call_activity_task(
             state=self.histories,
             name=n,
@@ -37,14 +39,26 @@ class DurableOrchestrationContext:
                 retry_options=o,
                 name=n,
                 input_=i)
+        self.create_timer = lambda d: create_timer_task(state=self.histories,fire_at=d)
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
         self.decision_started_event: HistoryEvent = list(filter(
             lambda e_: e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED,
             self.histories))[0]
         self._current_utc_datetime = \
             dt_parse(self.decision_started_event["Timestamp"])
+        self._custom_status = None
         self.new_guid_counter = 0
         self.actions: List[List[IAction]] = []
+    
+    
+    def get_input(input: Any) -> Any:
+        """        
+        Returns
+        -------
+        str
+            Returns the input parameters obtained in the context of a Azure Function call
+        """
+        return input
 
     def call_activity(self, name: str, input_=None) -> Task:
         """Schedule an activity for execution.
@@ -138,6 +152,7 @@ class DurableOrchestrationContext:
         This date/time value is derived from the orchestration history. It
         always returns the same value at specific points in the orchestrator
         function code, making it deterministic and safe for replay.
+
         :return: The current date/time in a way that is safe for use by
         orchestrator functions
         """

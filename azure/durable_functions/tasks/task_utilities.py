@@ -1,6 +1,7 @@
-import json
-from ..models.history import HistoryEventType
-
+import json, datetime
+from ..models.history import HistoryEventType, HistoryEvent
+from ..models.Task import Task
+from typing import List
 
 def should_suspend(partial_result) -> bool:
     """Check the state of the result to determine if the orchestration should suspend."""
@@ -143,3 +144,41 @@ def set_processed(tasks):
     for task in tasks:
         if task is not None:
             task["IsProcessed"] = True
+
+def find_timer_created(state, fire_at):
+
+    if fire_at is None:
+        return None
+
+    tasks = list(
+        filter(lambda e:
+               not(not (e["EventType"] == HistoryEventType.TIMER_CREATED) 
+                   or not (e["FireAt"] == fire_at)),
+               state))
+    if tasks:
+        return tasks[0]
+    else:
+        return None
+
+# TODO remove this duplicate? and reuse 
+def find_timer_fired(state ,created_timer):
+    """Locate the Timer Fired Task.
+
+    Within the state passed, search for an event that has hasn't been processed,
+    is a timer fired task type,
+    and has the an timer id that is equal to the EventId of the provided
+    timer created task provided.
+    """
+    if created_timer is None:
+        return None
+
+    tasks = list(
+        filter(lambda e: not (
+               not (e["EventType"] == HistoryEventType.TIMER_FIRED)
+               or not (e.get("TimerId") == created_timer["EventId"])),
+               state))
+
+    if len(tasks) == 0:
+        return None
+
+    return tasks[0]

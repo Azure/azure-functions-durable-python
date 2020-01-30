@@ -2,9 +2,11 @@
 from .ActionType import ActionType
 from .CallActivityAction import CallActivityAction
 from .CallActivityWithRetryAction import CallActivityWithRetryAction
+from .CreateTimerAction import CreateTimerAction
 
 __all__ = [
     'ActionType',
     'CallActivityAction',
-    'CallActivityWithRetryAction'
+    'CallActivityWithRetryAction',
+    'CreateTimerAction'
 ]
