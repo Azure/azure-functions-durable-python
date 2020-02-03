@@ -31,7 +31,11 @@ cp -r ../samples/$SAMPLE $DIRECTORY/
 cd $DIRECTORY/$SAMPLE
 python -m venv env
 source env/bin/activate
-pip install /Users/prananth/azure-functions-durable-python
+
+echo "Provide local path to azure-functions-durable-python clone:"
+read lib_path
+pip install $lib_path/azure-functions-durable-python
 func init .
 func extensions install
 echo "Done"
+
