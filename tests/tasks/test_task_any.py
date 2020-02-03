@@ -34,14 +34,15 @@ def test_has_no_completed_task():
 
 def test_all_faulted_task_should_fail():
     all_actions = [WaitForExternalEventAction("C"), WaitForExternalEventAction("A"), WaitForExternalEventAction("B")]
-    task1 = Task(is_completed=False, is_faulted=True, action=all_actions[0], timestamp=date(2000,1,1))
-    task2 = Task(is_completed=False, is_faulted=True, action=all_actions[1],timestamp=date(2000,2,1))
-    task3 = Task(is_completed=False, is_faulted=True, action=all_actions[2],timestamp=date(2000,1,1))
+    task1 = Task(is_completed=False, is_faulted=True, action=all_actions[0], timestamp=date(2000,1,1), exc=Exception("test failure"))
+    task2 = Task(is_completed=False, is_faulted=True, action=all_actions[1], timestamp=date(2000,2,1), exc=Exception("test failure"))
+    task3 = Task(is_completed=False, is_faulted=True, action=all_actions[2], timestamp=date(2000,1,1), exc=Exception("test failure"))
 
     tasks = [task1, task2, task3]
     returned_taskset = task_any(tasks)
-    expected_taskset = TaskSet(is_completed=False, actions=all_actions, result=None, is_faulted=True, exception="all tasks have failed.")
-
+    error_messages = [Exception("test failure") for _ in range(3)]
+    expected_exception = Exception(f"All tasks have failed, errors messages in all tasks:{error_messages}")
+    expected_taskset = TaskSet(is_completed=True, actions=all_actions, result=None, is_faulted=True, exception=expected_exception)
     assert_taskset_equal(expected_taskset, returned_taskset)
 
 def test_one_faulted_task_should_still_proceed():
