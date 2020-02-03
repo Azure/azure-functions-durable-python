@@ -12,3 +12,4 @@ def assert_taskset_equal(taskset1, taskset2):
     assert taskset1.result == taskset2.result
     assert taskset1.exception == taskset2.exception
     assert taskset1.actions == taskset2.actions
+    assert taskset1.timestamp == taskset2.timestamp
