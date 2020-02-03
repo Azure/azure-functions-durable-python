@@ -19,22 +19,25 @@ def task_any(tasks):
     all_actions = []
     completed_tasks = []
     faulted_tasks = []
-
+    error_message = []
     for task in tasks:
         if isinstance(task, TaskSet):
             for action in task.actions:
                 all_actions.append(action)
         else:
             all_actions.append(task.action)
-        if task.is_completed:
-            completed_tasks.append(task)
+        
         if task.is_faulted:
             faulted_tasks.append(task)
+            error_message.append(task.exception)
+        elif task.is_completed:
+            completed_tasks.append(task)
 
     completed_tasks.sort(key=lambda t: t.timestamp)
 
     if len(faulted_tasks) == len(tasks):
-        return TaskSet(False, all_actions, None, is_faulted=True, exception="all tasks have failed.")
+        return TaskSet(True, all_actions, None, is_faulted=True, exception= \
+            Exception(f"All tasks have failed, errors messages in all tasks:{error_message}"))
     elif len(completed_tasks) != 0:
         return TaskSet(True, all_actions, completed_tasks[0], False, completed_tasks[0].timestamp)
     else:
