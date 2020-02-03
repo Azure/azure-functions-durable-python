@@ -26,7 +26,7 @@ def task_any(tasks):
                 all_actions.append(action)
         else:
             all_actions.append(task.action)
-        
+
         if task.is_faulted:
             faulted_tasks.append(task)
             error_message.append(task.exception)
@@ -36,8 +36,8 @@ def task_any(tasks):
     completed_tasks.sort(key=lambda t: t.timestamp)
 
     if len(faulted_tasks) == len(tasks):
-        return TaskSet(True, all_actions, None, is_faulted=True, exception= \
-            Exception(f"All tasks have failed, errors messages in all tasks:{error_message}"))
+        return TaskSet(True, all_actions, None, is_faulted=True, exception=Exception(
+            f"All tasks have failed, errors messages in all tasks:{error_message}"))
     elif len(completed_tasks) != 0:
         return TaskSet(True, all_actions, completed_tasks[0], False, completed_tasks[0].timestamp)
     else:

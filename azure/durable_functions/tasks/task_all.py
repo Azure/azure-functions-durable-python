@@ -20,11 +20,12 @@ def task_all(state, tasks):
         else:
             all_actions.append(task.action)
         results.append(task.result)
-        
+
         if not task.is_completed:
             is_completed = False
         else:
-            complete_time = task.timestamp if complete_time is None else max([task.timestamp, complete_time])
+            complete_time = task.timestamp if complete_time is None \
+                else max([task.timestamp, complete_time])
 
     if is_completed:
         return TaskSet(is_completed, all_actions, results, False, complete_time)
