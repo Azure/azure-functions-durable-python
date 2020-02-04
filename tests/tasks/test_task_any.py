@@ -8,6 +8,14 @@ from tests.test_utils.constants import DATETIME_STRING_FORMAT
 from tests.test_utils.ContextBuilder import ContextBuilder
 from .tasks_test_utils import assert_taskset_equal
 
+
+from tests.orchestrator.orchestrator_test_utils \
+    import assert_orchestration_state_equals, get_orchestration_state_result
+from tests.test_utils.ContextBuilder import ContextBuilder
+from azure.durable_functions.models.OrchestratorState import OrchestratorState
+from tests.orchestrator.test_sequential_orchestrator import base_expected_state,\
+ add_hello_action, add_hello_failed_events
+
 def test_has_completed_task():
     all_actions = [WaitForExternalEventAction("C"), WaitForExternalEventAction("A"), WaitForExternalEventAction("B")]
     task1 = Task(is_completed=False, is_faulted=False, action=all_actions[0], timestamp=date(2000,1,1))
@@ -68,3 +76,32 @@ def test_taskset_and_tasks_as_args():
     expected_taskset = TaskSet(is_completed=True, actions=all_actions, result=task2, timestamp=date(2000,1,1))
 
     assert_taskset_equal(expected_taskset, returned_taskset)
+
+
+def generator_function(context):
+
+    task1 = context.df.call_activity("Hello", "tokyo")
+    task2 = context.df.call_activity("Hello", "seattle")
+    yield context.df.task_any([task1, task2])
+
+    return True
+
+def test_failed_tokyo_state():
+    failed_reason = 'Reasons'
+    failed_details = 'Stuff and Things'
+    context_builder = ContextBuilder('test_simple_function')
+    for i in range(0,1):
+        add_hello_failed_events(
+            context_builder, i, failed_reason, failed_details)
+    result = get_orchestration_state_result(
+        context_builder, generator_function)
+    expected_state = base_expected_state()
+    for _ in range(2):
+        add_hello_action(expected_state, "test")
+    expected_state._error = f'{failed_reason} \n {failed_details}'
+    expected = expected_state.to_json()
+    assert_orchestration_state_equals(expected, result)
+
+
+
+
