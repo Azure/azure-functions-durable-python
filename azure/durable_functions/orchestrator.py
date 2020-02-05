@@ -5,7 +5,6 @@ function.
 """
 from typing import Callable, Iterator, Any
 
-from .interfaces.IFunctionContext import IFunctionContext
 from .models import (
     DurableOrchestrationContext,
     Task,
@@ -23,14 +22,14 @@ class Orchestrator:
     """
 
     def __init__(self,
-                 activity_func: Callable[[IFunctionContext], Iterator[Any]]):
+                 activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]]):
         """Create a new orchestrator for the user defined generator.
 
         Responsible for orchestrating the execution of the user defined
         generator function.
         :param activity_func: Generator function to orchestrate.
         """
-        self.fn: Callable[[IFunctionContext], Iterator[Any]] = activity_func
+        self.fn: Callable[[DurableOrchestrationContext], Iterator[Any]] = activity_func
         self.customStatus: Any = None
 
     # noinspection PyAttributeOutsideInit,PyUnboundLocalVariable
@@ -46,9 +45,8 @@ class Orchestrator:
         the durable extension.
         """
         self.durable_context = context
-        activity_context = IFunctionContext(df=self.durable_context)
 
-        self.generator = self.fn(activity_context)
+        self.generator = self.fn(self.durable_context)
         suspended = False
         try:
             generation_state = self._generate_next(None)

@@ -14,11 +14,11 @@ def generator_function(context):
     outputs = []
 
     retry_options = RETRY_OPTIONS
-    task1 = yield context.df.call_activity_with_retry(
+    task1 = yield context.call_activity_with_retry(
         "Hello", retry_options, "Tokyo")
-    task2 = yield context.df.call_activity_with_retry(
+    task2 = yield context.call_activity_with_retry(
         "Hello",  retry_options, "Seattle")
-    task3 = yield context.df.call_activity_with_retry(
+    task3 = yield context.call_activity_with_retry(
         "Hello",  retry_options, "London")
 
     outputs.append(task1)

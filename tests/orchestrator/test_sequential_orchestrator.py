@@ -9,9 +9,9 @@ from azure.durable_functions.models.actions.CallActivityAction \
 def generator_function(context):
     outputs = []
 
-    task1 = yield context.df.call_activity("Hello", "Tokyo")
-    task2 = yield context.df.call_activity("Hello", "Seattle")
-    task3 = yield context.df.call_activity("Hello", "London")
+    task1 = yield context.call_activity("Hello", "Tokyo")
+    task2 = yield context.call_activity("Hello", "Seattle")
+    task3 = yield context.call_activity("Hello", "London")
 
     outputs.append(task1)
     outputs.append(task2)

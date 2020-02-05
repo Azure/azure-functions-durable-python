@@ -4,8 +4,6 @@ from ..models.TaskSet import TaskSet
 def task_all(tasks):
     """Determine the state of scheduling the activities for execution with retry options.
 
-    :param state: The list of history events to search to determine the current
-    state of the activity.
     :param tasks: The tasks to evaluate their current state.
     :return: A Durable Task Set that reports the state of running all of the tasks within it.
     """

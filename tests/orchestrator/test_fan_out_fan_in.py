@@ -8,13 +8,13 @@ from tests.test_utils.ContextBuilder import ContextBuilder
 
 
 def generator_function(context):
-    activity_count = yield context.df.call_activity("GetActivityCount")
+    activity_count = yield context.call_activity("GetActivityCount")
     tasks = []
     for i in range(activity_count):
-        current_task = context.df.call_activity("ParrotValue", str(i))
+        current_task = context.call_activity("ParrotValue", str(i))
         tasks.append(current_task)
-    values = yield context.df.task_all(tasks)
-    results = yield context.df.call_activity("ShowMeTheSum", values)
+    values = yield context.task_all(tasks)
+    results = yield context.call_activity("ShowMeTheSum", values)
     return results
 
 
