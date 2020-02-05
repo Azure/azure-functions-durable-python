@@ -3,8 +3,6 @@ from typing import Callable, Iterator, Any
 
 from azure.durable_functions.models import DurableOrchestrationContext
 from azure.durable_functions.orchestrator import Orchestrator
-from azure.durable_functions.interfaces.IFunctionContext \
-    import IFunctionContext
 
 
 def assert_orchestration_state_equals(expected, result):
@@ -42,7 +40,7 @@ def assert_action_is_equal(expected_action, result_action):
 
 def get_orchestration_state_result(
         context_builder,
-        activity_func: Callable[[IFunctionContext], Iterator[Any]]):
+        activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]]):
     context_as_string = context_builder.to_json_string()
     orchestrator = Orchestrator(activity_func)
     result_of_handle = orchestrator.handle(

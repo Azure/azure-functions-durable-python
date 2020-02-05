@@ -87,10 +87,16 @@ class DurableOrchestrationContext:
         self.task_all = lambda t: task_all(state=self.histories, tasks=t)
 =======
         self.task_all = lambda t: task_all(tasks=t)
+<<<<<<< HEAD
 >>>>>>> test failed scenario
         self.decision_started_event: HistoryEvent = list(filter(
             lambda e_: e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED,
             self.histories))[0]
+=======
+        self.decision_started_event: HistoryEvent = \
+            [e_ for e_ in self.histories
+             if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]
+>>>>>>> Remove IFunctionContext abstraction
         self._current_utc_datetime = \
 <<<<<<< HEAD
             dt_parse(self.decision_started_event["Timestamp"])
@@ -169,6 +175,41 @@ class DurableOrchestrationContext:
         :param instance_id: A unique ID to use for the sub-orchestration
         instance. If `instanceId` is not specified, the extension will generate
         an id in the format `<calling orchestrator instance ID>:<#>`
+        """
+        raise NotImplementedError("This is a placeholder.")
+
+    def task_all(self, activities: List[HistoryEvent]) -> List[Task]:
+        """Schedule the execution of all activities
+
+        Similar to Promise.all. When called with `yield` or `return`, returns an
+        array containing the results of all [[Task]]s passed to it. It returns
+        when all of the [[Task]] instances have completed.
+
+        Throws an exception if any of the activities fails
+        Parameters
+        ----------
+        activities: List of activities to schedule
+
+        Returns
+        -------
+        The results of all activities.
+        """
+        raise NotImplementedError("This is a placeholder.")
+
+    def task_any(self, activities: List[HistoryEvent]) -> List[Task]:
+        """Schedule the execution of all activities
+
+        Similar to Promise.race. When called with `yield` or `return`, returns
+        the first [[Task]] instance to complete.
+
+        Throws an exception if all of the activities fail
+        Parameters
+        ----------
+        activities: List of activities to schedule
+
+        Returns
+        -------
+        The first [[Task]] instance to complete.
         """
         raise NotImplementedError("This is a placeholder.")
 
