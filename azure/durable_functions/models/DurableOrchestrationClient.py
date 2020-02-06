@@ -1,7 +1,8 @@
 import requests
 import json
 from typing import List
-
+import validators
+from urllib.parse import urlparse
 from azure.durable_functions.models import DurableOrchestrationBindings
 
 
@@ -49,10 +50,67 @@ class DurableOrchestrationClient:
         request_url = self._get_start_new_url(
             instance_id,
             orchestration_function_name)
-
         result = requests.post(request_url, json=self._get_json_input(
             client_input))
-        return result
+        if result.status_code <= 202 and result.text:
+            response_text = json.loads(result.text)
+            return response_text["id"]
+        else:
+            return None
+
+    def createCheckStatusResponse(self, request, instanceId):
+        """Return a dictionary object that holds the HttpResponse and orchestrator management urls.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            request that triggered the client function
+        instanceId : str
+            instance id of the orchestrator instance that the client is managing
+
+        Returns
+        -------
+        dict
+           Dictionary object that contains information for HttpResponse.
+        """
+        httpManagementPayload = self.getClientResponseLinks(request, instanceId)
+        return {
+            "status_code": 202,
+            "body": httpManagementPayload,
+            "headers": {
+                "Content-Type": "application/json",
+                "Location": httpManagementPayload["statusQueryGetUri"],
+                "Retry-After": 10,
+            },
+        }
+
+    def getClientResponseLinks(self, request, instanceId):
+        """Create a dictionary of orchestration management urls.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            request that triggered the client function
+        instanceId : str
+            instance id of the orchestrator instance that the client is managing
+
+        Returns
+        -------
+        dict
+            dictionary of orchestrator function management urls
+        """
+        payload = self._orchestration_bindings.management_urls.copy()
+        for key, _ in payload.items():
+            if request.url and validators.url(payload[key]):
+                request_parsed_url = urlparse(request.url)
+                value_parsed_url = urlparse(payload[key])
+                request_url_origin = '{url.scheme}://{url.netloc}/'.format(url=request_parsed_url)
+                value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
+                payload[key] = payload[key].replace(value_url_origin, request_url_origin)
+            payload[key] = payload[key].replace(
+                self._orchestration_bindings.management_urls["id"], instanceId)
+
+        return payload
 
     @staticmethod
     def _get_json_input(client_input: object) -> object:
