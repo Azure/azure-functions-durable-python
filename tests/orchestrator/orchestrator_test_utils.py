@@ -47,10 +47,10 @@ def get_orchestration_state_result(
     orchestrator = Orchestrator(activity_func)
     result_of_handle = orchestrator.handle(
         DurableOrchestrationContext.from_json(context_as_string))
-
     result = json.loads(result_of_handle)
     return result
 
 
-def assert_valid_schema(orchestration_state: str):
-    assert validate(instance=orchestration_state, schema=schema)
+def assert_valid_schema(orchestration_state):
+    validation_results = validate(instance=orchestration_state, schema=schema)
+    assert validation_results is None

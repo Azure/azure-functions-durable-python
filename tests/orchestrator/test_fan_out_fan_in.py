@@ -3,7 +3,7 @@ import json
 from azure.durable_functions.models import OrchestratorState
 from azure.durable_functions.models.actions import CallActivityAction
 from .orchestrator_test_utils import get_orchestration_state_result, \
-    assert_orchestration_state_equals
+    assert_orchestration_state_equals, assert_valid_schema
 from tests.test_utils.ContextBuilder import ContextBuilder
 
 
@@ -72,6 +72,7 @@ def test_initial_call():
     add_single_action(expected_state, function_name='GetActivityCount', input_=None)
     expected = expected_state.to_json()
 
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -88,6 +89,7 @@ def test_get_activity_count_success():
     add_multi_actions(expected_state, function_name='ParrotValue', volume=activity_count)
     expected = expected_state.to_json()
 
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -109,6 +111,7 @@ def test_parrot_value_success():
     add_single_action(expected_state, function_name='ShowMeTheSum', input_=results)
     expected = expected_state.to_json()
 
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -118,7 +121,6 @@ def test_show_me_the_sum_success():
     for i in range(activity_count):
         sum_ += i
     sum_results = f"Well that's nice {sum_}!"
-
     context_builder = ContextBuilder('test_fan_out_fan_in_function')
     add_completed_event(context_builder, 0, 'GetActivityCount', activity_count)
     add_completed_task_set_events(context_builder, 1, 'ParrotValue', activity_count)
@@ -136,9 +138,9 @@ def test_show_me_the_sum_success():
         results.append(i)
     add_single_action(expected_state, function_name='ShowMeTheSum', input_=results)
     expected_state._is_done = True
-
     expected = expected_state.to_json()
 
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -159,4 +161,5 @@ def test_failed_parrot_value():
     add_multi_actions(expected_state, function_name='ParrotValue', volume=activity_count)
     expected = expected_state.to_json()
 
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)

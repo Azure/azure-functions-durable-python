@@ -3,7 +3,7 @@ schema = {
     "type": "object",
     "properties": {
         "isDone": {"type": "boolean"},
-        "output": {"type": "string"},
+        "output": {},
         "error": {"type": "string"},
         "customStatus": {"type": "object"},
         "actions": {
@@ -15,11 +15,7 @@ schema = {
                     "properties": {
                         "functionName": {"type": "string"},
                         "actionType": {"type": "number"},
-                        "input": {"oneOf": [
-                            {"type": "object"},
-                            {"type": "null"}
-                        ]
-                        },
+                        "input": {},
                         "retryOptions": {
                             "type": "object",
                             "properties": {

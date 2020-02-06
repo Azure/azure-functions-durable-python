@@ -1,5 +1,5 @@
 from .orchestrator_test_utils \
-    import get_orchestration_state_result, assert_orchestration_state_equals
+    import get_orchestration_state_result, assert_orchestration_state_equals, assert_valid_schema
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.RetryOptions import RetryOptions
@@ -65,23 +65,31 @@ def add_retry_timer_events(context_builder: ContextBuilder, id_: int):
 
 def test_initial_orchestration_state():
     context_builder = ContextBuilder('test_simple_function')
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
 def test_tokyo_state():
     context_builder = ContextBuilder('test_simple_function')
     add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -90,11 +98,15 @@ def test_failed_tokyo_with_retry():
     failed_details = 'Stuff and Things'
     context_builder = ContextBuilder('test_simple_function')
     add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -104,11 +116,15 @@ def test_failed_tokyo_with_timer_entry():
     context_builder = ContextBuilder('test_simple_function')
     add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
     add_retry_timer_events(context_builder, 1)
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -119,11 +135,15 @@ def test_failed_tokyo_with_failed_retry():
     add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
     add_retry_timer_events(context_builder, 1)
     add_hello_failed_events(context_builder, 2, failed_reason, failed_details)
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -135,11 +155,15 @@ def test_failed_tokyo_with_failed_retry_timer_added():
     add_retry_timer_events(context_builder, 1)
     add_hello_failed_events(context_builder, 2, failed_reason, failed_details)
     add_retry_timer_events(context_builder, 3)
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -150,12 +174,16 @@ def test_successful_tokyo_with_failed_retry_timer_added():
     add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
     add_retry_timer_events(context_builder, 1)
     add_hello_completed_events(context_builder, 2, "\"Hello Tokyo!\"")
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -169,10 +197,14 @@ def test_failed_tokyo_hit_max_attempts():
     add_retry_timer_events(context_builder, 3)
     add_hello_failed_events(context_builder, 4, failed_reason, failed_details)
     add_retry_timer_events(context_builder, 5)
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     expected_state._error = f'{failed_reason} \n {failed_details}'
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
