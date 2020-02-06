@@ -1,8 +1,10 @@
 import json
 from typing import Callable, Iterator, Any
+from jsonschema import validate
 
 from azure.durable_functions.models import DurableOrchestrationContext
 from azure.durable_functions.orchestrator import Orchestrator
+from .schemas.OrchetrationStateSchema import schema
 
 
 def assert_orchestration_state_equals(expected, result):
@@ -45,6 +47,10 @@ def get_orchestration_state_result(
     orchestrator = Orchestrator(activity_func)
     result_of_handle = orchestrator.handle(
         DurableOrchestrationContext.from_json(context_as_string))
-    result = json.loads(result_of_handle)
 
+    result = json.loads(result_of_handle)
     return result
+
+
+def assert_valid_schema(orchestration_state: str):
+    assert validate(instance=orchestration_state, schema=schema)
