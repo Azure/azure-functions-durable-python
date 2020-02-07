@@ -1,7 +1,6 @@
 from typing import List
-from ..interfaces import IAction
+from ..interfaces.IAction import IAction
 from datetime import datetime
-
 
 class TaskSet:
     """Represents a list of some pending action.

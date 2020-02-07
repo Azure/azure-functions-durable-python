@@ -49,11 +49,9 @@ def find_event_raised(state, name):
     if not name:
         raise ValueError("Name cannot be empty")
 
-    tasks = list(
-        filter(lambda e: not (
-                (not (e["EventType"] == HistoryEventType.EVENT_RAISED)
-                    or not (e["Name"] == name))
-            or e.get("IsProcessed")), state))
+    tasks = [e for e in state
+             if e.event_type == HistoryEventType.EVENT_RAISED
+             and e.Name == name and not e.is_processed]
 
     if len(tasks) == 0:
         return None

@@ -4,7 +4,7 @@ from azure.durable_functions.models import Task, TaskSet
 from azure.durable_functions.tasks import task_any
 from azure.durable_functions.tasks.wait_for_external_event import wait_for_external_event_task
 from azure.durable_functions.models.actions.WaitForExternalEventAction import WaitForExternalEventAction
-from tests.test_utils.constants import DATETIME_STRING_FORMAT
+from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 from tests.test_utils.ContextBuilder import ContextBuilder
 from .tasks_test_utils import assert_taskset_equal
 
@@ -76,32 +76,3 @@ def test_taskset_and_tasks_as_args():
     expected_taskset = TaskSet(is_completed=True, actions=all_actions, result=task2, timestamp=date(2000,1,1))
 
     assert_taskset_equal(expected_taskset, returned_taskset)
-
-
-def generator_function(context):
-
-    task1 = context.df.call_activity("Hello", "tokyo")
-    task2 = context.df.call_activity("Hello", "seattle")
-    yield context.df.task_any([task1, task2])
-
-    return True
-
-def test_failed_tokyo_state():
-    failed_reason = 'Reasons'
-    failed_details = 'Stuff and Things'
-    context_builder = ContextBuilder('test_simple_function')
-    for i in range(0,1):
-        add_hello_failed_events(
-            context_builder, i, failed_reason, failed_details)
-    result = get_orchestration_state_result(
-        context_builder, generator_function)
-    expected_state = base_expected_state()
-    for _ in range(2):
-        add_hello_action(expected_state, "test")
-    expected_state._error = f'{failed_reason} \n {failed_details}'
-    expected = expected_state.to_json()
-    assert_orchestration_state_equals(expected, result)
-
-
-
-
