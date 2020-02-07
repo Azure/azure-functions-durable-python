@@ -1,6 +1,5 @@
 from typing import List
-from ..interfaces import IAction
-from datetime import datetime
+from ..interfaces.IAction import IAction
 
 
 class TaskSet:
@@ -39,7 +38,7 @@ class TaskSet:
         return self._is_faulted
 
     @property
-    def actions(self) -> IAction:
+    def actions(self) -> List[IAction]:
         """Get the scheduled action represented by the task.
 
         _Internal use only._

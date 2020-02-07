@@ -3,13 +3,8 @@
 Responsible for orchestrating the execution of the user defined generator
 function.
 """
-import logging
-import traceback
 from typing import Callable, Iterator, Any
 
-from dateutil.parser import parse as dt_parse
-
-from .interfaces import IFunctionContext
 from .models import (
     DurableOrchestrationContext,
     Task,
@@ -27,32 +22,31 @@ class Orchestrator:
     """
 
     def __init__(self,
-                 activity_func: Callable[[IFunctionContext], Iterator[Any]]):
+                 activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]]):
         """Create a new orchestrator for the user defined generator.
 
         Responsible for orchestrating the execution of the user defined
         generator function.
         :param activity_func: Generator function to orchestrate.
         """
-        self.fn: Callable[[IFunctionContext], Iterator[Any]] = activity_func
+        self.fn: Callable[[DurableOrchestrationContext], Iterator[Any]] = activity_func
         self.customStatus: Any = None
 
-    # noinspection PyAttributeOutsideInit
-    def handle(self, context_string: str):
+    # noinspection PyAttributeOutsideInit,PyUnboundLocalVariable
+    def handle(self, context: DurableOrchestrationContext):
         """Handle the orchestration of the user defined generator function.
 
         Called each time the durable extension executes an activity and needs
         the client to handle the result.
 
-        :param context_string: the context of what has been executed by
+        :param context: the context of what has been executed by
         the durable extension.
         :return: the resulting orchestration state, with instructions back to
         the durable extension.
         """
-        self.durable_context = DurableOrchestrationContext(context_string)
-        activity_context = IFunctionContext(df=self.durable_context)
+        self.durable_context = context
 
-        self.generator = self.fn(activity_context)
+        self.generator = self.fn(self.durable_context)
         suspended = False
         try:
             generation_state = self._generate_next(None)
@@ -86,8 +80,6 @@ class Orchestrator:
                 actions=self.durable_context.actions,
                 custom_status=self.customStatus)
         except Exception as e:
-            e_string = traceback.format_exc()
-            logging.warning(f"!!!Generator Termination Exception {e_string}")
             orchestration_state = OrchestratorState(
                 is_done=False,
                 output=None,  # Should have no output, after generation range
@@ -113,20 +105,17 @@ class Orchestrator:
             self.durable_context.actions.append(generation_state.actions)
 
     def _reset_timestamp(self):
-        last_timestamp = dt_parse(
-            self.durable_context.decision_started_event['Timestamp'])
-        decision_started_events = list(
-            filter(lambda e_: (
-                e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED
-                and dt_parse(e_["Timestamp"]) > last_timestamp),
-                self.durable_context.histories))
+        last_timestamp = self.durable_context.decision_started_event.timestamp
+        decision_started_events = [e_ for e_ in self.durable_context.histories
+                                   if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED
+                                   and e_.timestamp > last_timestamp]
         if len(decision_started_events) == 0:
             self.durable_context.current_utc_datetime = None
         else:
             self.durable_context.decision_started_event = \
                 decision_started_events[0]
-            self.durable_context.current_utc_datetime = dt_parse(
-                self.durable_context.decision_started_event['Timestamp'])
+            self.durable_context.current_utc_datetime = \
+                self.durable_context.decision_started_event.timestamp
 
     @classmethod
     def create(cls, fn):
@@ -135,4 +124,5 @@ class Orchestrator:
         :param fn: Generator function that needs orchestration
         :return: Handle function of the newly created orchestration client
         """
-        return lambda context: Orchestrator(fn).handle(context)
+        return lambda context: \
+            Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context))

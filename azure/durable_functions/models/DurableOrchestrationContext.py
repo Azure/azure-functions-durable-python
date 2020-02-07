@@ -1,9 +1,6 @@
 import json
-import logging
 import datetime
 from typing import List, Any, Dict
-
-from dateutil.parser import parse as dt_parse
 
 from . import (RetryOptions)
 from .history import HistoryEvent, HistoryEventType
@@ -20,20 +17,21 @@ class DurableOrchestrationContext:
     function-based activities.
     """
 
+    # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
+    # noinspection PyPep8Naming
     def __init__(self,
-                 context_string: str):
-        context: Dict[str, Any] = json.loads(context_string)
-        logging.warning(f"!!!Calling orchestrator handle {context}")
-        self._histories: List[HistoryEvent] = context.get("history")
-        self._instance_id = context.get("instanceId")
-        self._is_replaying = context.get("isReplaying")
-        self._parent_instance_id = context.get("parentInstanceId")
-        self.call_activity = lambda n, i: call_activity_task(
+                 history: Dict[Any, Any], instanceId: str, isReplaying: bool,
+                 parentInstanceId: str, **kwargs):
+        self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
+        self._instance_id: str = instanceId
+        self._is_replaying: bool = isReplaying
+        self._parent_instance_id: str = parentInstanceId
+        self.call_activity = lambda n, i=None: call_activity_task(
             state=self.histories,
             name=n,
             input_=i)
         self.call_activity_with_retry = \
-            lambda n, o, i: call_activity_with_retry_task(
+            lambda n, o, i=None: call_activity_with_retry_task(
                 state=self.histories,
                 retry_options=o,
                 name=n,
@@ -42,14 +40,33 @@ class DurableOrchestrationContext:
             state=self.histories,
             name=n)
         self.task_any = lambda t: task_any(tasks=t)
-        self.task_all = lambda t: task_all(state=self.histories, tasks=t)
-        self.decision_started_event: HistoryEvent = list(filter(
-            lambda e_: e_["EventType"] == HistoryEventType.ORCHESTRATOR_STARTED,
-            self.histories))[0]
+        self.task_all = lambda t: task_all(tasks=t)
+        self.decision_started_event: HistoryEvent = \
+            [e_ for e_ in self.histories
+             if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]
         self._current_utc_datetime = \
-            dt_parse(self.decision_started_event["Timestamp"])
+            self.decision_started_event.timestamp
         self.new_guid_counter = 0
         self.actions: List[List[IAction]] = []
+        if kwargs is not None:
+            for key, value in kwargs.items():
+                self.__setattr__(key, value)
+
+    @classmethod
+    def from_json(cls, json_string):
+        """Convert the value passed into a new instance of the class.
+
+        Parameters
+        ----------
+        json_string: Context passed a JSON serializable value to be converted into an
+        instance of the class
+
+        Returns
+        -------
+        DurableOrchestrationContext: new instance of the durable orchestration context class
+        """
+        json_dict = json.loads(json_string)
+        return cls(**json_dict)
 
     def call_activity(self, name: str, input_=None) -> Task:
         """Schedule an activity for execution.
@@ -87,6 +104,41 @@ class DurableOrchestrationContext:
         :param instance_id: A unique ID to use for the sub-orchestration
         instance. If `instanceId` is not specified, the extension will generate
         an id in the format `<calling orchestrator instance ID>:<#>`
+        """
+        raise NotImplementedError("This is a placeholder.")
+
+    def task_all(self, activities: List[HistoryEvent]) -> List[Task]:
+        """Schedule the execution of all activities.
+
+        Similar to Promise.all. When called with `yield` or `return`, returns an
+        array containing the results of all [[Task]]s passed to it. It returns
+        when all of the [[Task]] instances have completed.
+
+        Throws an exception if any of the activities fails
+        Parameters
+        ----------
+        activities: List of activities to schedule
+
+        Returns
+        -------
+        The results of all activities.
+        """
+        raise NotImplementedError("This is a placeholder.")
+
+    def task_any(self, activities: List[HistoryEvent]) -> List[Task]:
+        """Schedule the execution of all activities.
+
+        Similar to Promise.race. When called with `yield` or `return`, returns
+        the first [[Task]] instance to complete.
+
+        Throws an exception if all of the activities fail
+        Parameters
+        ----------
+        activities: List of activities to schedule
+
+        Returns
+        -------
+        The first [[Task]] instance to complete.
         """
         raise NotImplementedError("This is a placeholder.")
 
