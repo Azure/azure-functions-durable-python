@@ -1,9 +1,10 @@
 import json
 from typing import Callable, Iterator, Any
+from jsonschema import validate
 
+from azure.durable_functions.models import DurableOrchestrationContext
 from azure.durable_functions.orchestrator import Orchestrator
-from azure.durable_functions.interfaces.IFunctionContext \
-    import IFunctionContext
+from .schemas.OrchetrationStateSchema import schema
 
 
 def assert_orchestration_state_equals(expected, result):
@@ -26,19 +27,30 @@ def assert_actions_are_equal(expected, result):
     result_actions = result.get("actions")
     assert len(expected_actions) == len(result_actions)
     for index in range(len(expected_actions)):
-        expected_action = expected_actions[index][0]
-        result_action = result_actions[index][0]
-        assert_attribute_equal(expected_action, result_action, "functionName")
-        assert_attribute_equal(expected_action, result_action, "input")
-        assert_attribute_equal(expected_action, result_action, "actionType")
+        assert len(expected_actions[index]) == len(result_actions[index])
+        for action_index in range(len(expected_actions[index])):
+            expected_action = expected_actions[index][action_index]
+            result_action = result_actions[index][action_index]
+            assert_action_is_equal(expected_action, result_action)
+
+
+def assert_action_is_equal(expected_action, result_action):
+    assert_attribute_equal(expected_action, result_action, "functionName")
+    assert_attribute_equal(expected_action, result_action, "input")
+    assert_attribute_equal(expected_action, result_action, "actionType")
 
 
 def get_orchestration_state_result(
         context_builder,
-        activity_func: Callable[[IFunctionContext], Iterator[Any]]):
+        activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]]):
     context_as_string = context_builder.to_json_string()
     orchestrator = Orchestrator(activity_func)
-    result_of_handle = orchestrator.handle(context_as_string)
+    result_of_handle = orchestrator.handle(
+        DurableOrchestrationContext.from_json(context_as_string))
     result = json.loads(result_of_handle)
-
     return result
+
+
+def assert_valid_schema(orchestration_state):
+    validation_results = validate(instance=orchestration_state, schema=schema)
+    assert validation_results is None

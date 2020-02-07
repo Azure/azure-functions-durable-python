@@ -1,5 +1,5 @@
 from .orchestrator_test_utils \
-    import assert_orchestration_state_equals, get_orchestration_state_result
+    import assert_orchestration_state_equals, get_orchestration_state_result, assert_valid_schema
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.actions.CallActivityAction \
@@ -9,9 +9,9 @@ from azure.durable_functions.models.actions.CallActivityAction \
 def generator_function(context):
     outputs = []
 
-    task1 = yield context.df.call_activity("Hello", "Tokyo")
-    task2 = yield context.df.call_activity("Hello", "Seattle")
-    task3 = yield context.df.call_activity("Hello", "London")
+    task1 = yield context.call_activity("Hello", "Tokyo")
+    task2 = yield context.call_activity("Hello", "Seattle")
+    task3 = yield context.call_activity("Hello", "London")
 
     outputs.append(task1)
     outputs.append(task2)
@@ -48,23 +48,31 @@ def add_hello_failed_events(
 
 def test_initial_orchestration_state():
     context_builder = ContextBuilder('test_simple_function')
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
 def test_tokyo_state():
     context_builder = ContextBuilder('test_simple_function')
     add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -74,12 +82,16 @@ def test_failed_tokyo_state():
     context_builder = ContextBuilder('test_simple_function')
     add_hello_failed_events(
         context_builder, 0, failed_reason, failed_details)
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     expected_state._error = f'{failed_reason} \n {failed_details}'
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -87,13 +99,17 @@ def test_tokyo_and_seattle_state():
     context_builder = ContextBuilder('test_simple_function')
     add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
     add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state()
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
     add_hello_action(expected_state, 'London')
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -102,8 +118,10 @@ def test_tokyo_and_seattle_and_london_state():
     add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
     add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
     add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
+
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
     expected_state = base_expected_state(
         ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
     add_hello_action(expected_state, 'Tokyo')
@@ -111,4 +129,6 @@ def test_tokyo_and_seattle_and_london_state():
     add_hello_action(expected_state, 'London')
     expected_state._is_done = True
     expected = expected_state.to_json()
+
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
