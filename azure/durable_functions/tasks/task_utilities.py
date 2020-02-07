@@ -84,7 +84,7 @@ def find_task_completed(state, scheduled_task):
     """Locate the Completed Task.
 
     Within the state passed, search for an event that has hasn't been processed,
-    is a completed task type,
+    is a completed  task type,
     and has the a scheduled id that equals the EventId of the provided scheduled task.
     """
     if scheduled_task is None:
