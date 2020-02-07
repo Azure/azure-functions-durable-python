@@ -179,7 +179,7 @@ class DurableOrchestrationContext:
         raise NotImplementedError("This is a placeholder.")
 
     def task_all(self, activities: List[HistoryEvent]) -> List[Task]:
-        """Schedule the execution of all activities
+        """Schedule the execution of all activities.
 
         Similar to Promise.all. When called with `yield` or `return`, returns an
         array containing the results of all [[Task]]s passed to it. It returns
@@ -197,7 +197,7 @@ class DurableOrchestrationContext:
         raise NotImplementedError("This is a placeholder.")
 
     def task_any(self, activities: List[HistoryEvent]) -> List[Task]:
-        """Schedule the execution of all activities
+        """Schedule the execution of all activities.
 
         Similar to Promise.race. When called with `yield` or `return`, returns
         the first [[Task]] instance to complete.
