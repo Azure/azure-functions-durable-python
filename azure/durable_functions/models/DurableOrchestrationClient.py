@@ -1,10 +1,10 @@
-import requests
 import json
-from typing import List
+import re
+import requests
 import validators
+from typing import List
 from urllib.parse import urlparse
 from azure.durable_functions.models import DurableOrchestrationBindings
-
 
 class DurableOrchestrationClient:
     """Durable Orchestration Client.
@@ -59,45 +59,46 @@ class DurableOrchestrationClient:
             return None
 
     def createCheckStatusResponse(self, request, instanceId):
-        """Return a dictionary object that holds the HttpResponse and orchestrator management urls.
+        """ Create a dictionary object that is used to create HttpResponse and 
+        contains useful information for checking the status of the specified instance.
 
         Parameters
         ----------
         request : HttpRequest
-            request that triggered the client function
+            The HTTP request that triggered the current orchestration instance.
         instanceId : str
-            instance id of the orchestrator instance that the client is managing
+            The ID of the orchestration instance to check.
 
         Returns
         -------
         dict
-           Dictionary object that contains information for HttpResponse.
+           An HTTP 202 response with a Location header and a payload containing instance management URLs
         """
         httpManagementPayload = self.getClientResponseLinks(request, instanceId)
         return {
             "status_code": 202,
-            "body": httpManagementPayload,
+            "body": json.dumps(httpManagementPayload),
             "headers": {
                 "Content-Type": "application/json",
                 "Location": httpManagementPayload["statusQueryGetUri"],
-                "Retry-After": 10,
+                "Retry-After": "10",
             },
         }
 
     def getClientResponseLinks(self, request, instanceId):
-        """Create a dictionary of orchestration management urls.
+        """Create a dictionary of orchestrator management urls.
 
         Parameters
         ----------
         request : HttpRequest
-            request that triggered the client function
+            The HTTP request that triggered the current orchestration instance.
         instanceId : str
-            instance id of the orchestrator instance that the client is managing
+            The ID of the orchestration instance to check.
 
         Returns
         -------
         dict
-            dictionary of orchestrator function management urls
+            a dictionary object of orchestrator instance management urls
         """
         payload = self._orchestration_bindings.management_urls.copy()
         for key, _ in payload.items():
@@ -111,6 +112,58 @@ class DurableOrchestrationClient:
                 self._orchestration_bindings.management_urls["id"], instanceId)
 
         return payload
+
+
+    def raise_event(self, instance_id, event_name, event_data=None, task_hub_name=None, connection_name=None):
+        """Sends an event notification message to a waiting orchestration instance.
+        In order to handle the event, the target orchestration instance must be 
+        waiting for an event named `eventName` using waitForExternalEvent API.
+
+        Parameters
+        ----------
+        instance_id : str
+            The ID of the orchestration instance that will handle the event.
+        event_name : str
+            The name of the event.
+        event_data : any, optional
+            The JSON-serializable data associated with the event.
+        task_hub_name : str, optional
+            The TaskHubName of the orchestration that will handle the event.    
+        connection_name : str, optional
+            The name of the connection string associated with `taskHubName.`
+        
+        Raises
+        ------
+        ValueError
+            event name must be a valid string.
+        Exception
+            Raises an exception if the status code is 404 or 400 when raising the event.
+        """
+        if (not event_name):
+            raise ValueError("event_name must be a valid string.")
+        
+        id_placeholder = self._orchestration_bindings.management_urls["id"]
+        request_url = self._orchestration_bindings.management_urls["sendEventPostUri"].replace(id_placeholder, instance_id)
+        request_url = request_url.replace(self._event_name_placeholder, event_name)
+        if task_hub_name:
+            request_url = request_url.replace(self.task_hub_name, task_hub_name)
+        
+        if connection_name:
+            p=re.compile(r'(?P<connection>connection=)(?P<connectionString>[\w]+)', re.IGNORECASE)
+            p.sub(r'\g<connection>'+connection_name, request_url)
+    
+        response = requests.post(request_url, json=json.dumps(event_data))
+
+        switch_statement = {
+            202: lambda: None,
+            410: lambda: None,
+            404: lambda : f"No instance with ID {instance_id} found.",
+            400: lambda : "Only application/json request content is supported"
+        }
+        func = switch_statement.get(response.status_code, lambda: f"Webhook returned unrecognized status code {response.status_code}")
+        error_message = func()
+        if error_message:
+            raise Exception(error_message)
 
     @staticmethod
     def _get_json_input(client_input: object) -> object:
