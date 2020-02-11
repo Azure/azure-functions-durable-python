@@ -58,7 +58,7 @@ class DurableOrchestrationClient:
         else:
             return None
 
-    def createCheckStatusResponse(self, request, instanceId):
+    def create_check_status_response(self, request, instance_id):
         """ Create a dictionary object that is used to create HttpResponse and 
         contains useful information for checking the status of the specified instance.
 
@@ -74,18 +74,18 @@ class DurableOrchestrationClient:
         dict
            An HTTP 202 response with a Location header and a payload containing instance management URLs
         """
-        httpManagementPayload = self.getClientResponseLinks(request, instanceId)
+        http_management_payload = self.get_client_response_links(request, instance_id)
         return {
             "status_code": 202,
-            "body": json.dumps(httpManagementPayload),
+            "body": json.dumps(http_management_payload),
             "headers": {
                 "Content-Type": "application/json",
-                "Location": httpManagementPayload["statusQueryGetUri"],
+                "Location": http_management_payload["statusQueryGetUri"],
                 "Retry-After": "10",
             },
         }
 
-    def getClientResponseLinks(self, request, instanceId):
+    def get_client_response_links(self, request, instance_id):
         """Create a dictionary of orchestrator management urls.
 
         Parameters
@@ -101,15 +101,12 @@ class DurableOrchestrationClient:
             a dictionary object of orchestrator instance management urls
         """
         payload = self._orchestration_bindings.management_urls.copy()
+        
         for key, _ in payload.items():
-            if request.url and validators.url(payload[key]):
-                request_parsed_url = urlparse(request.url)
-                value_parsed_url = urlparse(payload[key])
-                request_url_origin = '{url.scheme}://{url.netloc}/'.format(url=request_parsed_url)
-                value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
-                payload[key] = payload[key].replace(value_url_origin, request_url_origin)
+            if request.url:
+                payload[key] = self.replace_url_origin(request.url, payload[key])
             payload[key] = payload[key].replace(
-                self._orchestration_bindings.management_urls["id"], instanceId)
+                self._orchestration_bindings.management_urls["id"], instance_id)
 
         return payload
 
@@ -142,16 +139,8 @@ class DurableOrchestrationClient:
         if (not event_name):
             raise ValueError("event_name must be a valid string.")
         
-        id_placeholder = self._orchestration_bindings.management_urls["id"]
-        request_url = self._orchestration_bindings.management_urls["sendEventPostUri"].replace(id_placeholder, instance_id)
-        request_url = request_url.replace(self._event_name_placeholder, event_name)
-        if task_hub_name:
-            request_url = request_url.replace(self.task_hub_name, task_hub_name)
+        request_url = self._get_raise_event_url(instance_id, event_name, task_hub_name, connection_name)
         
-        if connection_name:
-            p=re.compile(r'(?P<connection>connection=)(?P<connectionString>[\w]+)', re.IGNORECASE)
-            p.sub(r'\g<connection>'+connection_name, request_url)
-    
         response = requests.post(request_url, json=json.dumps(event_data))
 
         switch_statement = {
@@ -160,14 +149,32 @@ class DurableOrchestrationClient:
             404: lambda : f"No instance with ID {instance_id} found.",
             400: lambda : "Only application/json request content is supported"
         }
-        func = switch_statement.get(response.status_code, lambda: f"Webhook returned unrecognized status code {response.status_code}")
-        error_message = func()
+        has_error_message = switch_statement.get(response.status_code, lambda: f"Webhook returned unrecognized status code {response.status_code}")
+        error_message = has_error_message()
         if error_message:
             raise Exception(error_message)
 
     @staticmethod
     def _get_json_input(client_input: object) -> object:
         return json.dumps(client_input) if client_input is not None else None
+
+
+    @staticmethod
+    def replace_url_origin(request_url, value_url): 
+        def url_has_placeholder_but_valid(url):
+            parsed_url = urlparse(url)
+            if '{' in parsed_url.path:
+                parsed_url = parsed_url._replace(path=parsed_url.path.split("{")[0])
+                return validators.url('{url.scheme}://{url.netloc}{url.path}'.format(url=parsed_url))
+            return False
+        if validators.url(value_url) or url_has_placeholder_but_valid(value_url):
+            request_parsed_url = urlparse(request_url)
+            value_parsed_url = urlparse(value_url)
+            request_url_origin = '{url.scheme}://{url.netloc}/'.format(url=request_parsed_url)
+            value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
+            value_url = value_url.replace(value_url_origin, request_url_origin)
+        return value_url
+
 
     def _get_start_new_url(self, instance_id, orchestration_function_name):
         request_url = self._orchestration_bindings.creation_urls['createNewInstancePostUri']
@@ -177,3 +184,17 @@ class DurableOrchestrationClient:
                                           f'/{instance_id}'
                                           if instance_id is not None else '')
         return request_url
+
+    def _get_raise_event_url(self, instance_id, event_name, task_hub_name, connection_name):
+        id_placeholder = self._orchestration_bindings.management_urls["id"]
+        request_url = self._orchestration_bindings.management_urls["sendEventPostUri"].replace(id_placeholder, instance_id)
+        request_url = request_url.replace(self._event_name_placeholder, event_name)
+        if task_hub_name:
+            request_url = request_url.replace(self._orchestration_bindings.task_hub_name, task_hub_name)
+        
+        if connection_name:
+            p=re.compile(r'(?P<connection>connection=)(?P<connectionString>[\w]+)', re.IGNORECASE)
+            request_url = p.sub(r'\g<connection>'+connection_name, request_url)
+
+        return request_url
+    
