@@ -25,12 +25,13 @@ class ContextBuilder:
 
     def get_base_event(
             self, event_type: HistoryEventType, id_: int = -1,
-            is_played: bool = False) -> HistoryEvent:
+            is_played: bool = False, timestamp = None) -> HistoryEvent:
         self.current_datetime = self.current_datetime + timedelta(seconds=1)
-
+        if not timestamp:
+            timestamp = self.current_datetime
         event = HistoryEvent(EventType=event_type, EventId=id_,
                              IsPlayed=is_played,
-                             Timestamp=self.current_datetime.strftime(DATETIME_STRING_FORMAT))
+                             Timestamp=timestamp.strftime(DATETIME_STRING_FORMAT))
 
         return event
 
@@ -84,6 +85,13 @@ class ContextBuilder:
         event.Name = name
         event.Version = version
         event.Input = input_
+        self.history_events.append(event)
+
+    def add_event_raised_event(self, name: str, id_: int, input_=None, timestamp=None):
+        event = self.get_base_event(HistoryEventType.EVENT_RAISED, id_=id_, timestamp=timestamp)
+        event.Name = name
+        event.Input = input_ 
+        # event.timestamp = timestamp
         self.history_events.append(event)
 
     def to_json(self) -> Dict[str, Any]:

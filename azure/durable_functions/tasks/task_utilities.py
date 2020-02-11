@@ -24,6 +24,40 @@ def parse_history_event(directive_result):
     return None
 
 
+def find_event_raised(state, name):
+    """Find if the event with the given event name is raised.
+
+    Parameters
+    ----------
+    state : List[HistoryEvent]
+        List of histories to search from
+    name : str
+        Name of the event to search for
+
+    Returns
+    -------
+    HistoryEvent
+        The raised event with the given event name that has not yet been processed.
+        Returns None if no event with the given conditions was found.
+
+    Raises
+    ------
+    ValueError
+        Raises an error if no name was given when calling this function.
+    """
+    if not name:
+        raise ValueError("Name cannot be empty")
+
+    tasks = [e for e in state
+             if e.event_type == HistoryEventType.EVENT_RAISED
+             and e.Name == name and not e.is_processed]
+
+    if len(tasks) == 0:
+        return None
+
+    return tasks[0]
+
+
 def find_task_scheduled(state, name):
     """Locate the Scheduled Task.
 

@@ -2,9 +2,10 @@
 from .ActionType import ActionType
 from .CallActivityAction import CallActivityAction
 from .CallActivityWithRetryAction import CallActivityWithRetryAction
-
+from .WaitForExternalEventAction import WaitForExternalEventAction
 __all__ = [
     'ActionType',
     'CallActivityAction',
-    'CallActivityWithRetryAction'
+    'CallActivityWithRetryAction',
+    'WaitForExternalEventAction'
 ]

@@ -1,5 +1,6 @@
 from typing import List
 from ..interfaces.IAction import IAction
+from datetime import datetime
 
 
 class TaskSet:
@@ -15,11 +16,13 @@ class TaskSet:
     Task.all and Task.any.
     """
 
-    def __init__(self, is_completed, actions, result, is_faulted=False, exception=None):
+    def __init__(self, is_completed, actions, result, is_faulted=False,
+                 timestamp=None, exception=None):
         self._is_completed: bool = is_completed
         self._actions: List[IAction] = actions
         self._result = result
         self._is_faulted: bool = is_faulted
+        self._timestamp: datetime = timestamp
         self._exception = exception
 
     @property
@@ -47,6 +50,11 @@ class TaskSet:
     def result(self) -> object:
         """Get the result of the task, if completed. Otherwise `None`."""
         return self._result
+
+    @property
+    def timestamp(self) -> datetime:
+        """Get the timestamp of the task."""
+        return self._timestamp
 
     @property
     def exception(self):
