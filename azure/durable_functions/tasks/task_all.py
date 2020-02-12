@@ -10,11 +10,8 @@ def task_all(tasks):
     all_actions = []
     results = []
     is_completed = True
-<<<<<<< HEAD
     faulted = []
-=======
     complete_time = None
->>>>>>> able to pass in tasksets to task_any and task_all
     for task in tasks:
         if isinstance(task, TaskSet):
             for action in task.actions:
@@ -22,16 +19,8 @@ def task_all(tasks):
         else:
             all_actions.append(task.action)
         results.append(task.result)
-<<<<<<< HEAD
-<<<<<<< HEAD
         if task.is_faulted:
             faulted.append(task.exception)
-=======
-        
->>>>>>> able to pass in tasksets to task_any and task_all
-=======
-
->>>>>>> fix flake8
         if not task.is_completed:
             is_completed = False
         else:
