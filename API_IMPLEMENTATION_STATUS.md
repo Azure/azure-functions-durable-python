@@ -19,7 +19,7 @@ Documents the capability exposed by JavaScript durable functions and the status 
 | Orchestrator | setCustomStatus | no | Sets the JSON-serializable status of the current orchestrator function.
 | Orchestrator | currentUtcDateTime | yes | Gets the current date/time in a way that is safe for use by orchestrator functions.
 | Orchestrator | newGuid | no | Creates a new GUID that is safe for replay within an orchestration or operation.
-| client | createCheckStatusResponse | no| Creates an HTTP response that is useful for checking the status of the specified instance.
+| client | createCheckStatusResponse | yes| Creates an HTTP response that is useful for checking the status of the specified instance.
 | client | createHttpManagementPayload | no | Creates an [[HttpManagementPayload]] object that contains instance management HTTP endpoints.
 | client | getStatus | no | Gets the status of the specified orchestration instance.
 | client | getStatusAll | no | Gets the status of all orchestration instances. 
