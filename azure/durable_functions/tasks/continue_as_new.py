@@ -7,7 +7,7 @@ from ..models.actions.ContinueAsNewAction import ContinueAsNewAction
 
 def continue_as_new(
         input_: Any = None) -> Task:
-    """Creates a new continue as new action.
+    """Create a new continue as new action.
 
     :param input_:The JSON-serializable input to pass to the activity
     function.
