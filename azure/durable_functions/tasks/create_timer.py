@@ -2,7 +2,7 @@ from typing import List, Any
 from ..models.actions.CreateTimerAction import CreateTimerAction
 from ..models.history import HistoryEvent
 from .task_utilities import \
-    find_timer_created, find_timer_fired, set_processed
+    find_task_retry_timer_created, find_task_retry_timer_fired, set_processed
 import datetime
 from .timer_task import TimerTask
 
@@ -27,8 +27,8 @@ def create_timer_task(state: List[HistoryEvent],
 
     new_action = CreateTimerAction(fire_at)
 
-    timer_created = find_timer_created(state,fire_at)
-    timer_fired = find_timer_fired(state,timer_created)
+    timer_created = find_task_retry_timer_created(state,fire_at)
+    timer_fired = find_task_retry_timer_fired(state,timer_created)
 
     set_processed([timer_created,timer_fired])
 
