@@ -7,7 +7,7 @@ from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..models.Task import Task
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
-    wait_for_external_event_task
+    wait_for_external_event_task, continue_as_new
 
 
 class DurableOrchestrationContext:
@@ -39,6 +39,7 @@ class DurableOrchestrationContext:
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories,
             name=n)
+        self.continue_as_new = lambda i: continue_as_new(input_=i)
         self.task_any = lambda t: task_any(tasks=t)
         self.task_all = lambda t: task_all(tasks=t)
         self.decision_started_event: HistoryEvent = \

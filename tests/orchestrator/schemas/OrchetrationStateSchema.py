@@ -29,7 +29,7 @@ schema = {
                             "additionalProperties": False
                         }
                     },
-                    "required": ["functionName", "actionType"],
+                    "required": ["actionType"],
                     "additionalProperties": False
                 }
             }
