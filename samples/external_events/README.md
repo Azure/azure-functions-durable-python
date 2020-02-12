@@ -1,56 +1,117 @@
 
-# wait_for_external_event()  
   
 
-## **Samples**
+# External Events
 
+## **wait_for_external_event()**
 
-1. Wait for a external event
-
-2.  Wait for any of the external events
-
-3. Wait for all of the external events
-
+#### **1. Wait for an external event**
   
-
-### **1. Wait for a external event**
-
 ```
 def generator_function(context):
-	approved = yield context.df.wait_for_external_event("Approval")
+	approved = yield context.wait_for_external_event("Approval")
 	if approved:
 		return "approved"
 	else:
 		return "denied"
 ```
 
-### **2. Wait for any of the external events**
+#### **2. Wait for any of the external events**
 
 ```
 def generator_function(context):
-	event1 = context.df.wait_for_external_event("Event1")
-	event2 = context.df.wait_for_external_event("Event2")
-	event3 = context.df.wait_for_external_event("Event3")
+	event1 = context.wait_for_external_event("Event1")
+	event2 = context.wait_for_external_event("Event2")
+	event3 = context.wait_for_external_event("Event3")
+	winner = yield context.task_any([event1, event2, event3])
 	
-	winner = yield context.df.task_any([event1, event2, event3])
 	if winner == event1:
-		#...
+		# ...
 	elif winner == event2:
-		#...
+		# ...
 	elif winner == event3:
-		#..
-
+		# ...
 ```
 
-### **3. Wait for all of the external events**
+
+#### **3. Wait for all of the external events**
 
 ```
 def generator_function(context):
-	gate1 = context.df.wait_for_external_event("Event1")
-	gate2 = context.df.wait_for_external_event("Event2")
-	gate3 = context.df.wait_for_external_event("Event3")
-	
-	yield context.df.task_all([gate1, gate2, gate3])
-	yield context.df.call_activity("DurableActivity", "Hello")
+	gate1 = context.wait_for_external_event("Event1")
+	gate2 = context.wait_for_external_event("Event2")
+	gate3 = context.wait_for_external_event("Event3")
+	yield context.task_all([gate1, gate2, gate3])
+	yield context.call_activity("DurableActivity", "Hello")
+```
 
+
+## **raise_event()**
+
+For example, you can create a Http triggered function that raises an event to an orchestrator, and call the following:
+```
+http://localhost:7071/api/RaiseEvent?instance_id={instance_id}&event_name={event_name}
+```
+In RaiseEvent/__ init __.py :
+```
+async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
+	client = DurableOrchestrationClient(starter)
+	instance_id = req.params.get("instance_id")
+	event_name = req.params.get("event_name")
+	await client.raise_event(instance_id, event_name, True)
+
+	return func.HttpResponse(f'"{event_name}" event is sent')
+```
+
+## Example Use Cases: 
+
+### Define custom rules to handle external events
+  Inspired by some real use cases, here is an example of how you can customize your orchestrators. You can pass in different json rulesets in the request body when you create a new orchestrator instance, and customize the new orchestrator to wait for different events. In the provided sample, this json ruleset will be hard coded.
+
+
+Example json for a custom ruleset:
+```
+json_rule = {
+	"condition": {
+		"wait_events": ["A","B"],
+		"logic": "and"
+	},
+	"satisfied": [
+		{
+			"activity_func_name": "SuccessActions",
+			"args": {
+				"name": "abcd"
+			}
+		}
+	]
+}
+```
+This ruleset asks the orchestrator to wait for event A and event B. When both events are received, go on and trigger an activity function named "SuccessActions"
+
+
+In the orchestrator function:
+```
+tasks = []
+for event in json_rule["condition"]["wait_events"]:
+	tasks.append(context.wait_for_external_event(event))
+    
+if json_rule["condition"]["logic"] == 'and':
+	yield context.task_all(tasks)
+elif json_rule["condition"]["logic"] == 'or': 
+	yield context.task_any(tasks)
+
+output = []
+for action in json_rule["satisfied"]:
+	result = yield context.call_activity(action["activity_func_name"], json.dumps(action["args"]))
+	output.append(result)
+
+return output
+```
+
+Then in SuccessActions/__ init __.py   (Activity function):
+```
+def main(args: str) -> str:
+	logging.warning(f"Activity Triggered: SuccessActions")
+	args= json.loads(args)
+	return  f'Hello {args["name"]}'
 ```
