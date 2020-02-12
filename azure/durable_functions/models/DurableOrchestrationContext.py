@@ -36,7 +36,6 @@ class DurableOrchestrationContext:
                 retry_options=o,
                 name=n,
                 input_=i)
-        self.create_timer = lambda d: create_timer_task(state=self.histories,fire_at=d)
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories,
             name=n)
