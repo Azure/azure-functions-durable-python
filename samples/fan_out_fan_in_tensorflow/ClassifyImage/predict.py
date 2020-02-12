@@ -226,5 +226,6 @@ def predict_image_from_url(image_url):
         with urlopen(image_url) as testImage:
             image = Image.open(testImage)
             return _predict_image(image)
-    except:
+    except Exception as e:
+        _log_msg(str(e))
         return None

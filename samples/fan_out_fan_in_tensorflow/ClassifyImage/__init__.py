@@ -5,9 +5,15 @@ from .predict import predict_image_from_url
 
 
 def main(value):
-    run_info = json.loads(value)
-    instance_info = run_info['instance_info']
-    images = run_info['images']
+    """Classify the list of images based on whether they are a dog or cat
+    
+    Arguments:
+        value list of image URLs to predict
+    
+    Returns:
+        List of the of the results of the predictions
+    """
+    images = json.loads(value)
 
     prediction_results = []
     for image_url in images:
@@ -23,7 +29,4 @@ def main(value):
                 'url': image_url
             })
 
-    output = {"instance_info": instance_info,
-              "prediction_results": prediction_results}
-
-    return json.dumps(output)
+    return json.dumps(prediction_results)
