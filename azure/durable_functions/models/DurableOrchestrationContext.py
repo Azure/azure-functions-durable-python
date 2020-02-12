@@ -7,7 +7,7 @@ from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..models.Task import Task
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
-    wait_for_external_event_task, continue_as_new
+    wait_for_external_event_task, continue_as_new, new_guid
 
 
 class DurableOrchestrationContext:
@@ -20,12 +20,13 @@ class DurableOrchestrationContext:
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     # noinspection PyPep8Naming
     def __init__(self,
-                 history: Dict[Any, Any], instanceId: str, isReplaying: bool,
+                 history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
                  parentInstanceId: str, **kwargs):
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
+        self._new_guid_counter: int = 0
         self.call_activity = lambda n, i=None: call_activity_task(
             state=self.histories,
             name=n,
@@ -39,6 +40,7 @@ class DurableOrchestrationContext:
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories,
             name=n)
+        self.new_guid = lambda: new_guid(context=self)
         self.continue_as_new = lambda i: continue_as_new(input_=i)
         self.task_any = lambda t: task_any(tasks=t)
         self.task_all = lambda t: task_all(tasks=t)
@@ -105,6 +107,20 @@ class DurableOrchestrationContext:
         :param instance_id: A unique ID to use for the sub-orchestration
         instance. If `instanceId` is not specified, the extension will generate
         an id in the format `<calling orchestrator instance ID>:<#>`
+        """
+        raise NotImplementedError("This is a placeholder.")
+
+    def new_guid(self) -> str:
+        """Create a new GUID that is safe for replay within an orchestration or operation.
+
+        The default implementation of this method creates a name-based UUID
+        using the algorithm from RFC 4122 §4.3. The name input used to generate
+        this value is a combination of the orchestration instance ID and an
+        internally managed sequence number.
+
+        Returns
+        -------
+        New GUID that is safe for replay within an orchestration or operation.
         """
         raise NotImplementedError("This is a placeholder.")
 
