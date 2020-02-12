@@ -1,7 +1,7 @@
 import json
 import re
-import requests
 import validators
+import aiohttp
 from typing import List
 from urllib.parse import urlparse
 from azure.durable_functions.models import DurableOrchestrationBindings
@@ -30,10 +30,10 @@ class DurableOrchestrationClient:
         self._orchestration_bindings: DurableOrchestrationBindings = \
             DurableOrchestrationBindings.from_json(context)
 
-    def start_new(self,
-                  orchestration_function_name: str,
-                  instance_id: str,
-                  client_input):
+    async def start_new(self,
+                        orchestration_function_name: str,
+                        instance_id: str,
+                        client_input):
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
@@ -51,13 +51,14 @@ class DurableOrchestrationClient:
         request_url = self._get_start_new_url(
             instance_id,
             orchestration_function_name)
-        result = requests.post(request_url, json=self._get_json_input(
-            client_input))
-        if result.status_code <= 202 and result.text:
-            response_text = json.loads(result.text)
-            return response_text["id"]
-        else:
-            return None
+        async with aiohttp.ClientSession() as session:
+            async with session.post(request_url,
+                                    json=self._get_json_input(client_input)) as response:
+                data = await response.json()
+                if response.status <= 202 and data:
+                    return data["id"]
+                else:
+                    return None
 
     def create_check_status_response(self, request, instance_id):
         """Create a dictionary object that is used to create HttpResponse.
@@ -114,8 +115,8 @@ class DurableOrchestrationClient:
 
         return payload
 
-    def raise_event(self, instance_id, event_name, event_data=None,
-                    task_hub_name=None, connection_name=None):
+    async def raise_event(self, instance_id, event_name, event_data=None,
+                          task_hub_name=None, connection_name=None):
         """Send an event notification message to a waiting orchestration instance.
 
         In order to handle the event, the target orchestration instance must be
@@ -141,26 +142,26 @@ class DurableOrchestrationClient:
         Exception
             Raises an exception if the status code is 404 or 400 when raising the event.
         """
-        if (not event_name):
+        if not event_name:
             raise ValueError("event_name must be a valid string.")
 
         request_url = self._get_raise_event_url(
             instance_id, event_name, task_hub_name, connection_name)
 
-        response = requests.post(request_url, json=json.dumps(event_data))
-
-        switch_statement = {
-            202: lambda: None,
-            410: lambda: None,
-            404: lambda: f"No instance with ID {instance_id} found.",
-            400: lambda: "Only application/json request content is supported"
-        }
-        has_error_message = switch_statement.get(response.status_code, lambda:
-                                                 "Webhook returned unrecognized status code"
-                                                 + f" {response.status_code}")
-        error_message = has_error_message()
-        if error_message:
-            raise Exception(error_message)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(request_url, json=json.dumps(event_data)) as response:
+                switch_statement = {
+                    202: lambda: None,
+                    410: lambda: None,
+                    404: lambda: f"No instance with ID {instance_id} found.",
+                    400: lambda: "Only application/json request content is supported"
+                }
+                has_error_message = switch_statement.get(
+                    response.status, lambda: "Webhook returned unrecognized status code"
+                    + f" {response.status}")
+                error_message = has_error_message()
+                if error_message:
+                    raise Exception(error_message)
 
     @staticmethod
     def _get_json_input(client_input: object) -> object:
