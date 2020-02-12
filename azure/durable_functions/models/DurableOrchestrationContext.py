@@ -30,6 +30,7 @@ class DurableOrchestrationContext:
             state=self.histories,
             name=n,
             input_=i)
+        self.create_timer = lambda d: create_timer_task(state=self.histories,fire_at=d)
         self.call_activity_with_retry = \
             lambda n, o, i=None: call_activity_with_retry_task(
                 state=self.histories,
