@@ -40,9 +40,6 @@ class DurableOrchestrationContext:
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories,
             name=n)
-        self.create_timer = lambda d: create_timer_task(
-            state=self.histories,
-            fire_at=d)
         self.task_any = lambda t: task_any(tasks=t)
         self.task_all = lambda t: task_all(tasks=t)
         self.decision_started_event: HistoryEvent = \

@@ -3,6 +3,8 @@ from tests.test_utils.constants import DATETIME_STRING_FORMAT
 
 from ...constants import DATETIME_STRING_FORMAT
 
+from ...constants import DATETIME_STRING_FORMAT
+
 
 def add_attrib(json_dict: Dict[str, Any], object_,
                attribute_name: str, alt_name: str = None):
