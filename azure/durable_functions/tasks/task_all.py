@@ -12,6 +12,7 @@ def task_all(tasks):
     is_completed = True
     faulted = []
     complete_time = None
+    
     for task in tasks:
         if isinstance(task, TaskSet):
             for action in task.actions:
@@ -19,8 +20,10 @@ def task_all(tasks):
         else:
             all_actions.append(task.action)
         results.append(task.result)
+
         if task.is_faulted:
             faulted.append(task.exception)
+
         if not task.is_completed:
             is_completed = False
         else:
