@@ -7,7 +7,7 @@ from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..models.Task import Task
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
-    wait_for_external_event_task
+    wait_for_external_event_task,create_timer_task
 
 
 class DurableOrchestrationContext:
