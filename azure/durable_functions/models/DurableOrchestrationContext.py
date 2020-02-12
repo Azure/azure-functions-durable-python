@@ -6,21 +6,8 @@ from . import (RetryOptions)
 from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..models.Task import Task
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-from ..tasks import \
-    call_activity_task, task_all,call_activity_with_retry_task,create_timer_task
-=======
-from ..tasks import call_activity_task, task_all, call_activity_with_retry_task, wait_for_external_event_task
->>>>>>> fix bugs to make waitForExternalEvent working
-=======
-from ..tasks import call_activity_task, task_all, call_activity_with_retry_task, \
-=======
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
->>>>>>> implement task_any function
     wait_for_external_event_task
->>>>>>> flake8 fixes
 
 
 class DurableOrchestrationContext:
@@ -33,97 +20,38 @@ class DurableOrchestrationContext:
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     # noinspection PyPep8Naming
     def __init__(self,
-<<<<<<< HEAD
-                 context_string: str):
-        context: Dict[str, Any] = json.loads(context_string)
-        self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in context.get("history")]
-        self._instance_id = context.get("instanceId")
-        self._is_replaying = context.get("isReplaying")
-        self._parent_instance_id = context.get("parentInstanceId")
-<<<<<<< HEAD
-        self.input:str = context.get("input")
-        self.call_activity = lambda n, i: call_activity_task(
-=======
-=======
                  history: Dict[Any, Any], instanceId: str, isReplaying: bool,
                  parentInstanceId: str, **kwargs):
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
->>>>>>> Refactor json conversion
         self.call_activity = lambda n, i=None: call_activity_task(
->>>>>>> Base implementation of tests
             state=self.histories,
             name=n,
             input_=i)
-<<<<<<< HEAD
         self.call_activity_with_retry = \
             lambda n, o, i=None: call_activity_with_retry_task(
                 state=self.histories,
                 retry_options=o,
                 name=n,
                 input_=i)
-<<<<<<< HEAD
         self.create_timer = lambda d: create_timer_task(state=self.histories,fire_at=d)
-=======
-        self.call_activity_with_retry = lambda n, o, i: call_activity_with_retry_task(
-            state=self.histories,
-            retry_options=o,
-            name=n,
-            input_=i)
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories,
             name=n)
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> fix bugs to make waitForExternalEvent working
-=======
-        self.task_any = lambda t: task_any(state=self.histories, tasks=t)
->>>>>>> implement task_any function
-=======
-=======
         self.create_timer = lambda d: create_timer_task(
             state=self.histories,
             fire_at=d)
->>>>>>> create timer first pass
         self.task_any = lambda t: task_any(tasks=t)
->>>>>>> remove state in task_any
-        self.task_all = lambda t: task_all(state=self.histories, tasks=t)
-=======
         self.task_all = lambda t: task_all(tasks=t)
-<<<<<<< HEAD
->>>>>>> test failed scenario
-        self.decision_started_event: HistoryEvent = list(filter(
-            lambda e_: e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED,
-            self.histories))[0]
-=======
         self.decision_started_event: HistoryEvent = \
             [e_ for e_ in self.histories
              if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]
->>>>>>> Remove IFunctionContext abstraction
         self._current_utc_datetime = \
-<<<<<<< HEAD
-            dt_parse(self.decision_started_event["Timestamp"])
-        self._custom_status = None
-=======
             self.decision_started_event.timestamp
->>>>>>> Refactoring HistoryEvent
         self.new_guid_counter = 0
         self.actions: List[List[IAction]] = []
-<<<<<<< HEAD
-    
-    
-    def get_input(input: Any) -> Any:
-        """        
-        Returns
-        -------
-        str
-            Returns the input parameters obtained in the context of a Azure Function call
-        """
-        return input
-=======
         if kwargs is not None:
             for key, value in kwargs.items():
                 self.__setattr__(key, value)
@@ -143,9 +71,6 @@ class DurableOrchestrationContext:
         """
         json_dict = json.loads(json_string)
         return cls(**json_dict)
-<<<<<<< HEAD
->>>>>>> Refactor json conversion
-=======
     
     def get_input(input: Any) -> Any:
         """        
@@ -155,7 +80,6 @@ class DurableOrchestrationContext:
             Returns the input parameters obtained in the context of a Azure Function call
         """
         return input
->>>>>>> create timer first pass
 
     def call_activity(self, name: str, input_=None) -> Task:
         """Schedule an activity for execution.
