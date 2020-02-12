@@ -42,7 +42,7 @@ class DurableOrchestrationClient:
         :param orchestration_function_name: The name of the orchestrator
         function to start.
         :param instance_id: The ID to use for the new orchestration instance.
-        If no instanceId is specified, the Durable Functions extension will
+        If no instance id is specified, the Durable Functions extension will
         generate a random GUID (recommended).
         :param client_input: JSON-serializable input value for the orchestrator
         function.
@@ -70,7 +70,7 @@ class DurableOrchestrationClient:
         ----------
         request : HttpRequest
             The HTTP request that triggered the current orchestration instance.
-        instanceId : str
+        instance_id : str
             The ID of the orchestration instance to check.
 
         Returns
@@ -97,7 +97,7 @@ class DurableOrchestrationClient:
         ----------
         request : HttpRequest
             The HTTP request that triggered the current orchestration instance.
-        instanceId : str
+        instance_id : str
             The ID of the orchestration instance to check.
 
         Returns
