@@ -6,6 +6,7 @@ from typing import List
 from urllib.parse import urlparse
 from azure.durable_functions.models import DurableOrchestrationBindings
 
+
 class DurableOrchestrationClient:
     """Durable Orchestration Client.
 
@@ -59,8 +60,10 @@ class DurableOrchestrationClient:
             return None
 
     def create_check_status_response(self, request, instance_id):
-        """ Create a dictionary object that is used to create HttpResponse and 
-        contains useful information for checking the status of the specified instance.
+        """Create a dictionary object that is used to create HttpResponse.
+
+        The returned object contains useful information for checking
+        the status of the specified instance.
 
         Parameters
         ----------
@@ -72,7 +75,8 @@ class DurableOrchestrationClient:
         Returns
         -------
         dict
-           An HTTP 202 response with a Location header and a payload containing instance management URLs
+           An HTTP 202 response with a Location header
+           and a payload containing instance management URLs
         """
         http_management_payload = self.get_client_response_links(request, instance_id)
         return {
@@ -101,19 +105,20 @@ class DurableOrchestrationClient:
             a dictionary object of orchestrator instance management urls
         """
         payload = self._orchestration_bindings.management_urls.copy()
-        
+
         for key, _ in payload.items():
             if request.url:
-                payload[key] = self.replace_url_origin(request.url, payload[key])
+                payload[key] = self._replace_url_origin(request.url, payload[key])
             payload[key] = payload[key].replace(
                 self._orchestration_bindings.management_urls["id"], instance_id)
 
         return payload
 
+    def raise_event(self, instance_id, event_name, event_data=None,
+                    task_hub_name=None, connection_name=None):
+        """Send an event notification message to a waiting orchestration instance.
 
-    def raise_event(self, instance_id, event_name, event_data=None, task_hub_name=None, connection_name=None):
-        """Sends an event notification message to a waiting orchestration instance.
-        In order to handle the event, the target orchestration instance must be 
+        In order to handle the event, the target orchestration instance must be
         waiting for an event named `eventName` using waitForExternalEvent API.
 
         Parameters
@@ -125,10 +130,10 @@ class DurableOrchestrationClient:
         event_data : any, optional
             The JSON-serializable data associated with the event.
         task_hub_name : str, optional
-            The TaskHubName of the orchestration that will handle the event.    
+            The TaskHubName of the orchestration that will handle the event.
         connection_name : str, optional
             The name of the connection string associated with `taskHubName.`
-        
+
         Raises
         ------
         ValueError
@@ -138,18 +143,21 @@ class DurableOrchestrationClient:
         """
         if (not event_name):
             raise ValueError("event_name must be a valid string.")
-        
-        request_url = self._get_raise_event_url(instance_id, event_name, task_hub_name, connection_name)
-        
+
+        request_url = self._get_raise_event_url(
+            instance_id, event_name, task_hub_name, connection_name)
+
         response = requests.post(request_url, json=json.dumps(event_data))
 
         switch_statement = {
             202: lambda: None,
             410: lambda: None,
-            404: lambda : f"No instance with ID {instance_id} found.",
-            400: lambda : "Only application/json request content is supported"
+            404: lambda: f"No instance with ID {instance_id} found.",
+            400: lambda: "Only application/json request content is supported"
         }
-        has_error_message = switch_statement.get(response.status_code, lambda: f"Webhook returned unrecognized status code {response.status_code}")
+        has_error_message = switch_statement.get(response.status_code, lambda:
+                                                 "Webhook returned unrecognized status code"
+                                                 + f" {response.status_code}")
         error_message = has_error_message()
         if error_message:
             raise Exception(error_message)
@@ -158,23 +166,22 @@ class DurableOrchestrationClient:
     def _get_json_input(client_input: object) -> object:
         return json.dumps(client_input) if client_input is not None else None
 
-
     @staticmethod
-    def replace_url_origin(request_url, value_url): 
-        def url_has_placeholder_but_valid(url):
+    def _replace_url_origin(request_url, value_url):
+        def _url_has_placeholder_but_valid(url):
             parsed_url = urlparse(url)
             if '{' in parsed_url.path:
                 parsed_url = parsed_url._replace(path=parsed_url.path.split("{")[0])
-                return validators.url('{url.scheme}://{url.netloc}{url.path}'.format(url=parsed_url))
+                return validators.url(
+                    '{url.scheme}://{url.netloc}{url.path}'.format(url=parsed_url))
             return False
-        if validators.url(value_url) or url_has_placeholder_but_valid(value_url):
+        if validators.url(value_url) or _url_has_placeholder_but_valid(value_url):
             request_parsed_url = urlparse(request_url)
             value_parsed_url = urlparse(value_url)
             request_url_origin = '{url.scheme}://{url.netloc}/'.format(url=request_parsed_url)
             value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
             value_url = value_url.replace(value_url_origin, request_url_origin)
         return value_url
-
 
     def _get_start_new_url(self, instance_id, orchestration_function_name):
         request_url = self._orchestration_bindings.creation_urls['createNewInstancePostUri']
@@ -187,14 +194,16 @@ class DurableOrchestrationClient:
 
     def _get_raise_event_url(self, instance_id, event_name, task_hub_name, connection_name):
         id_placeholder = self._orchestration_bindings.management_urls["id"]
-        request_url = self._orchestration_bindings.management_urls["sendEventPostUri"].replace(id_placeholder, instance_id)
+        request_url = self._orchestration_bindings.management_urls["sendEventPostUri"].replace(
+            id_placeholder, instance_id)
         request_url = request_url.replace(self._event_name_placeholder, event_name)
         if task_hub_name:
-            request_url = request_url.replace(self._orchestration_bindings.task_hub_name, task_hub_name)
-        
+            request_url = request_url.replace(
+                self._orchestration_bindings.task_hub_name, task_hub_name)
+
         if connection_name:
-            p=re.compile(r'(?P<connection>connection=)(?P<connectionString>[\w]+)', re.IGNORECASE)
-            request_url = p.sub(r'\g<connection>'+connection_name, request_url)
+            p = re.compile(
+                r'(?P<connection>connection=)(?P<connectionString>[\w]+)', re.IGNORECASE)
+            request_url = p.sub(r'\g<connection>' + connection_name, request_url)
 
         return request_url
-    
