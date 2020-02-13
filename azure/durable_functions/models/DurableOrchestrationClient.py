@@ -61,9 +61,7 @@ class DurableOrchestrationClient:
                     return None
 
     def create_check_status_response(self, request, instance_id):
-        """Create a dictionary object that is used to create HttpResponse.
-
-        The returned object contains useful information for checking
+        """Create a HttpResponse that contains useful information for checking
         the status of the specified instance.
 
         Parameters
@@ -75,7 +73,7 @@ class DurableOrchestrationClient:
 
         Returns
         -------
-        dict
+        HttpResponse
            An HTTP 202 response with a Location header
            and a payload containing instance management URLs
         """
