@@ -6,8 +6,9 @@ from . import (RetryOptions)
 from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..models.Task import Task
+from ..models.TokenSource import TokenSource
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
-    wait_for_external_event_task, continue_as_new, new_guid
+    wait_for_external_event_task, continue_as_new, new_guid, call_http
 
 
 class DurableOrchestrationContext:
@@ -37,6 +38,10 @@ class DurableOrchestrationContext:
                 retry_options=o,
                 name=n,
                 input_=i)
+        self.call_http = lambda method, uri, content=None, headers=None, token_source=None: \
+            call_http(
+                state=self.histories, method=method, uri=uri, content=content, headers=headers,
+                token_source=token_source)
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories,
             name=n)
@@ -74,10 +79,15 @@ class DurableOrchestrationContext:
     def call_activity(self, name: str, input_=None) -> Task:
         """Schedule an activity for execution.
 
-        :param name: The name of the activity function to call.
-        :param input_:The JSON-serializable input to pass to the activity
+        Parameters
+        ----------
+        name: The name of the activity function to call.
+        input_:The JSON-serializable input to pass to the activity
         function.
-        :return: A Durable Task that completes when the called activity
+
+        Returns
+        -------
+        A Durable Task that completes when the called activity
         function completes or fails.
         """
         raise NotImplementedError("This is a placeholder.")
@@ -87,12 +97,35 @@ class DurableOrchestrationContext:
                                  input_=None) -> Task:
         """Schedule an activity for execution with retry options.
 
-        :param name: The name of the activity function to call.
-        :param retry_options: The retry options for the activity function.
-        :param input_: The JSON-serializable input to pass to the activity
+        Parameters
+        ----------
+        name: The name of the activity function to call.
+        retry_options: The retry options for the activity function.
+        input_: The JSON-serializable input to pass to the activity
         function.
-        :return: A Durable Task that completes when the called activity
+
+        Returns
+        -------
+        A Durable Task that completes when the called activity
         function completes or fails completely.
+        """
+        raise NotImplementedError("This is a placeholder.")
+
+    def call_http(self, method: str, uri: str, content: str = None,
+                  headers: Dict[str, str] = None, token_source: TokenSource = None):
+        """Schedule a durable HTTP call to the specified endpoint.
+
+        Parameters
+        ----------
+        method: The HTTP request method.
+        uri: The HTTP request uri.
+        content: The HTTP request content.
+        headers: The HTTP request headers.
+        token_source: The source of OAuth token to add to the request.
+
+        Returns
+        -------
+        The durable HTTP request to schedule.
         """
         raise NotImplementedError("This is a placeholder.")
 
@@ -101,11 +134,13 @@ class DurableOrchestrationContext:
                               instance_id: str = None) -> Task:
         """Schedule an orchestration function named `name` for execution.
 
-        :param name: The name of the orchestrator function to call.
-        :param input_: The JSON-serializable input to pass to the orchestrator
+        Parameters
+        ----------
+        name: The name of the orchestrator function to call.
+        input_: The JSON-serializable input to pass to the orchestrator
         function.
-        :param instance_id: A unique ID to use for the sub-orchestration
-        instance. If `instanceId` is not specified, the extension will generate
+        instance_id: A unique ID to use for the sub-orchestration instance.
+        If `instanceId` is not specified, the extension will generate
         an id in the format `<calling orchestrator instance ID>:<#>`
         """
         raise NotImplementedError("This is a placeholder.")
@@ -172,7 +207,9 @@ class DurableOrchestrationContext:
         is scheduled. It can be either auto-generated, in which case it is
         formatted as a GUID, or it can be user-specified with any format.
 
-        :return: The ID of the current orchestration instance.
+        Returns
+        -------
+        The ID of the current orchestration instance.
         """
         return self._instance_id
 
@@ -187,7 +224,9 @@ class DurableOrchestrationContext:
         to see whether the function is being replayed and then issue the log
         statements when this value is `false`.
 
-        :return: value indicating whether the orchestrator function is
+        Returns
+        -------
+        Value indicating whether the orchestrator function is
         currently replaying
         """
         return self._is_replaying
@@ -200,7 +239,10 @@ class DurableOrchestrationContext:
         orchestrator function is scheduled. It can be either auto-generated, in
         which case it is formatted as a GUID, or it can be user-specified with
         any format.
-        :return: ID of the parent orchestration of the current
+
+        Returns
+        -------
+        ID of the parent orchestration of the current
         sub-orchestration instance
         """
         return self._parent_instance_id
@@ -212,7 +254,10 @@ class DurableOrchestrationContext:
         This date/time value is derived from the orchestration history. It
         always returns the same value at specific points in the orchestrator
         function code, making it deterministic and safe for replay.
-        :return: The current date/time in a way that is safe for use by
+
+        Returns
+        -------
+        The current date/time in a way that is safe for use by
         orchestrator functions
         """
         return self._current_utc_datetime

@@ -27,6 +27,26 @@ schema = {
                             "required":
                                 ["firstRetryIntervalInMilliseconds", "maxNumberOfAttempts"],
                             "additionalProperties": False
+                        },
+                        "httpRequest": {
+                            "type": "object",
+                            "properties": {
+                                "method": {"type": "string"},
+                                "uri": {"type": "string"},
+                                "content": {},
+                                "headers": {},
+                                "tokenSource": {
+                                    "type": "object",
+                                    "properties": {
+                                        "resource": {"type": "string"}
+                                    },
+                                    "required": ["resource"],
+                                    "additionalProperties": False
+                                }
+                            },
+                            "required":
+                                ["method", "uri"],
+                            "additionalProperties": False
                         }
                     },
                     "required": ["actionType"],

@@ -9,16 +9,16 @@ Documents the capability exposed by JavaScript durable functions and the status 
 | Orchestrator | all | yes | Similar to Promise.all. When called with `yield` or `return`, returns an array containing the results of all [[Task]]s passed to it. It returns when all of the [[Task]] instances have completed.
 | Orchestrator | any | yes | Similar to Promise.race. When called with `yield` or `return`, returns the first [[Task]] instance to complete.
 | Orchestrator | waitForExternalEvent	| yes | Waits asynchronously for an event to be raised with the name `name` and returns the event data.
-| Orchestrator | continueAsNew	| no | Restarts the orchestration by clearing its history.
+| Orchestrator | continueAsNew	| yes | Restarts the orchestration by clearing its history.
 | Orchestrator | callEntity | no | Calls an operation on an entity, passing an argument, and waits for it to complete.
 | Orchestrator | callSubOrchestrator| no |Schedules an orchestration function named `name` for execution.
 | Orchestrator | callSubOrchestratorWithRetry |	no | Schedules an orchestrator function named `name` for execution with retry options.
-| Orchestrator | callHttp | no | Schedules a durable HTTP call to the specified endpoint.
+| Orchestrator | callHttp | yes | Schedules a durable HTTP call to the specified endpoint.
 | Orchestrator | createTimer | yes | Creates a durable timer that expires at a specified time.
 | Orchestrator | getInput | yes | Gets the input of the current orchestrator function as a deserialized value.
 | Orchestrator | setCustomStatus | no | Sets the JSON-serializable status of the current orchestrator function.
 | Orchestrator | currentUtcDateTime | yes | Gets the current date/time in a way that is safe for use by orchestrator functions.
-| Orchestrator | newGuid | no | Creates a new GUID that is safe for replay within an orchestration or operation.
+| Orchestrator | newGuid | yes | Creates a new GUID that is safe for replay within an orchestration or operation.
 | client | createCheckStatusResponse | no| Creates an HTTP response that is useful for checking the status of the specified instance.
 | client | createHttpManagementPayload | no | Creates an [[HttpManagementPayload]] object that contains instance management HTTP endpoints.
 | client | getStatus | no | Gets the status of the specified orchestration instance.
