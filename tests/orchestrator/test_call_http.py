@@ -9,7 +9,7 @@ from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 
 SIMPLE_GET_URI: str = \
-    'https://localhost:7071/we_just_need_a_uri_to_for_testing'
+    'https://localhost:7071/we_just_need_a_uri_to_use_for_testing'
 
 SIMPLE_RESULT: str = json.dumps({'name': 'simple'})
 

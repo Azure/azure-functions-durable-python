@@ -4,7 +4,6 @@ Responsible for orchestrating the execution of the user defined generator
 function.
 """
 from typing import Callable, Iterator, Any
-import traceback
 
 from .models import (
     DurableOrchestrationContext,
@@ -81,7 +80,6 @@ class Orchestrator:
                 actions=self.durable_context.actions,
                 custom_status=self.customStatus)
         except Exception as e:
-            traceback.print_stack()
             orchestration_state = OrchestratorState(
                 is_done=False,
                 output=None,  # Should have no output, after generation range
