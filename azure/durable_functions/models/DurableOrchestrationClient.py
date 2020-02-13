@@ -5,7 +5,7 @@ import aiohttp
 from typing import List
 from urllib.parse import urlparse
 from azure.durable_functions.models import DurableOrchestrationBindings
-
+import azure.functions as func
 
 class DurableOrchestrationClient:
     """Durable Orchestration Client.
@@ -80,7 +80,7 @@ class DurableOrchestrationClient:
            and a payload containing instance management URLs
         """
         http_management_payload = self.get_client_response_links(request, instance_id)
-        return {
+        response_args = {
             "status_code": 202,
             "body": json.dumps(http_management_payload),
             "headers": {
@@ -89,6 +89,7 @@ class DurableOrchestrationClient:
                 "Retry-After": "10",
             },
         }
+        return func.HttpResponse(**response_args)
 
     def get_client_response_links(self, request, instance_id):
         """Create a dictionary of orchestrator management urls.
