@@ -46,7 +46,7 @@ def test_create_check_status_response(binding_string):
     instance_id = "abc123"
     request = Mock(url="http://test_azure.net/api/orchestrators/DurableOrchestrationTrigger")
     returned_response = client.create_check_status_response(request, instance_id)
-    
+
     http_management_payload = {
         "id":"abc123",
         "statusQueryGetUri":r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
@@ -67,4 +67,7 @@ def test_create_check_status_response(binding_string):
             },
         }
 
-    assert expected_response == returned_response
+    for k, v in expected_response.get("headers").items():
+        assert v == returned_response.headers.get(k)
+    assert expected_response.get("status_code") == returned_response.status_code
+    assert expected_response.get("body") == returned_response.get_body().decode()
