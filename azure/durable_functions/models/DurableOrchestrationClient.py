@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 from azure.durable_functions.models import DurableOrchestrationBindings
 import azure.functions as func
 
+
 class DurableOrchestrationClient:
     """Durable Orchestration Client.
 
@@ -61,8 +62,8 @@ class DurableOrchestrationClient:
                     return None
 
     def create_check_status_response(self, request, instance_id):
-        """Create a HttpResponse that contains useful information for checking
-        the status of the specified instance.
+        """Create a HttpResponse that contains useful information for \
+        checking the status of the specified instance.
 
         Parameters
         ----------
