@@ -42,7 +42,7 @@ def test_extracts_histories(starting_context):
 
 
 def test_added_function_context_args():
-    context_builder = ContextBuilder('test_fan_out_fan_in_function')
+    context_builder = ContextBuilder('test_function_context')
 
     additional_attributes = {"attrib1": 1, "attrib2": "two", "attrib3":
         {"randomDictionary": "random"}}
