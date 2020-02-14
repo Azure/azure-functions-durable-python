@@ -271,6 +271,6 @@ class DurableOrchestrationContext:
 
         Returns
         -------
-
+        Object containing function level attributes not used by durable orchestrator.
         """
         return self._function_context
