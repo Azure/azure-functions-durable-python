@@ -3,12 +3,13 @@ import datetime
 from typing import List, Any, Dict
 
 from . import (RetryOptions)
+from .FunctionContext import FunctionContext
 from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
-    wait_for_external_event_task, continue_as_new, new_guid, call_http
+    wait_for_external_event_task, continue_as_new, new_uuid, call_http
 
 
 class DurableOrchestrationContext:
@@ -27,7 +28,7 @@ class DurableOrchestrationContext:
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
-        self._new_guid_counter: int = 0
+        self._new_uuid_counter: int = 0
         self.call_activity = lambda n, i=None: call_activity_task(
             state=self.histories,
             name=n,
@@ -45,7 +46,7 @@ class DurableOrchestrationContext:
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories,
             name=n)
-        self.new_guid = lambda: new_guid(context=self)
+        self.new_uuid = lambda: new_uuid(context=self)
         self.continue_as_new = lambda i: continue_as_new(input_=i)
         self.task_any = lambda t: task_any(tasks=t)
         self.task_all = lambda t: task_all(tasks=t)
@@ -54,11 +55,9 @@ class DurableOrchestrationContext:
              if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]
         self._current_utc_datetime = \
             self.decision_started_event.timestamp
-        self.new_guid_counter = 0
+        self._new_uuid_counter = 0
         self.actions: List[List[IAction]] = []
-        if kwargs is not None:
-            for key, value in kwargs.items():
-                self.__setattr__(key, value)
+        self._function_context: FunctionContext = FunctionContext(**kwargs)
 
     @classmethod
     def from_json(cls, json_string):
@@ -145,8 +144,8 @@ class DurableOrchestrationContext:
         """
         raise NotImplementedError("This is a placeholder.")
 
-    def new_guid(self) -> str:
-        """Create a new GUID that is safe for replay within an orchestration or operation.
+    def new_uuid(self) -> str:
+        """Create a new UUID that is safe for replay within an orchestration or operation.
 
         The default implementation of this method creates a name-based UUID
         using the algorithm from RFC 4122 §4.3. The name input used to generate
@@ -155,7 +154,7 @@ class DurableOrchestrationContext:
 
         Returns
         -------
-        New GUID that is safe for replay within an orchestration or operation.
+        New UUID that is safe for replay within an orchestration or operation.
         """
         raise NotImplementedError("This is a placeholder.")
 
@@ -265,3 +264,13 @@ class DurableOrchestrationContext:
     @current_utc_datetime.setter
     def current_utc_datetime(self, value: datetime):
         self._current_utc_datetime = value
+
+    @property
+    def function_context(self) -> FunctionContext:
+        """Get the function level attributes not used by durable orchestrator.
+
+        Returns
+        -------
+
+        """
+        return self._function_context

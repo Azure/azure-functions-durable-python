@@ -3,6 +3,7 @@ from dateutil.parser import parse as dt_parse
 
 from azure.durable_functions.models.DurableOrchestrationContext \
     import DurableOrchestrationContext
+from tests.test_utils.ContextBuilder import ContextBuilder
 
 
 @pytest.fixture
@@ -38,3 +39,18 @@ def test_sets_current_utc_datetime(starting_context):
 
 def test_extracts_histories(starting_context):
     assert 2 == len(starting_context.histories)
+
+
+def test_added_function_context_args():
+    context_builder = ContextBuilder('test_fan_out_fan_in_function')
+
+    additional_attributes = {"attrib1": 1, "attrib2": "two", "attrib3":
+        {"randomDictionary": "random"}}
+
+    context_as_string = context_builder.to_json_string(**additional_attributes)
+
+    durable_context = DurableOrchestrationContext.from_json(context_as_string)
+
+    assert durable_context.function_context is not None
+    for key in additional_attributes:
+        assert additional_attributes[key] == getattr(durable_context.function_context, key)
