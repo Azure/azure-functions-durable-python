@@ -1,6 +1,5 @@
 import json
 import re
-import validators
 import aiohttp
 from typing import List
 from urllib.parse import urlparse
@@ -169,19 +168,11 @@ class DurableOrchestrationClient:
 
     @staticmethod
     def _replace_url_origin(request_url, value_url):
-        def _url_has_placeholder_but_valid(url):
-            parsed_url = urlparse(url)
-            if '{' in parsed_url.path:
-                parsed_url = parsed_url._replace(path=parsed_url.path.split("{")[0])
-                return validators.url(
-                    '{url.scheme}://{url.netloc}{url.path}'.format(url=parsed_url))
-            return False
-        if validators.url(value_url) or _url_has_placeholder_but_valid(value_url):
-            request_parsed_url = urlparse(request_url)
-            value_parsed_url = urlparse(value_url)
-            request_url_origin = '{url.scheme}://{url.netloc}/'.format(url=request_parsed_url)
-            value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
-            value_url = value_url.replace(value_url_origin, request_url_origin)
+        request_parsed_url = urlparse(request_url)
+        value_parsed_url = urlparse(value_url)
+        request_url_origin = '{url.scheme}://{url.netloc}/'.format(url=request_parsed_url)
+        value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
+        value_url = value_url.replace(value_url_origin, request_url_origin)
         return value_url
 
     def _get_start_new_url(self, instance_id, orchestration_function_name):
