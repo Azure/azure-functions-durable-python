@@ -13,7 +13,7 @@ def generator_function(context):
             {
                 "activity_func_name": "SuccessActions",
                 "args": {
-                    "name": "abcd"
+                    "name": "Tokyo"
                 }
             }
         ]
