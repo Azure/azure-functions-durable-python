@@ -30,7 +30,7 @@ def call_http(state: List[HistoryEvent], method: str, uri: str, content: str = N
     -------
     The durable HTTP request to schedule.
     """
-    if content and content is not isinstance(str):
+    if content and content is not isinstance(content, str):
         json_content = json.dumps(content)
     else:
         json_content = content

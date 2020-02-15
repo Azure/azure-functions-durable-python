@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
 from azure.durable_functions.models import TokenSource
-from azure.durable_functions.models.utils.json_utils import add_attrib
+from azure.durable_functions.models.utils.json_utils import add_attrib, add_json_attrib
 
 
 class DurableHttpRequest:
@@ -35,6 +35,7 @@ class DurableHttpRequest:
         """Get the HTTP request headers."""
         return self._headers
 
+    @property
     def token_source(self) -> TokenSource:
         """Get the source of OAuth token to add to the request."""
         return self._token_source
@@ -51,4 +52,5 @@ class DurableHttpRequest:
         add_attrib(json_dict, self, 'uri')
         add_attrib(json_dict, self, 'content')
         add_attrib(json_dict, self, 'headers')
+        add_json_attrib(json_dict, self, 'token_source', 'tokenSource')
         return json_dict
