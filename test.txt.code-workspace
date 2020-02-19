@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "/home/asedighi/Projects/azure-durable"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"debug.internalConsoleOptions": "neverOpen"
+	}
+}
