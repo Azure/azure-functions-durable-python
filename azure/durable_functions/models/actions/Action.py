@@ -1,7 +1,7 @@
-from ..models.actions import ActionType
+from azure.durable_functions.models.actions import ActionType
 
 
-class IAction:
+class Action:
     """Defines the base interface for Actions that need to be executed."""
 
     def __init__(self):

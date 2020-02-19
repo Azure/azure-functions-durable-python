@@ -5,7 +5,7 @@ from typing import List, Any, Dict
 from . import (RetryOptions)
 from .FunctionContext import FunctionContext
 from .history import HistoryEvent, HistoryEventType
-from ..interfaces import IAction
+from .actions import Action
 from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
@@ -56,7 +56,7 @@ class DurableOrchestrationContext:
         self._current_utc_datetime = \
             self.decision_started_event.timestamp
         self._new_uuid_counter = 0
-        self.actions: List[List[IAction]] = []
+        self.actions: List[List[Action]] = []
         self._function_context: FunctionContext = FunctionContext(**kwargs)
 
     @classmethod
