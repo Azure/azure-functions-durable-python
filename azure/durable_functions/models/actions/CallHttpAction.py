@@ -13,8 +13,13 @@ class CallHttpAction(Action):
     """
 
     def __init__(self, http_request: DurableHttpRequest):
-        self.action_type: ActionType = ActionType.CALL_HTTP
+        self._action_type: int = ActionType.CALL_HTTP
         self.http_request = http_request
+
+    @property
+    def action_type(self) -> int:
+        """Get the type of action this class represents."""
+        return ActionType.CALL_HTTP
 
     def to_json(self) -> Dict[str, Any]:
         """Convert object into a json dictionary.

@@ -14,13 +14,17 @@ class CallActivityWithRetryAction(Action):
 
     def __init__(self, function_name: str,
                  retry_options: RetryOptions, input_=None):
-        self.action_type: ActionType = ActionType.CALL_ACTIVITY_WITH_RETRY
         self.function_name: str = function_name
         self.retry_options: RetryOptions = retry_options
         self.input_ = input_
 
         if not self.function_name:
             raise ValueError("function_name cannot be empty")
+
+    @property
+    def action_type(self) -> int:
+        """Get the type of action this class represents."""
+        return ActionType.CALL_ACTIVITY_WITH_RETRY
 
     def to_json(self) -> Dict[str, Any]:
         """Convert object into a json dictionary.

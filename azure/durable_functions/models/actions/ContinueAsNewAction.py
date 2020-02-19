@@ -13,8 +13,12 @@ class ContinueAsNewAction(Action):
     """
 
     def __init__(self, input_=None):
-        self.action_type: ActionType = ActionType.CONTINUE_AS_NEW
         self.input_ = input_
+
+    @property
+    def action_type(self) -> int:
+        """Get the type of action this class represents."""
+        return ActionType.CONTINUE_AS_NEW
 
     def to_json(self) -> Dict[str, Any]:
         """Convert object into a json dictionary.

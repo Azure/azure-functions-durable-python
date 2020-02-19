@@ -20,12 +20,16 @@ class WaitForExternalEventAction(Action):
     """
 
     def __init__(self, external_event_name: str):
-        self.action_type: ActionType = ActionType.WAIT_FOR_EXTERNAL_EVENT
         self.external_event_name: str = external_event_name
         self.reason = "ExternalEvent"
 
         if not self.external_event_name:
             raise ValueError("external_event_name cannot be empty")
+
+    @property
+    def action_type(self) -> int:
+        """Get the type of action this class represents."""
+        return ActionType.WAIT_FOR_EXTERNAL_EVENT
 
     def to_json(self) -> Dict[str, Any]:
         """Convert object into a json dictionary.
