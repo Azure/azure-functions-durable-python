@@ -1,5 +1,5 @@
 import json
-from typing import Callable, Iterator, Any
+from typing import Callable, Iterator, Any, Dict
 from jsonschema import validate
 
 from azure.durable_functions.models import DurableOrchestrationContext
@@ -54,3 +54,11 @@ def get_orchestration_state_result(
 def assert_valid_schema(orchestration_state):
     validation_results = validate(instance=orchestration_state, schema=schema)
     assert validation_results is None
+
+
+def assert_dict_are_equal(expected: Dict[Any, Any], result: Dict[Any, Any]):
+    assert len(expected.keys()) == len(result.keys())
+    for key in expected.keys():
+        assert expected[key] == result[key]
+    for key in result.keys():
+        assert result[key] == expected[key]

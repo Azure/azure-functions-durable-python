@@ -78,6 +78,7 @@ setup(
         'grpcio-tools~=1.22.0',
         'python-dateutil==2.8.0',
         'requests==2.22.0',
+        'aiohttp==3.6.2'
     ],
     include_package_data=True,
     cmdclass={

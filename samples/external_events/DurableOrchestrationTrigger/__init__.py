@@ -1,26 +1,39 @@
 import logging
 import azure.durable_functions as df
-
+import json
 
 def generator_function(context):
-    """This function provides the waitForExternalEvent orchestration logic
-        
-    Arguments:
-        context {DurableOrchestrationContext} -- This context has the past history 
-        and the durable orchestration API's
-    
-    Returns:
-        {str} -- Returns whether "approved" or "denied"
-    
-    Yields:
-        wait_for_external_event {str} -- Yields at every step of the WaitForExternalEvent logic
-    """
-    approved = yield context.df.wait_for_external_event("Approval")
 
-    if approved:
-        return "approved"
-    else:
-        return "denied"
+    json_rule={
+        "condition": {
+            "wait_events": ["A","B"],
+            "logic": "and"
+        },
+        "satisfied":[
+            {
+                "activity_func_name": "SuccessActions",
+                "args": {
+                    "name": "Tokyo"
+                }
+            }
+        ]
+    }
+
+    tasks = []
+    for event in json_rule["condition"]["wait_events"]:
+        tasks.append(context.wait_for_external_event(event))
+    
+    if json_rule["condition"]["logic"] == 'and':
+        yield context.task_all(tasks)
+    elif json_rule["condition"]["logic"] == 'or': 
+        yield context.task_any(tasks)
+    
+    output = []
+    for action in json_rule["satisfied"]:
+        result = yield context.call_activity(action["activity_func_name"], json.dumps(action["args"]))
+        output.append(result)
+
+    return output
 
 
 def main(context: str):

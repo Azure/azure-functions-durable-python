@@ -51,4 +51,6 @@ def add_json_attrib(json_dict: Dict[str, Any], object_,
     alt_name: An alternate name to provide to the attribute in the in the dictionary
     """
     if hasattr(object_, attribute_name):
-        json_dict[alt_name or attribute_name] = getattr(object_, attribute_name).to_json()
+        attribute_value = getattr(object_, attribute_name)
+        if attribute_value:
+            json_dict[alt_name or attribute_name] = attribute_value.to_json()
