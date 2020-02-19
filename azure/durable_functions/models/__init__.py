@@ -6,11 +6,15 @@ from .OrchestratorState import OrchestratorState
 from .RetryOptions import RetryOptions
 from .Task import Task
 from .TaskSet import TaskSet
+from .DurableHttpRequest import DurableHttpRequest
+from .TokenSource import ManagedIdentityTokenSource
 
 __all__ = [
     'DurableOrchestrationBindings',
     'DurableOrchestrationClient',
     'DurableOrchestrationContext',
+    'DurableHttpRequest',
+    'ManagedIdentityTokenSource',
     'OrchestratorState',
     'RetryOptions',
     'Task',

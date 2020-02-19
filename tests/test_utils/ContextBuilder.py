@@ -94,7 +94,7 @@ class ContextBuilder:
         # event.timestamp = timestamp
         self.history_events.append(event)
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self, **kwargs) -> Dict[str, Any]:
         json_dict = {}
 
         add_attrib(json_dict, self, 'instance_id', 'instanceId')
@@ -104,6 +104,10 @@ class ContextBuilder:
 
         history_list_as_dict = self.get_history_list_as_dict()
         json_dict['history'] = history_list_as_dict
+
+        if kwargs is not None:
+            for key, value in kwargs.items():
+                json_dict[key] = value
 
         return json_dict
 
@@ -116,7 +120,7 @@ class ContextBuilder:
 
         return history_list
 
-    def to_json_string(self) -> str:
-        json_dict = self.to_json()
+    def to_json_string(self, **kwargs) -> str:
+        json_dict = self.to_json(**kwargs)
 
         return json.dumps(json_dict)
