@@ -26,7 +26,10 @@ class CallActivityAction(Action):
     def to_json(self) -> Dict[str, Any]:
         """Convert object into a json dictionary.
 
-        :return: The instance of the class converted into a json dictionary
+        Returns
+        -------
+        Dict[str, Any]
+            The instance of the class converted into a json dictionary
         """
         json_dict = {}
         add_attrib(json_dict, self, 'action_type', 'actionType')
