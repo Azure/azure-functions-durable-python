@@ -33,20 +33,26 @@ class DurableOrchestrationClient:
     async def start_new(self,
                         orchestration_function_name: str,
                         instance_id: str,
-                        client_input):
+                        client_input: object):
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
         existing instance will be silently replaced by this new instance.
 
-        :param orchestration_function_name: The name of the orchestrator
-        function to start.
-        :param instance_id: The ID to use for the new orchestration instance.
-        If no instance id is specified, the Durable Functions extension will
-        generate a random GUID (recommended).
-        :param client_input: JSON-serializable input value for the orchestrator
-        function.
-        :return: The ID of the new orchestration instance.
+        Parameters
+        ----------
+        orchestration_function_name : str
+            The name of the orchestrator function to start.
+        instance_id : str
+            The ID to use for the new orchestration instance. If no instance id is specified,
+            the Durable Functions extension will generate a random GUID (recommended).
+        client_input : object
+            JSON-serializable input value for the orchestrator function.
+
+        Returns
+        -------
+        str
+            The ID of the new orchestration instance if successful, None if not.
         """
         request_url = self._get_start_new_url(
             instance_id,
