@@ -40,9 +40,7 @@ schema = {
                                 "headers": {},
                                 "tokenSource": {
                                     "type": "object",
-                                    "properties": {
-                                        "resource": {"type": "string"}
-                                    },
+                                    "properties": {"resource": {"type": "string"}},
                                     "required": ["resource"],
                                     "additionalProperties": False,
                                 },

@@ -5,12 +5,8 @@ from .orchestrator_test_utils import (
 )
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
-from azure.durable_functions.models.actions.CallActivityAction import (
-    CallActivityAction,
-)
-from azure.durable_functions.models.actions.ContinueAsNewAction import (
-    ContinueAsNewAction,
-)
+from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction
+from azure.durable_functions.models.actions.ContinueAsNewAction import ContinueAsNewAction
 
 
 def generator_function(context):
@@ -32,9 +28,7 @@ def add_continue_as_new_action(state: OrchestratorState, input_: str):
     state.actions.append([action])
 
 
-def add_hello_completed_events(
-    context_builder: ContextBuilder, id_: int, result: str
-):
+def add_hello_completed_events(context_builder: ContextBuilder, id_: int, result: str):
     context_builder.add_task_scheduled_event(name="Hello", id_=id_)
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
@@ -44,9 +38,7 @@ def add_hello_completed_events(
 def test_initial_orchestration_state():
     context_builder = ContextBuilder("test_simple_function")
 
-    result = get_orchestration_state_result(
-        context_builder, generator_function
-    )
+    result = get_orchestration_state_result(context_builder, generator_function)
 
     expected_state = base_expected_state()
     add_hello_action(expected_state, "Tokyo")
@@ -60,9 +52,7 @@ def test_tokyo_state():
     context_builder = ContextBuilder("test_simple_function")
     add_hello_completed_events(context_builder, 0, '"Hello Tokyo!"')
 
-    result = get_orchestration_state_result(
-        context_builder, generator_function
-    )
+    result = get_orchestration_state_result(context_builder, generator_function)
 
     expected_state = base_expected_state()
     add_hello_action(expected_state, "Tokyo")

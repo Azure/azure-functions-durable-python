@@ -16,9 +16,7 @@ def _get_classify_images_tasks(config, image_list, context):
     Returns:
         List of tasks to perform
     """
-    image_count_per_instance = int(
-        config["number_of_images"] / config["instances"]
-    )
+    image_count_per_instance = int(config["number_of_images"] / config["instances"])
 
     tasks = []
 
@@ -55,9 +53,7 @@ def generator_function(context):
     }
 
     # Get the images that need to predicted
-    image_data = yield context.call_activity(
-        "GetImageUrls", config["number_of_images"]
-    )
+    image_data = yield context.call_activity("GetImageUrls", config["number_of_images"])
     image_list = json.loads(image_data)
 
     # break the images done into different tasks to be fan out with

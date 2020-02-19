@@ -12,9 +12,7 @@ from .task_utilities import (
 )
 
 
-def call_activity_task(
-    state: List[HistoryEvent], name: str, input_: Any = None
-) -> Task:
+def call_activity_task(state: List[HistoryEvent], name: str, input_: Any = None) -> Task:
     """Determine the state of Scheduling an activity for execution.
 
     :param state: The list of history events to search to determine the current

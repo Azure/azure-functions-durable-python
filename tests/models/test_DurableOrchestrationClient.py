@@ -1,8 +1,6 @@
 import json
 
-from azure.durable_functions.models.DurableOrchestrationClient import (
-    DurableOrchestrationClient,
-)
+from azure.durable_functions.models.DurableOrchestrationClient import DurableOrchestrationClient
 from tests.conftest import replace_stand_in_bits
 from unittest.mock import Mock
 
@@ -50,12 +48,8 @@ def test_get_raise_event_url(binding_string):
 def test_create_check_status_response(binding_string):
     client = DurableOrchestrationClient(binding_string)
     instance_id = "abc123"
-    request = Mock(
-        url="http://test_azure.net/api/orchestrators/DurableOrchestrationTrigger"
-    )
-    returned_response = client.create_check_status_response(
-        request, instance_id
-    )
+    request = Mock(url="http://test_azure.net/api/orchestrators/DurableOrchestrationTrigger")
+    returned_response = client.create_check_status_response(request, instance_id)
 
     http_management_payload = {
         "id": "abc123",
@@ -66,9 +60,7 @@ def test_create_check_status_response(binding_string):
         "purgeHistoryDeleteUri": r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
     }
     for key, _ in http_management_payload.items():
-        http_management_payload[key] = replace_stand_in_bits(
-            http_management_payload[key]
-        )
+        http_management_payload[key] = replace_stand_in_bits(http_management_payload[key])
     expected_response = {
         "status_code": 202,
         "body": json.dumps(http_management_payload),
@@ -81,9 +73,5 @@ def test_create_check_status_response(binding_string):
 
     for k, v in expected_response.get("headers").items():
         assert v == returned_response.headers.get(k)
-    assert (
-        expected_response.get("status_code") == returned_response.status_code
-    )
-    assert (
-        expected_response.get("body") == returned_response.get_body().decode()
-    )
+    assert expected_response.get("status_code") == returned_response.status_code
+    assert expected_response.get("body") == returned_response.get_body().decode()

@@ -1,9 +1,7 @@
 import pytest
 from dateutil.parser import parse as dt_parse
 
-from azure.durable_functions.models.DurableOrchestrationContext import (
-    DurableOrchestrationContext,
-)
+from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
 from tests.test_utils.ContextBuilder import ContextBuilder
 
 
@@ -34,10 +32,7 @@ def test_extracts_instance_id(starting_context):
 
 
 def test_sets_current_utc_datetime(starting_context):
-    assert (
-        dt_parse("2019-12-08T23:18:41.3240927Z")
-        == starting_context.current_utc_datetime
-    )
+    assert dt_parse("2019-12-08T23:18:41.3240927Z") == starting_context.current_utc_datetime
 
 
 def test_extracts_histories(starting_context):
@@ -59,6 +54,4 @@ def test_added_function_context_args():
 
     assert durable_context.function_context is not None
     for key in additional_attributes:
-        assert additional_attributes[key] == getattr(
-            durable_context.function_context, key
-        )
+        assert additional_attributes[key] == getattr(durable_context.function_context, key)

@@ -41,7 +41,5 @@ def add_GreeterServicer_to_server(servicer, server):
             response_serializer=greet__pb2.HelloReply.SerializeToString,
         ),
     }
-    generic_handler = grpc.method_handlers_generic_handler(
-        "Greet.Greeter", rpc_method_handlers
-    )
+    generic_handler = grpc.method_handlers_generic_handler("Greet.Greeter", rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))

@@ -46,12 +46,6 @@ def task_any(tasks):
             ),
         )
     elif len(completed_tasks) != 0:
-        return TaskSet(
-            True,
-            all_actions,
-            completed_tasks[0],
-            False,
-            completed_tasks[0].timestamp,
-        )
+        return TaskSet(True, all_actions, completed_tasks[0], False, completed_tasks[0].timestamp,)
     else:
         return TaskSet(False, all_actions, None)

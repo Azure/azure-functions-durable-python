@@ -37,9 +37,7 @@ class DurableOrchestrationContext:
         parentInstanceId: str,
         **kwargs
     ):
-        self._histories: List[HistoryEvent] = [
-            HistoryEvent(**he) for he in history
-        ]
+        self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
@@ -50,14 +48,13 @@ class DurableOrchestrationContext:
         self.call_activity_with_retry = lambda n, o, i=None: call_activity_with_retry_task(
             state=self.histories, retry_options=o, name=n, input_=i
         )
-        self.call_http = lambda method, uri, content=None, headers=None, token_source=None: \
-            call_http(
-                state=self.histories,
-                method=method,
-                uri=uri,
-                content=content,
-                headers=headers,
-                token_source=token_source,
+        self.call_http = lambda method, uri, content=None, headers=None, token_source=None: call_http(
+            state=self.histories,
+            method=method,
+            uri=uri,
+            content=content,
+            headers=headers,
+            token_source=token_source,
         )
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories, name=n
@@ -67,9 +64,7 @@ class DurableOrchestrationContext:
         self.task_any = lambda t: task_any(tasks=t)
         self.task_all = lambda t: task_all(tasks=t)
         self.decision_started_event: HistoryEvent = [
-            e_
-            for e_ in self.histories
-            if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED
+            e_ for e_ in self.histories if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED
         ][0]
         self._current_utc_datetime = self.decision_started_event.timestamp
         self._new_uuid_counter = 0
@@ -151,9 +146,7 @@ class DurableOrchestrationContext:
         """
         raise NotImplementedError("This is a placeholder.")
 
-    def call_sub_orchestrator(
-        self, name: str, input_=None, instance_id: str = None
-    ) -> Task:
+    def call_sub_orchestrator(self, name: str, input_=None, instance_id: str = None) -> Task:
         """Schedule an orchestration function named `name` for execution.
 
         Parameters

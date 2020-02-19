@@ -2,9 +2,7 @@ import logging
 from typing import List
 
 from ..models.Task import Task
-from ..models.actions.WaitForExternalEventAction import (
-    WaitForExternalEventAction,
-)
+from ..models.actions.WaitForExternalEventAction import WaitForExternalEventAction
 from ..models.history import HistoryEvent
 from .task_utilities import (
     set_processed,

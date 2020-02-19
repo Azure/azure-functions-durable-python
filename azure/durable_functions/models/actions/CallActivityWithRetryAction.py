@@ -11,9 +11,7 @@ class CallActivityWithRetryAction:
     Provides the information needed by the durable extension to be able to schedule the activity.
     """
 
-    def __init__(
-        self, function_name: str, retry_options: RetryOptions, input_=None
-    ):
+    def __init__(self, function_name: str, retry_options: RetryOptions, input_=None):
         self.action_type: ActionType = ActionType.CALL_ACTIVITY_WITH_RETRY
         self.function_name: str = function_name
         self.retry_options: RetryOptions = retry_options

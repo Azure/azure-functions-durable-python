@@ -22,35 +22,23 @@ def generator_function(context):
 
 
 def base_expected_state(output=None, error=None) -> OrchestratorState:
-    return OrchestratorState(
-        is_done=False, actions=[], output=output, error=error
-    )
+    return OrchestratorState(is_done=False, actions=[], output=output, error=error)
 
 
-def add_completed_event(
-    context_builder: ContextBuilder, id_: int, name: str, result
-):
+def add_completed_event(context_builder: ContextBuilder, id_: int, name: str, result):
     context_builder.add_task_scheduled_event(name=name, id_=id_)
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
-    context_builder.add_task_completed_event(
-        id_=id_, result=json.dumps(result)
-    )
+    context_builder.add_task_completed_event(id_=id_, result=json.dumps(result))
 
 
 def add_failed_event(
-    context_builder: ContextBuilder,
-    id_: int,
-    name: str,
-    reason: str,
-    details: str,
+    context_builder: ContextBuilder, id_: int, name: str, reason: str, details: str,
 ):
     context_builder.add_task_scheduled_event(name=name, id_=id_)
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
-    context_builder.add_task_failed_event(
-        id_=id_, reason=reason, details=details
-    )
+    context_builder.add_task_failed_event(id_=id_, reason=reason, details=details)
 
 
 def add_completed_task_set_events(
@@ -67,11 +55,7 @@ def add_completed_task_set_events(
             add_completed_event(context_builder, start_id + i, name, i)
         else:
             add_failed_event(
-                context_builder,
-                start_id + i,
-                name,
-                failed_reason,
-                failed_details,
+                context_builder, start_id + i, name, failed_reason, failed_details,
             )
 
 
@@ -80,14 +64,10 @@ def add_single_action(state: OrchestratorState, function_name: str, input_):
     state.actions.append([action])
 
 
-def add_multi_actions(
-    state: OrchestratorState, function_name: str, volume: int
-):
+def add_multi_actions(state: OrchestratorState, function_name: str, volume: int):
     actions = []
     for i in range(volume):
-        action = CallActivityAction(
-            function_name=function_name, input_=json.dumps(i)
-        )
+        action = CallActivityAction(function_name=function_name, input_=json.dumps(i))
         actions.append(action)
     state.actions.append(actions)
 
@@ -95,14 +75,10 @@ def add_multi_actions(
 def test_initial_call():
     context_builder = ContextBuilder("test_fan_out_fan_in_function")
 
-    result = get_orchestration_state_result(
-        context_builder, generator_function
-    )
+    result = get_orchestration_state_result(context_builder, generator_function)
 
     expected_state = base_expected_state()
-    add_single_action(
-        expected_state, function_name="GetActivityCount", input_=None
-    )
+    add_single_action(expected_state, function_name="GetActivityCount", input_=None)
     expected = expected_state.to_json()
 
     assert_valid_schema(result)
@@ -114,17 +90,11 @@ def test_get_activity_count_success():
     context_builder = ContextBuilder("test_fan_out_fan_in_function")
     add_completed_event(context_builder, 0, "GetActivityCount", activity_count)
 
-    result = get_orchestration_state_result(
-        context_builder, generator_function
-    )
+    result = get_orchestration_state_result(context_builder, generator_function)
 
     expected_state = base_expected_state()
-    add_single_action(
-        expected_state, function_name="GetActivityCount", input_=None
-    )
-    add_multi_actions(
-        expected_state, function_name="ParrotValue", volume=activity_count
-    )
+    add_single_action(expected_state, function_name="GetActivityCount", input_=None)
+    add_multi_actions(expected_state, function_name="ParrotValue", volume=activity_count)
     expected = expected_state.to_json()
 
     assert_valid_schema(result)
@@ -135,27 +105,17 @@ def test_parrot_value_success():
     activity_count = 5
     context_builder = ContextBuilder("test_fan_out_fan_in_function")
     add_completed_event(context_builder, 0, "GetActivityCount", activity_count)
-    add_completed_task_set_events(
-        context_builder, 1, "ParrotValue", activity_count
-    )
+    add_completed_task_set_events(context_builder, 1, "ParrotValue", activity_count)
 
-    result = get_orchestration_state_result(
-        context_builder, generator_function
-    )
+    result = get_orchestration_state_result(context_builder, generator_function)
 
     expected_state = base_expected_state()
-    add_single_action(
-        expected_state, function_name="GetActivityCount", input_=None
-    )
-    add_multi_actions(
-        expected_state, function_name="ParrotValue", volume=activity_count
-    )
+    add_single_action(expected_state, function_name="GetActivityCount", input_=None)
+    add_multi_actions(expected_state, function_name="ParrotValue", volume=activity_count)
     results = []
     for i in range(activity_count):
         results.append(i)
-    add_single_action(
-        expected_state, function_name="ShowMeTheSum", input_=results
-    )
+    add_single_action(expected_state, function_name="ShowMeTheSum", input_=results)
     expected = expected_state.to_json()
 
     assert_valid_schema(result)
@@ -170,30 +130,18 @@ def test_show_me_the_sum_success():
     sum_results = f"Well that's nice {sum_}!"
     context_builder = ContextBuilder("test_fan_out_fan_in_function")
     add_completed_event(context_builder, 0, "GetActivityCount", activity_count)
-    add_completed_task_set_events(
-        context_builder, 1, "ParrotValue", activity_count
-    )
-    add_completed_event(
-        context_builder, activity_count + 1, "ShowMeTheSum", sum_results
-    )
+    add_completed_task_set_events(context_builder, 1, "ParrotValue", activity_count)
+    add_completed_event(context_builder, activity_count + 1, "ShowMeTheSum", sum_results)
 
-    result = get_orchestration_state_result(
-        context_builder, generator_function
-    )
+    result = get_orchestration_state_result(context_builder, generator_function)
 
     expected_state = base_expected_state(sum_results)
-    add_single_action(
-        expected_state, function_name="GetActivityCount", input_=None
-    )
-    add_multi_actions(
-        expected_state, function_name="ParrotValue", volume=activity_count
-    )
+    add_single_action(expected_state, function_name="GetActivityCount", input_=None)
+    add_multi_actions(expected_state, function_name="ParrotValue", volume=activity_count)
     results = []
     for i in range(activity_count):
         results.append(i)
-    add_single_action(
-        expected_state, function_name="ShowMeTheSum", input_=results
-    )
+    add_single_action(expected_state, function_name="ShowMeTheSum", input_=results)
     expected_state._is_done = True
     expected = expected_state.to_json()
 
@@ -208,28 +156,14 @@ def test_failed_parrot_value():
     context_builder = ContextBuilder("test_fan_out_fan_in_function")
     add_completed_event(context_builder, 0, "GetActivityCount", activity_count)
     add_completed_task_set_events(
-        context_builder,
-        1,
-        "ParrotValue",
-        activity_count,
-        2,
-        failed_reason,
-        failed_details,
+        context_builder, 1, "ParrotValue", activity_count, 2, failed_reason, failed_details,
     )
 
-    result = get_orchestration_state_result(
-        context_builder, generator_function
-    )
+    result = get_orchestration_state_result(context_builder, generator_function)
 
-    expected_state = base_expected_state(
-        error=f"{failed_reason} \n {failed_details}"
-    )
-    add_single_action(
-        expected_state, function_name="GetActivityCount", input_=None
-    )
-    add_multi_actions(
-        expected_state, function_name="ParrotValue", volume=activity_count
-    )
+    expected_state = base_expected_state(error=f"{failed_reason} \n {failed_details}")
+    add_single_action(expected_state, function_name="GetActivityCount", input_=None)
+    add_multi_actions(expected_state, function_name="ParrotValue", volume=activity_count)
     expected = expected_state.to_json()
 
     assert_valid_schema(result)

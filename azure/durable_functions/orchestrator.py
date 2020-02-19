@@ -23,8 +23,7 @@ class Orchestrator:
     """
 
     def __init__(
-        self,
-        activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]],
+        self, activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]],
     ):
         """Create a new orchestrator for the user defined generator.
 
@@ -32,9 +31,7 @@ class Orchestrator:
         generator function.
         :param activity_func: Generator function to orchestrate.
         """
-        self.fn: Callable[
-            [DurableOrchestrationContext], Iterator[Any]
-        ] = activity_func
+        self.fn: Callable[[DurableOrchestrationContext], Iterator[Any]] = activity_func
         self.customStatus: Any = None
 
     # noinspection PyAttributeOutsideInit,PyUnboundLocalVariable
@@ -70,12 +67,9 @@ class Orchestrator:
                     continue
 
                 if (
-                    isinstance(generation_state, Task)
-                    or isinstance(generation_state, TaskSet)
+                    isinstance(generation_state, Task) or isinstance(generation_state, TaskSet)
                 ) and (generation_state.is_faulted):
-                    generation_state = self.generator.throw(
-                        generation_state.exception
-                    )
+                    generation_state = self.generator.throw(generation_state.exception)
                     continue
 
                 self._reset_timestamp()
@@ -107,13 +101,9 @@ class Orchestrator:
         return gen_result
 
     def _add_to_actions(self, generation_state):
-        if isinstance(generation_state, Task) and hasattr(
-            generation_state, "action"
-        ):
+        if isinstance(generation_state, Task) and hasattr(generation_state, "action"):
             self.durable_context.actions.append([generation_state.action])
-        elif isinstance(generation_state, TaskSet) and hasattr(
-            generation_state, "actions"
-        ):
+        elif isinstance(generation_state, TaskSet) and hasattr(generation_state, "actions"):
             self.durable_context.actions.append(generation_state.actions)
 
     def _reset_timestamp(self):
@@ -127,9 +117,7 @@ class Orchestrator:
         if len(decision_started_events) == 0:
             self.durable_context.current_utc_datetime = None
         else:
-            self.durable_context.decision_started_event = decision_started_events[
-                0
-            ]
+            self.durable_context.decision_started_event = decision_started_events[0]
             self.durable_context.current_utc_datetime = (
                 self.durable_context.decision_started_event.timestamp
             )
