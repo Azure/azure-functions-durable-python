@@ -27,9 +27,8 @@ class DurableOrchestrationClient:
         self._show_history_query_key: str = "showHistory"
         self._show_history_output_query_key: str = "showHistoryOutput"
         self._show_input_query_key: str = "showInput"
-        self._orchestration_bindings: DurableOrchestrationBindings = DurableOrchestrationBindings.from_json(
-            context
-        )
+        self._orchestration_bindings: DurableOrchestrationBindings = \
+            DurableOrchestrationBindings.from_json(context)
 
     async def start_new(
         self, orchestration_function_name: str, instance_id: str, client_input
