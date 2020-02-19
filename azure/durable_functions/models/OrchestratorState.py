@@ -19,7 +19,7 @@ class OrchestratorState:
                  error: str = None,
                  custom_status: Any = None):
         self._is_done: bool = is_done
-        self._actions: List[List[Any]] = actions
+        self._actions: List[List[Action]] = actions
         self._output: Any = output
         self._error: str = error
         self._custom_status: Any = custom_status
@@ -54,7 +54,7 @@ class OrchestratorState:
         return self._output
 
     @property
-    def error(self):
+    def error(self) -> str:
         """Get the error received when running the orchestration.
 
         Optional.
@@ -69,7 +69,10 @@ class OrchestratorState:
     def to_json(self) -> Dict[str, Any]:
         """Convert object into a json dictionary.
 
-        :return: The instance of the class converted into a json dictionary
+        Returns
+        -------
+        Dict[str, Any]
+            The instance of the class converted into a json dictionary
         """
         json_dict = {}
         add_attrib(json_dict, self, '_is_done', 'isDone')
@@ -93,7 +96,10 @@ class OrchestratorState:
     def to_json_string(self) -> str:
         """Convert object into a json string.
 
-        :return: The instance of the object in json string format
+        Returns
+        -------
+        str
+            The instance of the object in json string format
         """
         json_dict = self.to_json()
         return json.dumps(json_dict)

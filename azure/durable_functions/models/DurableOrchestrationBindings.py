@@ -52,13 +52,14 @@ class DurableOrchestrationBindings:
 
         Parameters
         ----------
-        json_string: Context passed a JSON serializable value to be converted into an
-        instance of the class
+        json_string
+            Context passed a JSON serializable value to be converted into an
+            instance of the class
 
         Returns
         -------
-        DurableOrchestrationBindings: new instance of the durable orchestration binding class
-
+        DurableOrchestrationBindings
+            New instance of the durable orchestration binding class
         """
         json_dict = json.loads(json_string)
         return cls(**json_dict)

@@ -23,12 +23,13 @@ def new_uuid(context: DurableOrchestrationContext) -> str:
     Parameters
     ----------
     context : DurableOrchestrationContext
-    provides reference to the instance id, current_utc_datetime and a new_uuid_counter attribute
-    that is combined together to form that name that is used for the V5 UUID.
+        Provides reference to the instance id, current_utc_datetime and a new_uuid_counter
+        attribute that is combined together to form that name that is used for the V5 UUID.
 
     Returns
     -------
-    New UUID that is safe for replay within an orchestration or operation.
+    str
+        New UUID that is safe for replay within an orchestration or operation.
     """
     uuid_name_value = \
         f"{context.instance_id}" \

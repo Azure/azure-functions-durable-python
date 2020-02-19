@@ -9,9 +9,15 @@ def continue_as_new(
         input_: Any = None) -> Task:
     """Create a new continue as new action.
 
-    :param input_:The JSON-serializable input to pass to the activity
-    function.
-    :return: A Durable Task that causes the orchestrator reset and start as a new orchestration.
+    Parameters
+    ----------
+    input_: Any
+        The JSON-serializable input to pass to the activity function.
+
+    Returns
+    -------
+    Task
+        A Durable Task that causes the orchestrator reset and start as a new orchestration.
     """
     new_action = ContinueAsNewAction(input_)
 

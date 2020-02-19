@@ -13,22 +13,29 @@ from ..models.Task import (
 
 
 def call_http(state: List[HistoryEvent], method: str, uri: str, content: str = None,
-              headers: Dict[str, str] = None, token_source: TokenSource = None):
+              headers: Dict[str, str] = None, token_source: TokenSource = None) -> Task:
     """Get task used to schedule a durable HTTP call to the specified endpoint.
 
     Parameters
     ----------
-    state: The list of events that have been processed to determine the state of the task to
-    be scheduled
-    method: The HTTP request method.
-    uri: The HTTP request uri.
-    content: The HTTP request content.
-    headers: The HTTP request headers.
-    token_source: The source of OAuth token to add to the request.
+    state: List[HistoryEvent]
+        The list of events that have been processed to determine the state of the task to be
+        scheduled
+    method: str
+        The HTTP request method.
+    uri: str
+        The HTTP request uri.
+    content: str
+        The HTTP request content.
+    headers: Dict[str, str]
+        The HTTP request headers.
+    token_source: TokenSource
+        The source of OAuth token to add to the request.
 
     Returns
     -------
-    The durable HTTP request to schedule.
+    Task
+        The durable HTTP request to schedule.
     """
     if content and content is not isinstance(content, str):
         json_content = json.dumps(content)

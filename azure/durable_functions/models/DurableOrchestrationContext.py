@@ -2,7 +2,7 @@ import json
 import datetime
 from typing import List, Any, Dict
 
-from . import (RetryOptions)
+from . import (RetryOptions, TaskSet)
 from .FunctionContext import FunctionContext
 from .history import HistoryEvent, HistoryEventType
 from .actions import Action
@@ -60,17 +60,18 @@ class DurableOrchestrationContext:
         self._function_context: FunctionContext = FunctionContext(**kwargs)
 
     @classmethod
-    def from_json(cls, json_string):
+    def from_json(cls, json_string: str):
         """Convert the value passed into a new instance of the class.
 
         Parameters
         ----------
-        json_string: Context passed a JSON serializable value to be converted into an
-        instance of the class
+        json_string: str
+            Context passed a JSON serializable value to be converted into an instance of the class
 
         Returns
         -------
-        DurableOrchestrationContext: new instance of the durable orchestration context class
+        DurableOrchestrationContext
+            New instance of the durable orchestration context class
         """
         json_dict = json.loads(json_string)
         return cls(**json_dict)
@@ -80,14 +81,15 @@ class DurableOrchestrationContext:
 
         Parameters
         ----------
-        name: The name of the activity function to call.
-        input_:The JSON-serializable input to pass to the activity
-        function.
+        name: str
+            The name of the activity function to call.
+        input_:
+            The JSON-serializable input to pass to the activity function.
 
         Returns
         -------
-        A Durable Task that completes when the called activity
-        function completes or fails.
+        Task
+            A Durable Task that completes when the called activity function completes or fails.
         """
         raise NotImplementedError("This is a placeholder.")
 
@@ -98,33 +100,42 @@ class DurableOrchestrationContext:
 
         Parameters
         ----------
-        name: The name of the activity function to call.
-        retry_options: The retry options for the activity function.
-        input_: The JSON-serializable input to pass to the activity
-        function.
+        name: str
+            The name of the activity function to call.
+        retry_options: RetryOptions
+            The retry options for the activity function.
+        input_:
+            The JSON-serializable input to pass to the activity function.
 
         Returns
         -------
-        A Durable Task that completes when the called activity
-        function completes or fails completely.
+        Task
+            A Durable Task that completes when the called activity function completes or
+            fails completely.
         """
         raise NotImplementedError("This is a placeholder.")
 
     def call_http(self, method: str, uri: str, content: str = None,
-                  headers: Dict[str, str] = None, token_source: TokenSource = None):
+                  headers: Dict[str, str] = None, token_source: TokenSource = None) -> Task:
         """Schedule a durable HTTP call to the specified endpoint.
 
         Parameters
         ----------
-        method: The HTTP request method.
-        uri: The HTTP request uri.
-        content: The HTTP request content.
-        headers: The HTTP request headers.
-        token_source: The source of OAuth token to add to the request.
+        method: str
+            The HTTP request method.
+        uri: str
+            The HTTP request uri.
+        content: str
+            The HTTP request content.
+        headers: Dict[str, str]
+            The HTTP request headers.
+        token_source: TokenSource
+            The source of OAuth token to add to the request.
 
         Returns
         -------
-        The durable HTTP request to schedule.
+        Task
+            The durable HTTP request to schedule.
         """
         raise NotImplementedError("This is a placeholder.")
 
@@ -135,12 +146,14 @@ class DurableOrchestrationContext:
 
         Parameters
         ----------
-        name: The name of the orchestrator function to call.
-        input_: The JSON-serializable input to pass to the orchestrator
-        function.
-        instance_id: A unique ID to use for the sub-orchestration instance.
-        If `instanceId` is not specified, the extension will generate
-        an id in the format `<calling orchestrator instance ID>:<#>`
+        name: str
+            The name of the orchestrator function to call.
+        input_:
+            The JSON-serializable input to pass to the orchestrator function.
+        instance_id: str
+            A unique ID to use for the sub-orchestration instance. If `instanceId` is not
+            specified, the extension will generate an id in the format `<calling orchestrator
+            instance ID>:<#>`
         """
         raise NotImplementedError("This is a placeholder.")
 
@@ -154,11 +167,12 @@ class DurableOrchestrationContext:
 
         Returns
         -------
-        New UUID that is safe for replay within an orchestration or operation.
+        str
+            New UUID that is safe for replay within an orchestration or operation.
         """
         raise NotImplementedError("This is a placeholder.")
 
-    def task_all(self, activities: List[HistoryEvent]) -> List[Task]:
+    def task_all(self, activities: List[Task]) -> TaskSet:
         """Schedule the execution of all activities.
 
         Similar to Promise.all. When called with `yield` or `return`, returns an
@@ -168,28 +182,33 @@ class DurableOrchestrationContext:
         Throws an exception if any of the activities fails
         Parameters
         ----------
-        activities: List of activities to schedule
+        activities: List[Task]
+            List of activities to schedule
 
         Returns
         -------
-        The results of all activities.
+        TaskSet
+            The results of all activities.
         """
         raise NotImplementedError("This is a placeholder.")
 
-    def task_any(self, activities: List[HistoryEvent]) -> List[Task]:
+    def task_any(self, activities: List[Task]) -> TaskSet:
         """Schedule the execution of all activities.
 
         Similar to Promise.race. When called with `yield` or `return`, returns
         the first [[Task]] instance to complete.
 
         Throws an exception if all of the activities fail
+
         Parameters
         ----------
-        activities: List of activities to schedule
+        activities: List[Task]
+            List of activities to schedule
 
         Returns
         -------
-        The first [[Task]] instance to complete.
+        TaskSet
+            The first [[Task]] instance to complete.
         """
         raise NotImplementedError("This is a placeholder.")
 
@@ -199,7 +218,7 @@ class DurableOrchestrationContext:
         return self._histories
 
     @property
-    def instance_id(self):
+    def instance_id(self) -> str:
         """Get the ID of the current orchestration instance.
 
         The instance ID is generated and fixed when the orchestrator function
@@ -208,12 +227,13 @@ class DurableOrchestrationContext:
 
         Returns
         -------
-        The ID of the current orchestration instance.
+        str
+            The ID of the current orchestration instance.
         """
         return self._instance_id
 
     @property
-    def is_replaying(self):
+    def is_replaying(self) -> bool:
         """Get the value indicating orchestration replaying itself.
 
         This property is useful when there is logic that needs to run only when
@@ -225,13 +245,13 @@ class DurableOrchestrationContext:
 
         Returns
         -------
-        Value indicating whether the orchestrator function is
-        currently replaying
+        bool
+            Value indicating whether the orchestrator function is currently replaying.
         """
         return self._is_replaying
 
     @property
-    def parent_instance_id(self):
+    def parent_instance_id(self) -> str:
         """Get the ID of the parent orchestration.
 
         The parent instance ID is generated and fixed when the parent
@@ -241,8 +261,8 @@ class DurableOrchestrationContext:
 
         Returns
         -------
-        ID of the parent orchestration of the current
-        sub-orchestration instance
+        str
+            ID of the parent orchestration of the current sub-orchestration instance
         """
         return self._parent_instance_id
 
@@ -256,8 +276,8 @@ class DurableOrchestrationContext:
 
         Returns
         -------
-        The current date/time in a way that is safe for use by
-        orchestrator functions
+        datetime
+            The current date/time in a way that is safe for use by orchestrator functions
         """
         return self._current_utc_datetime
 
@@ -271,6 +291,7 @@ class DurableOrchestrationContext:
 
         Returns
         -------
-        Object containing function level attributes not used by durable orchestrator.
+        FunctionContext
+            Object containing function level attributes not used by durable orchestrator.
         """
         return self._function_context

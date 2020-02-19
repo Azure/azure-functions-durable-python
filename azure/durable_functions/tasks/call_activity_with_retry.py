@@ -18,14 +18,22 @@ def call_activity_with_retry_task(
         input_: Any = None) -> Task:
     """Determine the state of scheduling an activity for execution with retry options.
 
-    :param state: The list of history events to search to determine the current
-    state of the activity.
-    :param name: The name of the activity function to call.
-    :param retry_options: The retry options for the activity function.
-    :param input_: The JSON-serializable input to pass to the activity
-    function.
-    :return: A Durable Task that completes when the called activity
-    function completes or fails completely.
+    Parameters
+    ----------
+    state: List[HistoryEvent]
+        The list of history events to search to determine the current state of the activity.
+    retry_options: RetryOptions
+        The retry options for the activity function.
+    name: str
+        The name of the activity function to call.
+    input_: Any
+        The JSON-serializable input to pass to the activity function.
+
+    Returns
+    -------
+    Task
+        A Durable Task that completes when the called activity function completes or fails
+        completely.
     """
     new_action = CallActivityWithRetryAction(
         function_name=name, retry_options=retry_options, input_=input_)
