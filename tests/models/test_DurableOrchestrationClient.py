@@ -5,6 +5,8 @@ from azure.durable_functions.models.DurableOrchestrationClient \
 from tests.conftest import replace_stand_in_bits
 from unittest.mock import Mock
 
+RPC_BASE_URL = "http://127.0.0.1:17071/durabletask/"
+
 
 # noinspection PyProtectedMember
 def test_get_start_new_url(binding_string):
@@ -13,7 +15,7 @@ def test_get_start_new_url(binding_string):
     function_name = "my_function"
     start_new_url = client._get_start_new_url(instance_id, function_name)
     expected_url = replace_stand_in_bits(
-        f"BASE_URL/orchestrators/{function_name}/{instance_id}?code=AUTH_CODE")
+        f"{RPC_BASE_URL}orchestrators/{function_name}/{instance_id}")
     assert expected_url == start_new_url
 
 
@@ -42,8 +44,8 @@ def test_get_raise_event_url(binding_string):
                                                   connection_name)
 
     expected_url = replace_stand_in_bits(
-        f"BASE_URL/instances/{instance_id}/raiseEvent/{event_name}?taskHub=test_task_hub"
-        "&connection=test_connection&code=AUTH_CODE")
+        f"{RPC_BASE_URL}instances/{instance_id}/raiseEvent/{event_name}"
+        f"?taskHub=test_task_hub&connection=test_connection")
 
     assert expected_url == raise_event_url
 
