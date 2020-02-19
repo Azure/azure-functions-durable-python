@@ -44,8 +44,8 @@ def test_extracts_histories(starting_context):
 def test_added_function_context_args():
     context_builder = ContextBuilder('test_function_context')
 
-    additional_attributes = {"attrib1": 1, "attrib2": "two", "attrib3":
-        {"randomDictionary": "random"}}
+    additional_attributes = {"attrib1": 1, "attrib2": "two",
+                             "attrib3": {"randomDictionary": "random"}}
 
     context_as_string = context_builder.to_json_string(**additional_attributes)
 
