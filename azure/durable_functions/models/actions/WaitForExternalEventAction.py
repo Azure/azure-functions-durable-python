@@ -1,10 +1,11 @@
 from typing import Any, Dict
 
+from .Action import Action
 from .ActionType import ActionType
 from ..utils.json_utils import add_attrib
 
 
-class WaitForExternalEventAction:
+class WaitForExternalEventAction(Action):
     """Defines the structure of Wait for External Event object.
 
     Returns

@@ -1,10 +1,11 @@
 from typing import Any, Dict
 
+from .Action import Action
 from .ActionType import ActionType
 from ..utils.json_utils import add_attrib
 
 
-class CallActivityAction:
+class CallActivityAction(Action):
     """Defines the structure of the Call Activity object.
 
     Provides the information needed by the durable extension to be able to schedule the activity.

@@ -1,11 +1,12 @@
 from typing import Any, Dict
 
+from .Action import Action
 from .ActionType import ActionType
 from .. import DurableHttpRequest
 from ..utils.json_utils import add_attrib, add_json_attrib
 
 
-class CallHttpAction:
+class CallHttpAction(Action):
     """Defines the structure of the Call Http object.
 
     Provides the information needed by the durable extension to be able to schedule the activity.

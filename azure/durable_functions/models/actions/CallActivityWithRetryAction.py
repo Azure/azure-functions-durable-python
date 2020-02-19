@@ -1,11 +1,12 @@
 from typing import Any, Dict
 
+from .Action import Action
 from .ActionType import ActionType
 from ..RetryOptions import RetryOptions
 from ..utils.json_utils import add_attrib, add_json_attrib
 
 
-class CallActivityWithRetryAction:
+class CallActivityWithRetryAction(Action):
     """Defines the structure of the Call Activity With Retry object.
 
     Provides the information needed by the durable extension to be able to schedule the activity.
