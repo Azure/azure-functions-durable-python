@@ -26,12 +26,23 @@ def task_all(tasks):
         if not task.is_completed:
             is_completed = False
         else:
-            complete_time = task.timestamp if complete_time is None \
+            complete_time = (
+                task.timestamp
+                if complete_time is None
                 else max([task.timestamp, complete_time])
+            )
 
     if len(faulted) > 0:
-        return TaskSet(is_completed, all_actions, results, is_faulted=True, exception=faulted[0])
+        return TaskSet(
+            is_completed,
+            all_actions,
+            results,
+            is_faulted=True,
+            exception=faulted[0],
+        )
     if is_completed:
-        return TaskSet(is_completed, all_actions, results, False, complete_time)
+        return TaskSet(
+            is_completed, all_actions, results, False, complete_time
+        )
     else:
         return TaskSet(is_completed, all_actions, None)

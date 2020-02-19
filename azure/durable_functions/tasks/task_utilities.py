@@ -4,9 +4,11 @@ from ..models.history import HistoryEventType
 
 def should_suspend(partial_result) -> bool:
     """Check the state of the result to determine if the orchestration should suspend."""
-    return bool(partial_result is not None
-                and hasattr(partial_result, "is_completed")
-                and not partial_result.is_completed)
+    return bool(
+        partial_result is not None
+        and hasattr(partial_result, "is_completed")
+        and not partial_result.is_completed
+    )
 
 
 def parse_history_event(directive_result):
@@ -48,9 +50,13 @@ def find_event_raised(state, name):
     if not name:
         raise ValueError("Name cannot be empty")
 
-    tasks = [e for e in state
-             if e.event_type == HistoryEventType.EVENT_RAISED
-             and e.Name == name and not e.is_processed]
+    tasks = [
+        e
+        for e in state
+        if e.event_type == HistoryEventType.EVENT_RAISED
+        and e.Name == name
+        and not e.is_processed
+    ]
 
     if len(tasks) == 0:
         return None
@@ -67,9 +73,13 @@ def find_task_scheduled(state, name):
     if not name:
         raise ValueError("Name cannot be empty")
 
-    tasks = [e for e in state
-             if e.event_type == HistoryEventType.TASK_SCHEDULED
-             and e.Name == name and not e.is_processed]
+    tasks = [
+        e
+        for e in state
+        if e.event_type == HistoryEventType.TASK_SCHEDULED
+        and e.Name == name
+        and not e.is_processed
+    ]
 
     if len(tasks) == 0:
         return None
@@ -87,8 +97,12 @@ def find_task_completed(state, scheduled_task):
     if scheduled_task is None:
         return None
 
-    tasks = [e for e in state if e.event_type == HistoryEventType.TASK_COMPLETED
-             and e.TaskScheduledId == scheduled_task.event_id]
+    tasks = [
+        e
+        for e in state
+        if e.event_type == HistoryEventType.TASK_COMPLETED
+        and e.TaskScheduledId == scheduled_task.event_id
+    ]
 
     if len(tasks) == 0:
         return None
@@ -106,8 +120,12 @@ def find_task_failed(state, scheduled_task):
     if scheduled_task is None:
         return None
 
-    tasks = [e for e in state if e.event_type == HistoryEventType.TASK_FAILED
-             and e.TaskScheduledId == scheduled_task.event_id]
+    tasks = [
+        e
+        for e in state
+        if e.event_type == HistoryEventType.TASK_FAILED
+        and e.TaskScheduledId == scheduled_task.event_id
+    ]
 
     if len(tasks) == 0:
         return None
@@ -126,8 +144,12 @@ def find_task_retry_timer_created(state, failed_task):
     if failed_task is None:
         return None
 
-    tasks = [e for e in state if e.event_type == HistoryEventType.TIMER_CREATED
-             and e.event_id == failed_task.TaskScheduledId + 1]
+    tasks = [
+        e
+        for e in state
+        if e.event_type == HistoryEventType.TIMER_CREATED
+        and e.event_id == failed_task.TaskScheduledId + 1
+    ]
 
     if len(tasks) == 0:
         return None
@@ -146,8 +168,12 @@ def find_task_retry_timer_fired(state, retry_timer_created):
     if retry_timer_created is None:
         return None
 
-    tasks = [e for e in state if e.event_type == HistoryEventType.TIMER_FIRED
-             and e.TimerId == retry_timer_created.event_id]
+    tasks = [
+        e
+        for e in state
+        if e.event_type == HistoryEventType.TIMER_FIRED
+        and e.TimerId == retry_timer_created.event_id
+    ]
 
     if len(tasks) == 0:
         return None

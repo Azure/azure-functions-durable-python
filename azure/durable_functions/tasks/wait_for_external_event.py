@@ -1,16 +1,19 @@
 import logging
 from typing import List
 
-from ..models.Task import (
-    Task)
-from ..models.actions.WaitForExternalEventAction import WaitForExternalEventAction
+from ..models.Task import Task
+from ..models.actions.WaitForExternalEventAction import (
+    WaitForExternalEventAction,
+)
 from ..models.history import HistoryEvent
-from .task_utilities import set_processed, parse_history_event, find_event_raised
+from .task_utilities import (
+    set_processed,
+    parse_history_event,
+    find_event_raised,
+)
 
 
-def wait_for_external_event_task(
-        state: List[HistoryEvent],
-        name: str) -> Task:
+def wait_for_external_event_task(state: List[HistoryEvent], name: str) -> Task:
     """Determine the state of a task that is waiting for an event to occur.
 
     Parameters
@@ -31,14 +34,15 @@ def wait_for_external_event_task(
     new_action = WaitForExternalEventAction(name)
     event_raised = find_event_raised(state, name)
     set_processed([event_raised])
-    if (event_raised):
+    if event_raised:
         return Task(
             is_completed=True,
             is_faulted=False,
             action=new_action,
             result=parse_history_event(event_raised),
             timestamp=event_raised.timestamp,
-            id_=event_raised.event_id)
+            id_=event_raised.event_id,
+        )
 
     else:
         return Task(is_completed=False, is_faulted=False, action=new_action)

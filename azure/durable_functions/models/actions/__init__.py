@@ -6,9 +6,9 @@ from .WaitForExternalEventAction import WaitForExternalEventAction
 from .CallHttpAction import CallHttpAction
 
 __all__ = [
-    'ActionType',
-    'CallActivityAction',
-    'CallActivityWithRetryAction',
-    'CallHttpAction',
-    'WaitForExternalEventAction'
+    "ActionType",
+    "CallActivityAction",
+    "CallActivityWithRetryAction",
+    "CallHttpAction",
+    "WaitForExternalEventAction",
 ]

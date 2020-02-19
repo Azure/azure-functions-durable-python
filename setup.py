@@ -12,10 +12,9 @@ from distutils.command import build
 
 def _gen_grpc():
     root = pathlib.Path(os.path.abspath(os.path.dirname(__file__)))
-    proto_root_dir = \
-        root / 'azure' / 'durable_functions' / 'grpc' / 'protobuf'
+    proto_root_dir = root / "azure" / "durable_functions" / "grpc" / "protobuf"
     proto_src_dir = proto_root_dir
-    staging_root_dir = root / 'build' / 'protos'
+    staging_root_dir = root / "build" / "protos"
     staging_dir = staging_root_dir
     build_dir = staging_dir
 
@@ -24,21 +23,29 @@ def _gen_grpc():
 
     shutil.copytree(proto_src_dir, build_dir)
 
-    subprocess.run([
-        sys.executable, '-m', 'grpc_tools.protoc',
-        '-I', str(proto_src_dir),
-        '--python_out', str(staging_root_dir),
-        '--grpc_python_out', str(staging_root_dir),
-        os.sep.join((str(proto_src_dir),
-                     'DurableRpc.proto')),
-    ], check=True, stdout=sys.stdout, stderr=sys.stderr,
-        cwd=staging_root_dir)
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "grpc_tools.protoc",
+            "-I",
+            str(proto_src_dir),
+            "--python_out",
+            str(staging_root_dir),
+            "--grpc_python_out",
+            str(staging_root_dir),
+            os.sep.join((str(proto_src_dir), "DurableRpc.proto")),
+        ],
+        check=True,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+        cwd=staging_root_dir,
+    )
 
-    compiled = glob.glob(str(staging_dir / '*.py'))
+    compiled = glob.glob(str(staging_dir / "*.py"))
 
     if not compiled:
-        print('grpc_tools.protoc produced no Python files',
-              file=sys.stderr)
+        print("grpc_tools.protoc produced no Python files", file=sys.stderr)
         sys.exit(1)
 
     # Not sure if we need this line that will copy both the
@@ -62,27 +69,25 @@ class BuildModule(build.build):
 
 
 setup(
-    name='azure-functions-durable',
+    name="azure-functions-durable",
     packages=find_packages(exclude=("tests", "samples")),
-    version='1.0.1ab',
-    description='Durable Functions Support For Python Functionapp',
-    license='MIT',
+    version="1.0.1ab",
+    description="Durable Functions Support For Python Functionapp",
+    license="MIT",
     setup_requires=[
-        'grpcio~=1.22.0',
-        'grpcio-tools~=1.22.0',
-        'python-dateutil==2.8.0',
-        'requests==2.22.0',
+        "grpcio~=1.22.0",
+        "grpcio-tools~=1.22.0",
+        "python-dateutil==2.8.0",
+        "requests==2.22.0",
     ],
     install_requires=[
-        'grpcio~=1.22.0',
-        'grpcio-tools~=1.22.0',
-        'python-dateutil==2.8.0',
-        'requests==2.22.0',
-        'aiohttp==3.6.2'
+        "grpcio~=1.22.0",
+        "grpcio-tools~=1.22.0",
+        "python-dateutil==2.8.0",
+        "requests==2.22.0",
+        "aiohttp==3.6.2",
     ],
     include_package_data=True,
-    cmdclass={
-        'build': BuildModule
-    },
-    test_suite='tests'
+    cmdclass={"build": BuildModule},
+    test_suite="tests",
 )

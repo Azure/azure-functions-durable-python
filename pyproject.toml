@@ -1,0 +1,16 @@
+[tool.black]
+line-length = 79
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.idea
+  | \.github
+  | \.vscode
+  | \.eggs
+  | \investigations
+  | .project
+  | .gitignore
+  | .flake8
+)/
+'''

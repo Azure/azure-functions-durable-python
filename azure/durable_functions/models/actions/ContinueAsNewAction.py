@@ -23,6 +23,6 @@ class ContinueAsNewAction:
         The instance of the class converted into a json dictionary
         """
         json_dict = {}
-        add_attrib(json_dict, self, 'action_type', 'actionType')
-        add_attrib(json_dict, self, 'input_', 'input')
+        add_attrib(json_dict, self, "action_type", "actionType")
+        add_attrib(json_dict, self, "input_", "input")
         return json_dict

@@ -1,12 +1,10 @@
 from typing import Any
 
-from ..models.Task import (
-    Task)
+from ..models.Task import Task
 from ..models.actions.ContinueAsNewAction import ContinueAsNewAction
 
 
-def continue_as_new(
-        input_: Any = None) -> Task:
+def continue_as_new(input_: Any = None) -> Task:
     """Create a new continue as new action.
 
     :param input_:The JSON-serializable input to pass to the activity

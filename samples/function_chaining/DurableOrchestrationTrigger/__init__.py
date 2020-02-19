@@ -1,6 +1,7 @@
 import logging
 import azure.durable_functions as df
 
+
 def generator_function(context):
     """This function provides the core function chaining orchestration logic
     
@@ -21,7 +22,7 @@ def generator_function(context):
         Yields at every step of the function chain orchestration logic
     """
 
-    # Chained functions - output of a function is passed as 
+    # Chained functions - output of a function is passed as
     # input to the next function in the chain
     r1 = yield context.call_activity("DurableActivity", "One")
     r2 = yield context.call_activity("DurableActivity", r1)
@@ -29,7 +30,8 @@ def generator_function(context):
 
     return final_result
 
-def main(context:str):
+
+def main(context: str):
     """This function creates the orchestration and provides
     the durable framework with the core orchestration logic
     

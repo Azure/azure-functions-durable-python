@@ -11,16 +11,18 @@ class RetryOptions:
     """
 
     def __init__(
-            self,
-            first_retry_interval_in_milliseconds: int,
-            max_number_of_attempts: int):
-        self._first_retry_interval_in_milliseconds: int = \
-            first_retry_interval_in_milliseconds
+        self,
+        first_retry_interval_in_milliseconds: int,
+        max_number_of_attempts: int,
+    ):
+        self._first_retry_interval_in_milliseconds: int = first_retry_interval_in_milliseconds
         self._max_number_of_attempts: int = max_number_of_attempts
 
         if self._first_retry_interval_in_milliseconds <= 0:
-            raise ValueError("first_retry_interval_in_milliseconds value"
-                             "must be greater than 0.")
+            raise ValueError(
+                "first_retry_interval_in_milliseconds value"
+                "must be greater than 0."
+            )
 
     @property
     def first_retry_interval_in_milliseconds(self):
@@ -50,11 +52,10 @@ class RetryOptions:
         add_attrib(
             json_dict,
             self,
-            'first_retry_interval_in_milliseconds',
-            'firstRetryIntervalInMilliseconds')
+            "first_retry_interval_in_milliseconds",
+            "firstRetryIntervalInMilliseconds",
+        )
         add_attrib(
-            json_dict,
-            self,
-            'max_number_of_attempts',
-            'maxNumberOfAttempts')
+            json_dict, self, "max_number_of_attempts", "maxNumberOfAttempts"
+        )
         return json_dict

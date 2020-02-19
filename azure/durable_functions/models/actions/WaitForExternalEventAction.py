@@ -36,9 +36,9 @@ class WaitForExternalEventAction:
         """
         json_dict = {}
 
-        add_attrib(json_dict, self, 'action_type', 'actionType')
-        add_attrib(json_dict, self, 'external_event_name', 'externalEventName')
-        add_attrib(json_dict, self, 'reason', 'reason')
+        add_attrib(json_dict, self, "action_type", "actionType")
+        add_attrib(json_dict, self, "external_event_name", "externalEventName")
+        add_attrib(json_dict, self, "reason", "reason")
         return json_dict
 
     def __eq__(self, other):
@@ -53,6 +53,8 @@ class WaitForExternalEventAction:
         if not isinstance(other, WaitForExternalEventAction):
             return False
         else:
-            return self.action_type == other.action_type \
-                and self.external_event_name == other.external_event_name \
+            return (
+                self.action_type == other.action_type
+                and self.external_event_name == other.external_event_name
                 and self.reason == other.reason
+            )

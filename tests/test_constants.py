@@ -2,7 +2,8 @@
 import unittest
 from azure.durable_functions.constants import (
     DEFAULT_LOCAL_HOST,
-    DEFAULT_LOCAL_ORIGIN)
+    DEFAULT_LOCAL_ORIGIN,
+)
 
 
 class TestConstants(unittest.TestCase):

@@ -4,7 +4,7 @@ from azure.durable_functions import DurableOrchestrationClient
 
 
 async def main(req: func.HttpRequest, starter: str):
-    function_name = req.route_params.get('functionName')
+    function_name = req.route_params.get("functionName")
     client = DurableOrchestrationClient(starter)
     instance_id = await client.start_new(function_name, None, None)
 

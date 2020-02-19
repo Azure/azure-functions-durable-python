@@ -9,7 +9,8 @@ from .models import (
     DurableOrchestrationContext,
     Task,
     TaskSet,
-    OrchestratorState)
+    OrchestratorState,
+)
 from .models.history import HistoryEventType
 from .tasks import should_suspend
 
@@ -21,15 +22,19 @@ class Orchestrator:
     function.
     """
 
-    def __init__(self,
-                 activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]]):
+    def __init__(
+        self,
+        activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]],
+    ):
         """Create a new orchestrator for the user defined generator.
 
         Responsible for orchestrating the execution of the user defined
         generator function.
         :param activity_func: Generator function to orchestrate.
         """
-        self.fn: Callable[[DurableOrchestrationContext], Iterator[Any]] = activity_func
+        self.fn: Callable[
+            [DurableOrchestrationContext], Iterator[Any]
+        ] = activity_func
         self.customStatus: Any = None
 
     # noinspection PyAttributeOutsideInit,PyUnboundLocalVariable
@@ -59,15 +64,18 @@ class Orchestrator:
                         is_done=False,
                         output=None,
                         actions=self.durable_context.actions,
-                        custom_status=self.customStatus)
+                        custom_status=self.customStatus,
+                    )
                     suspended = True
                     continue
 
-                if (isinstance(generation_state, Task)
-                    or isinstance(generation_state, TaskSet)) and (
-                        generation_state.is_faulted):
+                if (
+                    isinstance(generation_state, Task)
+                    or isinstance(generation_state, TaskSet)
+                ) and (generation_state.is_faulted):
                     generation_state = self.generator.throw(
-                        generation_state.exception)
+                        generation_state.exception
+                    )
                     continue
 
                 self._reset_timestamp()
@@ -78,14 +86,16 @@ class Orchestrator:
                 is_done=True,
                 output=sie.value,
                 actions=self.durable_context.actions,
-                custom_status=self.customStatus)
+                custom_status=self.customStatus,
+            )
         except Exception as e:
             orchestration_state = OrchestratorState(
                 is_done=False,
                 output=None,  # Should have no output, after generation range
                 actions=self.durable_context.actions,
                 error=str(e),
-                custom_status=self.customStatus)
+                custom_status=self.customStatus,
+            )
 
         return orchestration_state.to_json_string()
 
@@ -97,25 +107,32 @@ class Orchestrator:
         return gen_result
 
     def _add_to_actions(self, generation_state):
-        if (isinstance(generation_state, Task)
-                and hasattr(generation_state, "action")):
+        if isinstance(generation_state, Task) and hasattr(
+            generation_state, "action"
+        ):
             self.durable_context.actions.append([generation_state.action])
-        elif (isinstance(generation_state, TaskSet)
-              and hasattr(generation_state, "actions")):
+        elif isinstance(generation_state, TaskSet) and hasattr(
+            generation_state, "actions"
+        ):
             self.durable_context.actions.append(generation_state.actions)
 
     def _reset_timestamp(self):
         last_timestamp = self.durable_context.decision_started_event.timestamp
-        decision_started_events = [e_ for e_ in self.durable_context.histories
-                                   if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED
-                                   and e_.timestamp > last_timestamp]
+        decision_started_events = [
+            e_
+            for e_ in self.durable_context.histories
+            if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED
+            and e_.timestamp > last_timestamp
+        ]
         if len(decision_started_events) == 0:
             self.durable_context.current_utc_datetime = None
         else:
-            self.durable_context.decision_started_event = \
-                decision_started_events[0]
-            self.durable_context.current_utc_datetime = \
+            self.durable_context.decision_started_event = decision_started_events[
+                0
+            ]
+            self.durable_context.current_utc_datetime = (
                 self.durable_context.decision_started_event.timestamp
+            )
 
     @classmethod
     def create(cls, fn):
@@ -124,5 +141,6 @@ class Orchestrator:
         :param fn: Generator function that needs orchestration
         :return: Handle function of the newly created orchestration client
         """
-        return lambda context: \
-            Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context))
+        return lambda context: Orchestrator(fn).handle(
+            DurableOrchestrationContext.from_json(context)
+        )

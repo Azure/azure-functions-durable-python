@@ -11,8 +11,9 @@ class CallActivityWithRetryAction:
     Provides the information needed by the durable extension to be able to schedule the activity.
     """
 
-    def __init__(self, function_name: str,
-                 retry_options: RetryOptions, input_=None):
+    def __init__(
+        self, function_name: str, retry_options: RetryOptions, input_=None
+    ):
         self.action_type: ActionType = ActionType.CALL_ACTIVITY_WITH_RETRY
         self.function_name: str = function_name
         self.retry_options: RetryOptions = retry_options
@@ -28,8 +29,8 @@ class CallActivityWithRetryAction:
         """
         json_dict = {}
 
-        add_attrib(json_dict, self, 'action_type', 'actionType')
-        add_attrib(json_dict, self, 'function_name', 'functionName')
-        add_attrib(json_dict, self, 'input', 'input')
-        add_json_attrib(json_dict, self, 'retry_options', 'retryOptions')
+        add_attrib(json_dict, self, "action_type", "actionType")
+        add_attrib(json_dict, self, "function_name", "functionName")
+        add_attrib(json_dict, self, "input", "input")
+        add_json_attrib(json_dict, self, "retry_options", "retryOptions")
         return json_dict

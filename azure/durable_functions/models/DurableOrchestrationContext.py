@@ -2,14 +2,22 @@ import json
 import datetime
 from typing import List, Any, Dict
 
-from . import (RetryOptions)
+from . import RetryOptions
 from .FunctionContext import FunctionContext
 from .history import HistoryEvent, HistoryEventType
 from ..interfaces import IAction
 from ..models.Task import Task
 from ..models.TokenSource import TokenSource
-from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
-    wait_for_external_event_task, continue_as_new, new_uuid, call_http
+from ..tasks import (
+    call_activity_task,
+    task_all,
+    task_any,
+    call_activity_with_retry_task,
+    wait_for_external_event_task,
+    continue_as_new,
+    new_uuid,
+    call_http,
+)
 
 
 class DurableOrchestrationContext:
@@ -21,40 +29,48 @@ class DurableOrchestrationContext:
 
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     # noinspection PyPep8Naming
-    def __init__(self,
-                 history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
-                 parentInstanceId: str, **kwargs):
-        self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
+    def __init__(
+        self,
+        history: List[Dict[Any, Any]],
+        instanceId: str,
+        isReplaying: bool,
+        parentInstanceId: str,
+        **kwargs
+    ):
+        self._histories: List[HistoryEvent] = [
+            HistoryEvent(**he) for he in history
+        ]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
         self._new_uuid_counter: int = 0
         self.call_activity = lambda n, i=None: call_activity_task(
+            state=self.histories, name=n, input_=i
+        )
+        self.call_activity_with_retry = lambda n, o, i=None: call_activity_with_retry_task(
+            state=self.histories, retry_options=o, name=n, input_=i
+        )
+        self.call_http = lambda method, uri, content=None, headers=None, token_source=None: call_http(
             state=self.histories,
-            name=n,
-            input_=i)
-        self.call_activity_with_retry = \
-            lambda n, o, i=None: call_activity_with_retry_task(
-                state=self.histories,
-                retry_options=o,
-                name=n,
-                input_=i)
-        self.call_http = lambda method, uri, content=None, headers=None, token_source=None: \
-            call_http(
-                state=self.histories, method=method, uri=uri, content=content, headers=headers,
-                token_source=token_source)
+            method=method,
+            uri=uri,
+            content=content,
+            headers=headers,
+            token_source=token_source,
+        )
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
-            state=self.histories,
-            name=n)
+            state=self.histories, name=n
+        )
         self.new_uuid = lambda: new_uuid(context=self)
         self.continue_as_new = lambda i: continue_as_new(input_=i)
         self.task_any = lambda t: task_any(tasks=t)
         self.task_all = lambda t: task_all(tasks=t)
-        self.decision_started_event: HistoryEvent = \
-            [e_ for e_ in self.histories
-             if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]
-        self._current_utc_datetime = \
-            self.decision_started_event.timestamp
+        self.decision_started_event: HistoryEvent = [
+            e_
+            for e_ in self.histories
+            if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED
+        ][0]
+        self._current_utc_datetime = self.decision_started_event.timestamp
         self._new_uuid_counter = 0
         self.actions: List[List[IAction]] = []
         self._function_context: FunctionContext = FunctionContext(**kwargs)
@@ -91,9 +107,9 @@ class DurableOrchestrationContext:
         """
         raise NotImplementedError("This is a placeholder.")
 
-    def call_activity_with_retry(self,
-                                 name: str, retry_options: RetryOptions,
-                                 input_=None) -> Task:
+    def call_activity_with_retry(
+        self, name: str, retry_options: RetryOptions, input_=None
+    ) -> Task:
         """Schedule an activity for execution with retry options.
 
         Parameters
@@ -110,8 +126,14 @@ class DurableOrchestrationContext:
         """
         raise NotImplementedError("This is a placeholder.")
 
-    def call_http(self, method: str, uri: str, content: str = None,
-                  headers: Dict[str, str] = None, token_source: TokenSource = None):
+    def call_http(
+        self,
+        method: str,
+        uri: str,
+        content: str = None,
+        headers: Dict[str, str] = None,
+        token_source: TokenSource = None,
+    ):
         """Schedule a durable HTTP call to the specified endpoint.
 
         Parameters
@@ -128,9 +150,9 @@ class DurableOrchestrationContext:
         """
         raise NotImplementedError("This is a placeholder.")
 
-    def call_sub_orchestrator(self,
-                              name: str, input_=None,
-                              instance_id: str = None) -> Task:
+    def call_sub_orchestrator(
+        self, name: str, input_=None, instance_id: str = None
+    ) -> Task:
         """Schedule an orchestration function named `name` for execution.
 
         Parameters

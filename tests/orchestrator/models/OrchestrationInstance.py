@@ -12,7 +12,7 @@ class OrchestrationInstance:
     def to_json(self) -> Dict[str, Any]:
         json_dict = {}
 
-        add_attrib(json_dict, self, 'instance_id', 'InstanceId')
-        add_attrib(json_dict, self, 'execution_id', 'ExecutionId')
+        add_attrib(json_dict, self, "instance_id", "InstanceId")
+        add_attrib(json_dict, self, "execution_id", "ExecutionId")
 
         return json_dict

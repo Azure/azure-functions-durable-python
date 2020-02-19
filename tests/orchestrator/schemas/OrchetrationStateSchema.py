@@ -21,12 +21,15 @@ schema = {
                             "properties": {
                                 "firstRetryIntervalInMilliseconds": {
                                     "type": "number",
-                                    "minimum": 1},
-                                "maxNumberOfAttempts": {"type": "number"}
+                                    "minimum": 1,
+                                },
+                                "maxNumberOfAttempts": {"type": "number"},
                             },
-                            "required":
-                                ["firstRetryIntervalInMilliseconds", "maxNumberOfAttempts"],
-                            "additionalProperties": False
+                            "required": [
+                                "firstRetryIntervalInMilliseconds",
+                                "maxNumberOfAttempts",
+                            ],
+                            "additionalProperties": False,
                         },
                         "httpRequest": {
                             "type": "object",
@@ -41,20 +44,19 @@ schema = {
                                         "resource": {"type": "string"}
                                     },
                                     "required": ["resource"],
-                                    "additionalProperties": False
-                                }
+                                    "additionalProperties": False,
+                                },
                             },
-                            "required":
-                                ["method", "uri"],
-                            "additionalProperties": False
-                        }
+                            "required": ["method", "uri"],
+                            "additionalProperties": False,
+                        },
                     },
                     "required": ["actionType"],
-                    "additionalProperties": False
-                }
-            }
-        }
+                    "additionalProperties": False,
+                },
+            },
+        },
     },
     "required": ["isDone"],
-    "additionalProperties": False
+    "additionalProperties": False,
 }
