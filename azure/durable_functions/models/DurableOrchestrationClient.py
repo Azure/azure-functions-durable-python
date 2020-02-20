@@ -183,6 +183,11 @@ class DurableOrchestrationClient:
             Boolean marker for including output in the execution history response.
         show_input: bool
             Boolean marker for including the input in the response.
+
+        Returns
+        -------
+        DurableOrchestrationStatus
+            The status of the requested orchestration instance
         """
         raise NotImplementedError("This is a placeholder.")
 

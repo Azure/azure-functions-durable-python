@@ -1,4 +1,5 @@
 import pytest
+import json
 from azure.durable_functions.models.DurableOrchestrationBindings import \
     DurableOrchestrationBindings
 
@@ -6,38 +7,41 @@ from azure.durable_functions.models.DurableOrchestrationBindings import \
 TASK_HUB_NAME = "DurableFunctionsHub"
 BASE_URL = "http://localhost:7071/runtime/webhooks/durabletask"
 AUTH_CODE = "iDFeaQCSAIuXoodl6/w3rdvHZ6Nl7yJwRrHfeInNWDJjuiunhxk8dQ=="
+BASE_RPC_URL = "http://127.0.0.1:17071/durabletask/"
 
 
 def get_binding_string():
-    binding_string = '{"taskHubName":"DurableFunctionsHub","creationUrls":{' \
-                     '"createNewInstancePostUri":"http://localhost:7071/runtime/webhooks/' \
-                     'durabletask/orchestrators/{functionName}[/{instanceId}]?code=' \
-                     'iDFeaQCSAIuXoodl6/w3rdvHZ6Nl7yJwRrHfeInNWDJjuiunhxk8dQ==",' \
-                     '"createAndWaitOnNewInstancePostUri":"http://localhost:7071/runtime' \
-                     '/webhooks/durabletask/orchestrators/{functionName}[/{' \
-                     'instanceId}]?timeout={timeoutInSeconds}&pollingInterval={' \
-                     'intervalInSeconds}&code=iDFeaQCSAIuXoodl6' \
-                     '/w3rdvHZ6Nl7yJwRrHfeInNWDJjuiunhxk8dQ=="},"managementUrls":{' \
-                     '"id":"INSTANCEID",' \
-                     '"statusQueryGetUri":"http://localhost:7071/runtime/webhooks/durabletask' \
-                     '/instances/INSTANCEID?taskHub=DurableFunctionsHub&connection=Storage&code' \
-                     '=iDFeaQCSAIuXoodl6/w3rdvHZ6Nl7yJwRrHfeInNWDJjuiunhxk8dQ==",' \
-                     '"sendEventPostUri":"http://localhost:7071/runtime/webhooks/durabletask' \
-                     '/instances/INSTANCEID/raiseEvent/{' \
-                     'eventName}?taskHub=DurableFunctionsHub&connection=Storage&code' \
-                     '=iDFeaQCSAIuXoodl6/w3rdvHZ6Nl7yJwRrHfeInNWDJjuiunhxk8dQ==",' \
-                     '"terminatePostUri":"http://localhost:7071/runtime/webhooks/durabletask' \
-                     '/instances/INSTANCEID/terminate?reason={' \
-                     'text}&taskHub=DurableFunctionsHub&connection=Storage&code' \
-                     '=iDFeaQCSAIuXoodl6/w3rdvHZ6Nl7yJwRrHfeInNWDJjuiunhxk8dQ==",' \
-                     '"rewindPostUri":"http://localhost:7071/runtime/webhooks/durabletask' \
-                     '/instances/INSTANCEID/rewind?reason={' \
-                     'text}&taskHub=DurableFunctionsHub&connection=Storage&code' \
-                     '=iDFeaQCSAIuXoodl6/w3rdvHZ6Nl7yJwRrHfeInNWDJjuiunhxk8dQ==",' \
-                     '"purgeHistoryDeleteUri":"http://localhost:7071/runtime/webhooks' \
-                     '/durabletask/instances/INSTANCEID?taskHub=DurableFunctionsHub&connection' \
-                     '=Storage&code=iDFeaQCSAIuXoodl6/w3rdvHZ6Nl7yJwRrHfeInNWDJjuiunhxk8dQ=="},' \
-                     '"rpcBaseUrl":"http://127.0.0.1:17071/durabletask/"} '
+    binding = {
+        "taskHubName": TASK_HUB_NAME,
+        "creationUrls": {
+            "createNewInstancePostUri": f"{BASE_URL}/orchestrators/"
+                                        "{functionName}[/{instanceId}]?code="
+                                        f"{AUTH_CODE}",
+            "createAndWaitOnNewInstancePostUri": f"{BASE_URL}/orchestrators/"
+                                                 "{functionName}[/{instanceId}]?timeout="
+                                                 "{timeoutInSeconds}&pollingInterval="
+                                                 "{intervalInSeconds}&code="
+                                                 f"{AUTH_CODE}"
+        },
+        "managementUrls": {
+            "id": "INSTANCEID",
+            "statusQueryGetUri": f"{BASE_URL}/instances/INSTANCEID?taskHub=DurableFunctionsHub&"
+                                 f"connection=Storage&code={AUTH_CODE}",
+            "sendEventPostUri": f"{BASE_URL}/instances/INSTANCEID/raiseEvent/"
+                                "{eventName}?taskHub="
+                                f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}",
+            "terminatePostUri": f"{BASE_URL}/instances/INSTANCEID/terminate?reason="
+                                "{text}&taskHub="
+                                f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}",
+            "rewindPostUri": f"{BASE_URL}/instances/INSTANCEID/rewind?reason="
+                             "{text}&taskHub="
+                             f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}",
+            "purgeHistoryDeleteUri": f"{BASE_URL}/instances/INSTANCEID?taskHub="
+                                     f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}"
+        },
+        "rpcBaseUrl": BASE_RPC_URL
+    }
+    binding_string = json.dumps(binding)
 
     binding_string = replace_stand_in_bits(binding_string)
     return binding_string
