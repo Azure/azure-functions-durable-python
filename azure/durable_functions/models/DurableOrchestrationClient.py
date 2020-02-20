@@ -2,7 +2,8 @@ import json
 import aiohttp
 from typing import List
 from urllib.parse import urlparse
-from azure.durable_functions.models import DurableOrchestrationBindings
+from ..models import DurableOrchestrationBindings
+from .DurableOrchestrationStatus import DurableOrchestrationStatus
 import azure.functions as func
 
 
@@ -162,10 +163,28 @@ class DurableOrchestrationClient:
                 }
                 has_error_message = switch_statement.get(
                     response.status, lambda: "Webhook returned unrecognized status code"
-                    + f" {response.status}")
+                                             + f" {response.status}")
                 error_message = has_error_message()
                 if error_message:
                     raise Exception(error_message)
+
+    def get_status(self, instance_id: str, show_history: bool = None,
+                   show_history_output: bool = None,
+                   show_input: bool = None) -> DurableOrchestrationStatus:
+        """Get the status of the specified orchestration instance.
+
+        Parameters
+        ----------
+        instance_id : str
+            The ID of the orchestration instance to query.
+        show_history: bool
+            Boolean marker for including execution history in the response.
+        show_history_output: bool
+            Boolean marker for including output in the execution history response.
+        show_input: bool
+            Boolean marker for including the input in the response.
+        """
+        raise NotImplementedError("This is a placeholder.")
 
     @staticmethod
     def _get_json_input(client_input: object) -> object:
