@@ -50,14 +50,13 @@ class DurableOrchestrationContext:
         self.call_activity_with_retry = lambda n, o, i=None: call_activity_with_retry_task(
             state=self.histories, retry_options=o, name=n, input_=i
         )
-        self.call_http = lambda method, uri, content=None, headers=None, token_source=None: \
-            call_http(
-                state=self.histories,
-                method=method,
-                uri=uri,
-                content=content,
-                headers=headers,
-                token_source=token_source,
+        self.call_http = lambda method, uri, content=None, headers=None, token_source=None: call_http(
+            state=self.histories,
+            method=method,
+            uri=uri,
+            content=content,
+            headers=headers,
+            token_source=token_source,
         )
         self.wait_for_external_event = lambda n: wait_for_external_event_task(
             state=self.histories, name=n
