@@ -41,14 +41,12 @@ def assert_action_is_equal(expected_action, result_action):
 
 
 def get_orchestration_state_result(
-    context_builder,
-    activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]],
-):
+        context_builder,
+        activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]]):
     context_as_string = context_builder.to_json_string()
     orchestrator = Orchestrator(activity_func)
     result_of_handle = orchestrator.handle(
-        DurableOrchestrationContext.from_json(context_as_string)
-    )
+        DurableOrchestrationContext.from_json(context_as_string))
     result = json.loads(result_of_handle)
     return result
 

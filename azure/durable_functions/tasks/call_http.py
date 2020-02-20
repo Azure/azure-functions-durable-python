@@ -1,29 +1,19 @@
 import json
 from typing import Dict, List
 
-from .task_utilities import (
-    find_task_scheduled,
-    find_task_completed,
-    find_task_failed,
-    set_processed,
-    parse_history_event,
-)
+from .task_utilities import find_task_scheduled, find_task_completed, find_task_failed, \
+    set_processed, parse_history_event
 from ..constants import HTTP_ACTION_NAME
 from ..models.DurableHttpRequest import DurableHttpRequest
 from ..models.TokenSource import TokenSource
 from ..models.actions import CallHttpAction
 from ..models.history import HistoryEvent
-from ..models.Task import Task
+from ..models.Task import (
+    Task)
 
 
-def call_http(
-    state: List[HistoryEvent],
-    method: str,
-    uri: str,
-    content: str = None,
-    headers: Dict[str, str] = None,
-    token_source: TokenSource = None,
-):
+def call_http(state: List[HistoryEvent], method: str, uri: str, content: str = None,
+              headers: Dict[str, str] = None, token_source: TokenSource = None):
     """Get task used to schedule a durable HTTP call to the specified endpoint.
 
     Parameters
@@ -45,9 +35,7 @@ def call_http(
     else:
         json_content = content
 
-    request = DurableHttpRequest(
-        method, uri, json_content, headers, token_source
-    )
+    request = DurableHttpRequest(method, uri, json_content, headers, token_source)
 
     new_action = CallHttpAction(request)
 
@@ -63,8 +51,7 @@ def call_http(
             action=new_action,
             result=parse_history_event(task_completed),
             timestamp=task_completed.timestamp,
-            id_=task_completed.TaskScheduledId,
-        )
+            id_=task_completed.TaskScheduledId)
 
     if task_failed is not None:
         return Task(
@@ -74,7 +61,8 @@ def call_http(
             result=task_failed.Reason,
             timestamp=task_failed.timestamp,
             id_=task_failed.TaskScheduledId,
-            exc=Exception(f"{task_failed.Reason} \n {task_failed.Details}"),
+            exc=Exception(
+                f"{task_failed.Reason} \n {task_failed.Details}")
         )
 
     return Task(is_completed=False, is_faulted=False, action=new_action)

@@ -23,6 +23,6 @@ class CallHttpAction:
         The instance of the class converted into a json dictionary
         """
         json_dict = {}
-        add_attrib(json_dict, self, "action_type", "actionType")
-        add_json_attrib(json_dict, self, "http_request", "httpRequest")
+        add_attrib(json_dict, self, 'action_type', 'actionType')
+        add_json_attrib(json_dict, self, 'http_request', 'httpRequest')
         return json_dict

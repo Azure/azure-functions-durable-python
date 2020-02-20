@@ -1,23 +1,14 @@
 from typing import Dict, Any
 
 from azure.durable_functions.models import TokenSource
-from azure.durable_functions.models.utils.json_utils import (
-    add_attrib,
-    add_json_attrib,
-)
+from azure.durable_functions.models.utils.json_utils import add_attrib, add_json_attrib
 
 
 class DurableHttpRequest:
     """Data structure representing a durable HTTP request."""
 
-    def __init__(
-        self,
-        method: str,
-        uri: str,
-        content: str = None,
-        headers: Dict[str, str] = None,
-        token_source: TokenSource = None,
-    ):
+    def __init__(self, method: str, uri: str, content: str = None, headers: Dict[str, str] = None,
+                 token_source: TokenSource = None):
         self._method: str = method
         self._uri: str = uri
         self._content: str = content
@@ -57,9 +48,9 @@ class DurableHttpRequest:
         The instance of the class converted into a json dictionary
         """
         json_dict = {}
-        add_attrib(json_dict, self, "method")
-        add_attrib(json_dict, self, "uri")
-        add_attrib(json_dict, self, "content")
-        add_attrib(json_dict, self, "headers")
-        add_json_attrib(json_dict, self, "token_source", "tokenSource")
+        add_attrib(json_dict, self, 'method')
+        add_attrib(json_dict, self, 'uri')
+        add_attrib(json_dict, self, 'content')
+        add_attrib(json_dict, self, 'headers')
+        add_json_attrib(json_dict, self, 'token_source', 'tokenSource')
         return json_dict

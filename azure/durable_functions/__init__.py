@@ -8,8 +8,8 @@ from .models.RetryOptions import RetryOptions
 from .models.TokenSource import ManagedIdentityTokenSource
 
 __all__ = [
-    "Orchestrator",
-    "DurableOrchestrationClient",
-    "ManagedIdentityTokenSource",
-    "RetryOptions",
+    'Orchestrator',
+    'DurableOrchestrationClient',
+    'ManagedIdentityTokenSource',
+    'RetryOptions'
 ]

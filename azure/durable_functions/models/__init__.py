@@ -10,13 +10,13 @@ from .DurableHttpRequest import DurableHttpRequest
 from .TokenSource import ManagedIdentityTokenSource
 
 __all__ = [
-    "DurableOrchestrationBindings",
-    "DurableOrchestrationClient",
-    "DurableOrchestrationContext",
-    "DurableHttpRequest",
-    "ManagedIdentityTokenSource",
-    "OrchestratorState",
-    "RetryOptions",
-    "Task",
-    "TaskSet",
+    'DurableOrchestrationBindings',
+    'DurableOrchestrationClient',
+    'DurableOrchestrationContext',
+    'DurableHttpRequest',
+    'ManagedIdentityTokenSource',
+    'OrchestratorState',
+    'RetryOptions',
+    'Task',
+    'TaskSet'
 ]

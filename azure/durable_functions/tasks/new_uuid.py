@@ -30,10 +30,9 @@ def new_uuid(context: DurableOrchestrationContext) -> str:
     -------
     New UUID that is safe for replay within an orchestration or operation.
     """
-    uuid_name_value = (
-        f"{context.instance_id}"
-        f"_{context.current_utc_datetime.strftime(DATETIME_STRING_FORMAT)}"
+    uuid_name_value = \
+        f"{context.instance_id}" \
+        f"_{context.current_utc_datetime.strftime(DATETIME_STRING_FORMAT)}" \
         f"_{context._new_uuid_counter}"
-    )
     context._new_uuid_counter += 1
     return _create_deterministic_uuid(URL_NAMESPACE, uuid_name_value)

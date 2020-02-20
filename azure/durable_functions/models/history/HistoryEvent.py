@@ -8,14 +8,8 @@ class HistoryEvent:
 
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     # noinspection PyPep8Naming
-    def __init__(
-        self,
-        EventType: HistoryEventType,
-        EventId: int,
-        IsPlayed: bool,
-        Timestamp: str,
-        **kwargs
-    ):
+    def __init__(self, EventType: HistoryEventType, EventId: int, IsPlayed: bool, Timestamp: str,
+                 **kwargs):
         self._event_type: HistoryEventType = EventType
         self._event_id: int = EventId
         self._is_played: bool = IsPlayed

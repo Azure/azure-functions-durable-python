@@ -7,7 +7,7 @@ def generator_function(context):
     activity_list = json.loads(activity_count)
 
     tasks = [context.call_activity("ParrotValue", i) for i in activity_list]
-
+        
     tasks_result = yield context.task_all(tasks)
     values = [int(t) for t in tasks_result]
     message = yield context.call_activity("ShowMeTheSum", values)

@@ -1,11 +1,9 @@
 import json
 
-from azure.durable_functions.models.DurableOrchestrationClient import (
-    DurableOrchestrationClient,
-)
+from azure.durable_functions.models.DurableOrchestrationClient \
+    import DurableOrchestrationClient
 from tests.conftest import replace_stand_in_bits
 from unittest.mock import Mock
-
 
 def test_get_start_new_url(binding_string):
     client = DurableOrchestrationClient(binding_string)
@@ -13,8 +11,7 @@ def test_get_start_new_url(binding_string):
     function_name = "myfunction"
     start_new_url = client._get_start_new_url(instance_id, function_name)
     expected_url = replace_stand_in_bits(
-        f"BASE_URL/orchestrators/{function_name}/{instance_id}?code=AUTH_CODE"
-    )
+        f"BASE_URL/orchestrators/{function_name}/{instance_id}?code=AUTH_CODE")
     assert expected_url == start_new_url
 
 
@@ -36,54 +33,41 @@ def test_get_raise_event_url(binding_string):
     event_name = "test_event_name"
     task_hub_name = "test_taskhub"
     connection_name = "test_connection"
-    raise_event_url = client._get_raise_event_url(
-        instance_id, event_name, task_hub_name, connection_name
-    )
-
+    raise_event_url = client._get_raise_event_url(instance_id, event_name, task_hub_name, connection_name)
+    
     expected_url = replace_stand_in_bits(
-        f"BASE_URL/instances/{instance_id}/raiseEvent/{event_name}?taskHub=test_taskhub&connection=test_connection&code=AUTH_CODE"
-    )
-
+        f"BASE_URL/instances/{instance_id}/raiseEvent/{event_name}?taskHub=test_taskhub&connection=test_connection&code=AUTH_CODE")
+    
     assert expected_url == raise_event_url
 
 
 def test_create_check_status_response(binding_string):
     client = DurableOrchestrationClient(binding_string)
     instance_id = "abc123"
-    request = Mock(
-        url="http://test_azure.net/api/orchestrators/DurableOrchestrationTrigger"
-    )
-    returned_response = client.create_check_status_response(
-        request, instance_id
-    )
+    request = Mock(url="http://test_azure.net/api/orchestrators/DurableOrchestrationTrigger")
+    returned_response = client.create_check_status_response(request, instance_id)
 
     http_management_payload = {
-        "id": "abc123",
-        "statusQueryGetUri": r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
-        "sendEventPostUri": r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123/raiseEvent/{eventName}?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
-        "terminatePostUri": r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123/terminate?reason={text}&taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
-        "rewindPostUri": r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123/rewind?reason={text}&taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
-        "purgeHistoryDeleteUri": r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
+        "id":"abc123",
+        "statusQueryGetUri":r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
+        "sendEventPostUri":r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123/raiseEvent/{eventName}?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
+        "terminatePostUri":r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123/terminate?reason={text}&taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
+        "rewindPostUri":r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123/rewind?reason={text}&taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
+        "purgeHistoryDeleteUri":r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE"
     }
     for key, _ in http_management_payload.items():
-        http_management_payload[key] = replace_stand_in_bits(
-            http_management_payload[key]
-        )
+        http_management_payload[key] = replace_stand_in_bits(http_management_payload[key])
     expected_response = {
-        "status_code": 202,
-        "body": json.dumps(http_management_payload),
-        "headers": {
-            "Content-Type": "application/json",
-            "Location": http_management_payload["statusQueryGetUri"],
-            "Retry-After": "10",
-        },
-    }
+            "status_code": 202,
+            "body": json.dumps(http_management_payload),
+            "headers": {
+                "Content-Type": "application/json",
+                "Location": http_management_payload["statusQueryGetUri"],
+                "Retry-After": "10",
+            },
+        }
 
     for k, v in expected_response.get("headers").items():
         assert v == returned_response.headers.get(k)
-    assert (
-        expected_response.get("status_code") == returned_response.status_code
-    )
-    assert (
-        expected_response.get("body") == returned_response.get_body().decode()
-    )
+    assert expected_response.get("status_code") == returned_response.status_code
+    assert expected_response.get("body") == returned_response.get_body().decode()

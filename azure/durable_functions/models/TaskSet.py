@@ -16,15 +16,8 @@ class TaskSet:
     Task.all and Task.any.
     """
 
-    def __init__(
-        self,
-        is_completed,
-        actions,
-        result,
-        is_faulted=False,
-        timestamp=None,
-        exception=None,
-    ):
+    def __init__(self, is_completed, actions, result, is_faulted=False,
+                 timestamp=None, exception=None):
         self._is_completed: bool = is_completed
         self._actions: List[IAction] = actions
         self._result = result

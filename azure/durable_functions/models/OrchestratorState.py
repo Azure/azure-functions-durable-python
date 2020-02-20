@@ -12,14 +12,12 @@ class OrchestratorState:
     extension
     """
 
-    def __init__(
-        self,
-        is_done: bool,
-        actions: List[List[IAction]],
-        output: Any,
-        error: str = None,
-        custom_status: Any = None,
-    ):
+    def __init__(self,
+                 is_done: bool,
+                 actions: List[List[IAction]],
+                 output: Any,
+                 error: str = None,
+                 custom_status: Any = None):
         self._is_done: bool = is_done
         self._actions: List[List[Any]] = actions
         self._output: Any = output
@@ -74,23 +72,23 @@ class OrchestratorState:
         :return: The instance of the class converted into a json dictionary
         """
         json_dict = {}
-        add_attrib(json_dict, self, "_is_done", "isDone")
+        add_attrib(json_dict, self, '_is_done', 'isDone')
         self._add_actions(json_dict)
         if self._output:
-            json_dict["output"] = self._output
+            json_dict['output'] = self._output
         if self._error:
-            json_dict["error"] = self._error
+            json_dict['error'] = self._error
         if self._custom_status:
-            json_dict["customStatus"] = self._custom_status
+            json_dict['customStatus'] = self._custom_status
         return json_dict
 
     def _add_actions(self, json_dict):
-        json_dict["actions"] = []
+        json_dict['actions'] = []
         for action_list in self._actions:
             action_result_list = []
             for action_obj in action_list:
                 action_result_list.append(action_obj.to_json())
-            json_dict["actions"].append(action_result_list)
+            json_dict['actions'].append(action_result_list)
 
     def to_json_string(self) -> str:
         """Convert object into a json string.

@@ -1,9 +1,8 @@
 import pytest
 from dateutil.parser import parse as dt_parse
 
-from azure.durable_functions.models.DurableOrchestrationContext import (
-    DurableOrchestrationContext,
-)
+from azure.durable_functions.models.DurableOrchestrationContext \
+    import DurableOrchestrationContext
 from tests.test_utils.ContextBuilder import ContextBuilder
 
 
@@ -20,8 +19,7 @@ def starting_context():
         '"Tags":null,"EventId":-1,"IsPlayed":false, '
         '"Timestamp":"2019-12-08T23:18:39.756132Z"}],"input":null,'
         '"instanceId":"48d0f95957504c2fa579e810a390b938", '
-        '"isReplaying":false,"parentInstanceId":null} '
-    )
+        '"isReplaying":false,"parentInstanceId":null} ')
     return context
 
 
@@ -34,10 +32,9 @@ def test_extracts_instance_id(starting_context):
 
 
 def test_sets_current_utc_datetime(starting_context):
-    assert (
-        dt_parse("2019-12-08T23:18:41.3240927Z")
-        == starting_context.current_utc_datetime
-    )
+    assert \
+        dt_parse("2019-12-08T23:18:41.3240927Z") == \
+        starting_context.current_utc_datetime
 
 
 def test_extracts_histories(starting_context):
@@ -45,13 +42,10 @@ def test_extracts_histories(starting_context):
 
 
 def test_added_function_context_args():
-    context_builder = ContextBuilder("test_function_context")
+    context_builder = ContextBuilder('test_function_context')
 
-    additional_attributes = {
-        "attrib1": 1,
-        "attrib2": "two",
-        "attrib3": {"randomDictionary": "random"},
-    }
+    additional_attributes = {"attrib1": 1, "attrib2": "two", "attrib3":
+        {"randomDictionary": "random"}}
 
     context_as_string = context_builder.to_json_string(**additional_attributes)
 
@@ -59,6 +53,4 @@ def test_added_function_context_args():
 
     assert durable_context.function_context is not None
     for key in additional_attributes:
-        assert additional_attributes[key] == getattr(
-            durable_context.function_context, key
-        )
+        assert additional_attributes[key] == getattr(durable_context.function_context, key)

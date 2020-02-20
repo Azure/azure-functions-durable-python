@@ -5,13 +5,11 @@ from typing import List, Dict, Any
 
 from .json_utils import add_attrib, convert_history_event_to_json_dict
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
-from tests.orchestrator.models.OrchestrationInstance import (
-    OrchestrationInstance,
-)
+from tests.orchestrator.models.OrchestrationInstance \
+    import OrchestrationInstance
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
-from azure.durable_functions.models.history.HistoryEventType import (
-    HistoryEventType,
-)
+from azure.durable_functions.models.history.HistoryEventType \
+    import HistoryEventType
 
 
 class ContextBuilder:
@@ -26,21 +24,14 @@ class ContextBuilder:
         self.add_execution_started_event(name)
 
     def get_base_event(
-        self,
-        event_type: HistoryEventType,
-        id_: int = -1,
-        is_played: bool = False,
-        timestamp=None,
-    ) -> HistoryEvent:
+            self, event_type: HistoryEventType, id_: int = -1,
+            is_played: bool = False, timestamp = None) -> HistoryEvent:
         self.current_datetime = self.current_datetime + timedelta(seconds=1)
         if not timestamp:
             timestamp = self.current_datetime
-        event = HistoryEvent(
-            EventType=event_type,
-            EventId=id_,
-            IsPlayed=is_played,
-            Timestamp=timestamp.strftime(DATETIME_STRING_FORMAT),
-        )
+        event = HistoryEvent(EventType=event_type, EventId=id_,
+                             IsPlayed=is_played,
+                             Timestamp=timestamp.strftime(DATETIME_STRING_FORMAT))
 
         return event
 
@@ -53,8 +44,7 @@ class ContextBuilder:
         self.history_events.append(event)
 
     def add_task_scheduled_event(
-        self, name: str, id_: int, version: str = "", input_=None
-    ):
+            self, name: str, id_: int, version: str = '', input_=None):
         event = self.get_base_event(HistoryEventType.TASK_SCHEDULED, id_=id_)
         event.Name = name
         event.Version = version
@@ -82,19 +72,14 @@ class ContextBuilder:
         return fire_at
 
     def add_timer_fired_event(self, id_: int, fire_at: str):
-        event = self.get_base_event(
-            HistoryEventType.TIMER_FIRED, is_played=True
-        )
+        event = self.get_base_event(HistoryEventType.TIMER_FIRED, is_played=True)
         event.TimerId = id_
         event.FireAt = fire_at
         self.history_events.append(event)
 
     def add_execution_started_event(
-        self, name: str, version: str = "", input_=None
-    ):
-        event = self.get_base_event(
-            HistoryEventType.EXECUTION_STARTED, is_played=True
-        )
+            self, name: str, version: str = '', input_=None):
+        event = self.get_base_event(HistoryEventType.EXECUTION_STARTED, is_played=True)
         event.orchestration_instance = OrchestrationInstance()
         self.instance_id = event.orchestration_instance.instance_id
         event.Name = name
@@ -102,27 +87,23 @@ class ContextBuilder:
         event.Input = input_
         self.history_events.append(event)
 
-    def add_event_raised_event(
-        self, name: str, id_: int, input_=None, timestamp=None
-    ):
-        event = self.get_base_event(
-            HistoryEventType.EVENT_RAISED, id_=id_, timestamp=timestamp
-        )
+    def add_event_raised_event(self, name: str, id_: int, input_=None, timestamp=None):
+        event = self.get_base_event(HistoryEventType.EVENT_RAISED, id_=id_, timestamp=timestamp)
         event.Name = name
-        event.Input = input_
+        event.Input = input_ 
         # event.timestamp = timestamp
         self.history_events.append(event)
 
     def to_json(self, **kwargs) -> Dict[str, Any]:
         json_dict = {}
 
-        add_attrib(json_dict, self, "instance_id", "instanceId")
-        add_attrib(json_dict, self, "parent_instance_id", "parentInstanceId")
-        add_attrib(json_dict, self, "is_replaying", "isReplaying")
-        add_attrib(json_dict, self, "input_")
+        add_attrib(json_dict, self, 'instance_id', 'instanceId')
+        add_attrib(json_dict, self, 'parent_instance_id', 'parentInstanceId')
+        add_attrib(json_dict, self, 'is_replaying', 'isReplaying')
+        add_attrib(json_dict, self, 'input_')
 
         history_list_as_dict = self.get_history_list_as_dict()
-        json_dict["history"] = history_list_as_dict
+        json_dict['history'] = history_list_as_dict
 
         if kwargs is not None:
             for key, value in kwargs.items():

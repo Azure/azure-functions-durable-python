@@ -10,13 +10,13 @@ from .new_uuid import new_uuid
 from .call_http import call_http
 
 __all__ = [
-    "call_activity_task",
-    "call_activity_with_retry_task",
-    "call_http",
-    "continue_as_new",
-    "new_uuid",
-    "task_all",
-    "task_any",
-    "should_suspend",
-    "wait_for_external_event_task",
+    'call_activity_task',
+    'call_activity_with_retry_task',
+    'call_http',
+    'continue_as_new',
+    'new_uuid',
+    'task_all',
+    'task_any',
+    'should_suspend',
+    'wait_for_external_event_task'
 ]
