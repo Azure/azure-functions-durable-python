@@ -11,14 +11,20 @@ from .orchestrator_test_utils import (
 )
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
-from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
-from azure.durable_functions.models.TokenSource import ManagedIdentityTokenSource
+from azure.durable_functions.models.actions.CallHttpAction import (
+    CallHttpAction,
+)
+from azure.durable_functions.models.TokenSource import (
+    ManagedIdentityTokenSource,
+)
 
 TEST_URI: str = "https://localhost:7071/we_just_need_a_uri_to_use_for_testing"
 SIMPLE_RESULT: str = json.dumps({"name": "simple"})
 CONTENT = json.dumps({"name": "some data", "additional": "data"})
 HEADERS = {"header1": "value1", "header2": "value2"}
-TOKEN_SOURCE = ManagedIdentityTokenSource("https://management.core.windows.net/")
+TOKEN_SOURCE = ManagedIdentityTokenSource(
+    "https://management.core.windows.net/"
+)
 
 
 def simple_get_generator_function(context):
@@ -47,18 +53,24 @@ def add_http_action(state: OrchestratorState, request):
     state.actions.append([action])
 
 
-def add_completed_http_events(context_builder: ContextBuilder, id_: int, result: str):
+def add_completed_http_events(
+    context_builder: ContextBuilder, id_: int, result: str
+):
     context_builder.add_task_scheduled_event(name=HTTP_ACTION_NAME, id_=id_)
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
     context_builder.add_task_completed_event(id_=id_, result=result)
 
 
-def add_failed_http_events(context_builder: ContextBuilder, id_: int, reason: str, details: str):
+def add_failed_http_events(
+    context_builder: ContextBuilder, id_: int, reason: str, details: str
+):
     context_builder.add_task_scheduled_event(name=HTTP_ACTION_NAME, id_=id_)
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
-    context_builder.add_task_failed_event(id_=id_, reason=reason, details=details)
+    context_builder.add_task_failed_event(
+        id_=id_, reason=reason, details=details
+    )
 
 
 def get_request() -> DurableHttpRequest:
@@ -78,7 +90,9 @@ def post_request() -> DurableHttpRequest:
 def test_initial_orchestration_state():
     context_builder = ContextBuilder("test_simple_function")
 
-    result = get_orchestration_state_result(context_builder, simple_get_generator_function)
+    result = get_orchestration_state_result(
+        context_builder, simple_get_generator_function
+    )
 
     expected_state = base_expected_state()
     request = get_request()
@@ -93,7 +107,9 @@ def test_completed_state():
     context_builder = ContextBuilder("test_simple_function")
     add_completed_http_events(context_builder, 0, SIMPLE_RESULT)
 
-    result = get_orchestration_state_result(context_builder, simple_get_generator_function)
+    result = get_orchestration_state_result(
+        context_builder, simple_get_generator_function
+    )
 
     expected_state = base_expected_state()
     request = get_request()
@@ -111,7 +127,9 @@ def test_failed_state():
     context_builder = ContextBuilder("test_simple_function")
     add_failed_http_events(context_builder, 0, failed_reason, failed_details)
 
-    result = get_orchestration_state_result(context_builder, simple_get_generator_function)
+    result = get_orchestration_state_result(
+        context_builder, simple_get_generator_function
+    )
 
     expected_state = base_expected_state()
     request = get_request()
@@ -126,7 +144,9 @@ def test_failed_state():
 def test_initial_post_state():
     context_builder = ContextBuilder("test_simple_function")
 
-    result = get_orchestration_state_result(context_builder, complete_generator_function)
+    result = get_orchestration_state_result(
+        context_builder, complete_generator_function
+    )
 
     expected_state = base_expected_state()
     request = post_request()
@@ -158,7 +178,9 @@ def test_post_completed_state():
     context_builder = ContextBuilder("test_simple_function")
     add_completed_http_events(context_builder, 0, SIMPLE_RESULT)
 
-    result = get_orchestration_state_result(context_builder, complete_generator_function)
+    result = get_orchestration_state_result(
+        context_builder, complete_generator_function
+    )
 
     expected_state = base_expected_state()
     request = post_request()

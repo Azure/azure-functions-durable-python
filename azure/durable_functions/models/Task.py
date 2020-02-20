@@ -17,7 +17,14 @@ class Task:
     """
 
     def __init__(
-        self, is_completed, is_faulted, action, result=None, timestamp=None, id_=None, exc=None,
+        self,
+        is_completed,
+        is_faulted,
+        action,
+        result=None,
+        timestamp=None,
+        id_=None,
+        exc=None,
     ):
         self._is_completed: bool = is_completed
         self._is_faulted: bool = is_faulted

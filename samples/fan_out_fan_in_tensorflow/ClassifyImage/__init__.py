@@ -19,7 +19,9 @@ def main(value):
     for image_url in images:
         results = predict_image_from_url(image_url)
         if results is not None:
-            prediction_results.append({"tag": results["predictedTagName"], "url": image_url})
+            prediction_results.append(
+                {"tag": results["predictedTagName"], "url": image_url}
+            )
         else:
             prediction_results.append({"tag": "error", "url": image_url})
 

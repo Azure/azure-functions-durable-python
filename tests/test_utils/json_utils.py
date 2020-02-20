@@ -8,7 +8,9 @@ from azure.durable_functions.models.utils.json_utils import (
 )
 
 
-def convert_history_event_to_json_dict(history_event: HistoryEvent,) -> Dict[str, Any]:
+def convert_history_event_to_json_dict(
+    history_event: HistoryEvent,
+) -> Dict[str, Any]:
     json_dict = {}
 
     add_attrib(json_dict, history_event, "event_id", "EventId")
@@ -27,7 +29,10 @@ def convert_history_event_to_json_dict(history_event: HistoryEvent,) -> Dict[str
     add_attrib(json_dict, history_event, "TimerId")
     add_attrib(json_dict, history_event, "Name")
     add_json_attrib(
-        json_dict, history_event, "orchestration_instance", "OrchestrationInstance",
+        json_dict,
+        history_event,
+        "orchestration_instance",
+        "OrchestrationInstance",
     )
 
     return json_dict

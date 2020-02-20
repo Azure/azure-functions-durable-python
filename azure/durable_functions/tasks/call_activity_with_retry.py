@@ -11,12 +11,17 @@ from .task_utilities import (
 )
 from ..models.RetryOptions import RetryOptions
 from ..models.Task import Task
-from ..models.actions.CallActivityWithRetryAction import CallActivityWithRetryAction
+from ..models.actions.CallActivityWithRetryAction import (
+    CallActivityWithRetryAction,
+)
 from ..models.history import HistoryEvent
 
 
 def call_activity_with_retry_task(
-    state: List[HistoryEvent], retry_options: RetryOptions, name: str, input_: Any = None,
+    state: List[HistoryEvent],
+    retry_options: RetryOptions,
+    name: str,
+    input_: Any = None,
 ) -> Task:
     """Determine the state of scheduling an activity for execution with retry options.
 
@@ -37,7 +42,9 @@ def call_activity_with_retry_task(
         task_completed = find_task_completed(state, task_scheduled)
         task_failed = find_task_failed(state, task_scheduled)
         task_retry_timer = find_task_retry_timer_created(state, task_failed)
-        task_retry_timer_fired = find_task_retry_timer_fired(state, task_retry_timer)
+        task_retry_timer_fired = find_task_retry_timer_fired(
+            state, task_retry_timer
+        )
         set_processed(
             [
                 task_scheduled,
@@ -72,7 +79,9 @@ def call_activity_with_retry_task(
                 action=new_action,
                 timestamp=task_failed.timestamp,
                 id_=task_failed.TaskScheduledId,
-                exc=Exception(f"{task_failed.Reason} \n {task_failed.Details}"),
+                exc=Exception(
+                    f"{task_failed.Reason} \n {task_failed.Details}"
+                ),
             )
 
     return Task(is_completed=False, is_faulted=False, action=new_action)

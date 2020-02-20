@@ -31,7 +31,9 @@ def _initialize():
         with open(labels_filename, "rt") as lf:
             labels = [l.strip() for l in lf.readlines()]
         with tf.compat.v1.Session() as sess:
-            input_tensor_shape = sess.graph.get_tensor_by_name("Placeholder:0").shape.as_list()
+            input_tensor_shape = sess.graph.get_tensor_by_name(
+                "Placeholder:0"
+            ).shape.as_list()
             network_input_size = input_tensor_shape[1]
             logging.info("network_input_size = " + str(network_input_size))
 
@@ -97,10 +99,14 @@ def _extract_and_resize(img, targetSize):
         ratio = float(img.shape[0]) / float(targetSize[0])
         xOrigin = 0
         yOrigin = 0
-    resize_image = np.empty((targetSize[0], targetSize[1], img.shape[2]), dtype=np.uint8)
+    resize_image = np.empty(
+        (targetSize[0], targetSize[1], img.shape[2]), dtype=np.uint8
+    )
     for y in range(targetSize[0]):
         for x in range(targetSize[1]):
-            resize_image[y, x] = _extract_bilinear_pixel(img, x, y, ratio, xOrigin, yOrigin)
+            resize_image[y, x] = _extract_bilinear_pixel(
+                img, x, y, ratio, xOrigin, yOrigin
+            )
     return resize_image
 
 
@@ -123,7 +129,16 @@ def _crop_center(img, cropx, cropy):
     h, w = img.shape[:2]
     startx = max(0, w // 2 - (cropx // 2) - 1)
     starty = max(0, h // 2 - (cropy // 2) - 1)
-    _log_msg("crop_center: " + str(w) + "x" + str(h) + " to " + str(cropx) + "x" + str(cropy))
+    _log_msg(
+        "crop_center: "
+        + str(w)
+        + "x"
+        + str(h)
+        + " to "
+        + str(cropx)
+        + "x"
+        + str(cropy)
+    )
     return img[starty : starty + cropy, startx : startx + cropx]
 
 
@@ -134,7 +149,14 @@ def _resize_down_to_1600_max_dim(image):
 
     new_size = (1600 * w // h, 1600) if (h > w) else (1600, 1600 * h // w)
     _log_msg(
-        "resize: " + str(w) + "x" + str(h) + " to " + str(new_size[0]) + "x" + str(new_size[1])
+        "resize: "
+        + str(w)
+        + "x"
+        + str(h)
+        + " to "
+        + str(new_size[0])
+        + "x"
+        + str(new_size[1])
     )
     if max(new_size) / max(image.size) >= 0.5:
         method = Image.BILINEAR
@@ -161,9 +183,19 @@ def _update_orientation(image):
             orientation -= 1
             if orientation >= 4:
                 image = image.transpose(Image.TRANSPOSE)
-            if orientation == 2 or orientation == 3 or orientation == 6 or orientation == 7:
+            if (
+                orientation == 2
+                or orientation == 3
+                or orientation == 6
+                or orientation == 7
+            ):
                 image = image.transpose(Image.FLIP_TOP_BOTTOM)
-            if orientation == 1 or orientation == 2 or orientation == 5 or orientation == 6:
+            if (
+                orientation == 1
+                or orientation == 2
+                or orientation == 5
+                or orientation == 6
+            ):
                 image = image.transpose(Image.FLIP_LEFT_RIGHT)
     return image
 
@@ -190,7 +222,9 @@ def _predict_image(image):
     resized_image = _extract_and_resize_to_256_square(image)
 
     # Crop the center for the specified network_input_Size
-    cropped_image = _crop_center(resized_image, network_input_size, network_input_size)
+    cropped_image = _crop_center(
+        resized_image, network_input_size, network_input_size
+    )
 
     tf.compat.v1.reset_default_graph()
     tf.import_graph_def(graph_def, name="")
@@ -211,7 +245,8 @@ def _predict_image(image):
                 result.append(prediction)
                 if (
                     not highest_prediction
-                    or prediction["probability"] > highest_prediction["probability"]
+                    or prediction["probability"]
+                    > highest_prediction["probability"]
                 ):
                     highest_prediction = prediction
 

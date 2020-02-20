@@ -2,7 +2,9 @@ from datetime import datetime, date
 import json
 from azure.durable_functions.models import Task, TaskSet
 from azure.durable_functions.tasks import task_any
-from azure.durable_functions.tasks.wait_for_external_event import wait_for_external_event_task
+from azure.durable_functions.tasks.wait_for_external_event import (
+    wait_for_external_event_task,
+)
 from azure.durable_functions.models.actions.WaitForExternalEventAction import (
     WaitForExternalEventAction,
 )
@@ -31,19 +33,31 @@ def test_has_completed_task():
         WaitForExternalEventAction("B"),
     ]
     task1 = Task(
-        is_completed=False, is_faulted=False, action=all_actions[0], timestamp=date(2000, 1, 1),
+        is_completed=False,
+        is_faulted=False,
+        action=all_actions[0],
+        timestamp=date(2000, 1, 1),
     )
     task2 = Task(
-        is_completed=True, is_faulted=False, action=all_actions[1], timestamp=date(2000, 2, 1),
+        is_completed=True,
+        is_faulted=False,
+        action=all_actions[1],
+        timestamp=date(2000, 2, 1),
     )
     task3 = Task(
-        is_completed=True, is_faulted=False, action=all_actions[2], timestamp=date(2000, 1, 1),
+        is_completed=True,
+        is_faulted=False,
+        action=all_actions[2],
+        timestamp=date(2000, 1, 1),
     )
 
     tasks = [task1, task2, task3]
     returned_taskset = task_any(tasks)
     expected_taskset = TaskSet(
-        is_completed=True, actions=all_actions, result=task3, timestamp=date(2000, 1, 1),
+        is_completed=True,
+        actions=all_actions,
+        result=task3,
+        timestamp=date(2000, 1, 1),
     )
 
     assert_taskset_equal(expected_taskset, returned_taskset)
@@ -56,18 +70,29 @@ def test_has_no_completed_task():
         WaitForExternalEventAction("B"),
     ]
     task1 = Task(
-        is_completed=False, is_faulted=False, action=all_actions[0], timestamp=date(2000, 1, 1),
+        is_completed=False,
+        is_faulted=False,
+        action=all_actions[0],
+        timestamp=date(2000, 1, 1),
     )
     task2 = Task(
-        is_completed=False, is_faulted=False, action=all_actions[1], timestamp=date(2000, 2, 1),
+        is_completed=False,
+        is_faulted=False,
+        action=all_actions[1],
+        timestamp=date(2000, 2, 1),
     )
     task3 = Task(
-        is_completed=False, is_faulted=False, action=all_actions[2], timestamp=date(2000, 1, 1),
+        is_completed=False,
+        is_faulted=False,
+        action=all_actions[2],
+        timestamp=date(2000, 1, 1),
     )
 
     tasks = [task1, task2, task3]
     returned_taskset = task_any(tasks)
-    expected_taskset = TaskSet(is_completed=False, actions=all_actions, result=None)
+    expected_taskset = TaskSet(
+        is_completed=False, actions=all_actions, result=None
+    )
 
     assert_taskset_equal(expected_taskset, returned_taskset)
 
@@ -123,18 +148,29 @@ def test_one_faulted_task_should_still_proceed():
         WaitForExternalEventAction("B"),
     ]
     task1 = Task(
-        is_completed=False, is_faulted=True, action=all_actions[0], timestamp=date(2000, 1, 1),
+        is_completed=False,
+        is_faulted=True,
+        action=all_actions[0],
+        timestamp=date(2000, 1, 1),
     )
     task2 = Task(
-        is_completed=False, is_faulted=False, action=all_actions[1], timestamp=date(2000, 2, 1),
+        is_completed=False,
+        is_faulted=False,
+        action=all_actions[1],
+        timestamp=date(2000, 2, 1),
     )
     task3 = Task(
-        is_completed=False, is_faulted=False, action=all_actions[2], timestamp=date(2000, 1, 1),
+        is_completed=False,
+        is_faulted=False,
+        action=all_actions[2],
+        timestamp=date(2000, 1, 1),
     )
 
     tasks = [task1, task2, task3]
     returned_taskset = task_any(tasks)
-    expected_taskset = TaskSet(is_completed=False, actions=all_actions, result=None)
+    expected_taskset = TaskSet(
+        is_completed=False, actions=all_actions, result=None
+    )
 
     assert_taskset_equal(expected_taskset, returned_taskset)
 
@@ -146,7 +182,10 @@ def test_taskset_and_tasks_as_args():
         WaitForExternalEventAction("B"),
     ]
     task1 = Task(
-        is_completed=False, is_faulted=True, action=all_actions[0], timestamp=date(2000, 1, 1),
+        is_completed=False,
+        is_faulted=True,
+        action=all_actions[0],
+        timestamp=date(2000, 1, 1),
     )
     task2 = TaskSet(
         is_completed=True,
@@ -159,7 +198,10 @@ def test_taskset_and_tasks_as_args():
     tasks = [task1, task2]
     returned_taskset = task_any(tasks)
     expected_taskset = TaskSet(
-        is_completed=True, actions=all_actions, result=task2, timestamp=date(2000, 1, 1),
+        is_completed=True,
+        actions=all_actions,
+        result=task2,
+        timestamp=date(2000, 1, 1),
     )
 
     assert_taskset_equal(expected_taskset, returned_taskset)

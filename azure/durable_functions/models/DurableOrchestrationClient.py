@@ -27,11 +27,12 @@ class DurableOrchestrationClient:
         self._show_history_query_key: str = "showHistory"
         self._show_history_output_query_key: str = "showHistoryOutput"
         self._show_input_query_key: str = "showInput"
-        self._orchestration_bindings: DurableOrchestrationBindings = DurableOrchestrationBindings.from_json(
-            context
-        )
+        self._orchestration_bindings: DurableOrchestrationBindings = \
+            DurableOrchestrationBindings.from_json(context)
 
-    async def start_new(self, orchestration_function_name: str, instance_id: str, client_input):
+    async def start_new(
+        self, orchestration_function_name: str, instance_id: str, client_input
+    ):
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
@@ -46,7 +47,9 @@ class DurableOrchestrationClient:
         function.
         :return: The ID of the new orchestration instance.
         """
-        request_url = self._get_start_new_url(instance_id, orchestration_function_name)
+        request_url = self._get_start_new_url(
+            instance_id, orchestration_function_name
+        )
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 request_url, json=self._get_json_input(client_input)
@@ -74,7 +77,9 @@ class DurableOrchestrationClient:
            An HTTP 202 response with a Location header
            and a payload containing instance management URLs
         """
-        http_management_payload = self.get_client_response_links(request, instance_id)
+        http_management_payload = self.get_client_response_links(
+            request, instance_id
+        )
         response_args = {
             "status_code": 202,
             "body": json.dumps(http_management_payload),
@@ -105,7 +110,9 @@ class DurableOrchestrationClient:
 
         for key, _ in payload.items():
             if request.url:
-                payload[key] = self._replace_url_origin(request.url, payload[key])
+                payload[key] = self._replace_url_origin(
+                    request.url, payload[key]
+                )
             payload[key] = payload[key].replace(
                 self._orchestration_bindings.management_urls["id"], instance_id
             )
@@ -113,7 +120,12 @@ class DurableOrchestrationClient:
         return payload
 
     async def raise_event(
-        self, instance_id, event_name, event_data=None, task_hub_name=None, connection_name=None,
+        self,
+        instance_id,
+        event_name,
+        event_data=None,
+        task_hub_name=None,
+        connection_name=None,
     ):
         """Send an event notification message to a waiting orchestration instance.
 
@@ -148,7 +160,9 @@ class DurableOrchestrationClient:
         )
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(request_url, json=json.dumps(event_data)) as response:
+            async with session.post(
+                request_url, json=json.dumps(event_data)
+            ) as response:
                 switch_statement = {
                     202: lambda: None,
                     410: lambda: None,
@@ -157,7 +171,8 @@ class DurableOrchestrationClient:
                 }
                 has_error_message = switch_statement.get(
                     response.status,
-                    lambda: "Webhook returned unrecognized status code" + f" {response.status}",
+                    lambda: "Webhook returned unrecognized status code"
+                    + f" {response.status}",
                 )
                 error_message = has_error_message()
                 if error_message:
@@ -171,27 +186,38 @@ class DurableOrchestrationClient:
     def _replace_url_origin(request_url, value_url):
         request_parsed_url = urlparse(request_url)
         value_parsed_url = urlparse(value_url)
-        request_url_origin = "{url.scheme}://{url.netloc}/".format(url=request_parsed_url)
-        value_url_origin = "{url.scheme}://{url.netloc}/".format(url=value_parsed_url)
+        request_url_origin = "{url.scheme}://{url.netloc}/".format(
+            url=request_parsed_url
+        )
+        value_url_origin = "{url.scheme}://{url.netloc}/".format(
+            url=value_parsed_url
+        )
         value_url = value_url.replace(value_url_origin, request_url_origin)
         return value_url
 
     def _get_start_new_url(self, instance_id, orchestration_function_name):
-        request_url = self._orchestration_bindings.creation_urls["createNewInstancePostUri"]
+        request_url = self._orchestration_bindings.creation_urls[
+            "createNewInstancePostUri"
+        ]
         request_url = request_url.replace(
             self._function_name_placeholder, orchestration_function_name
         )
         request_url = request_url.replace(
-            self._instance_id_placeholder, f"/{instance_id}" if instance_id is not None else "",
+            self._instance_id_placeholder,
+            f"/{instance_id}" if instance_id is not None else "",
         )
         return request_url
 
-    def _get_raise_event_url(self, instance_id, event_name, task_hub_name, connection_name):
+    def _get_raise_event_url(
+        self, instance_id, event_name, task_hub_name, connection_name
+    ):
         id_placeholder = self._orchestration_bindings.management_urls["id"]
-        request_url = self._orchestration_bindings.management_urls["sendEventPostUri"].replace(
-            id_placeholder, instance_id
+        request_url = self._orchestration_bindings.management_urls[
+            "sendEventPostUri"
+        ].replace(id_placeholder, instance_id)
+        request_url = request_url.replace(
+            self._event_name_placeholder, event_name
         )
-        request_url = request_url.replace(self._event_name_placeholder, event_name)
         if task_hub_name:
             request_url = request_url.replace(
                 self._orchestration_bindings.task_hub_name, task_hub_name
@@ -199,8 +225,11 @@ class DurableOrchestrationClient:
 
         if connection_name:
             p = re.compile(
-                r"(?P<connection>connection=)(?P<connectionString>[\w]+)", re.IGNORECASE,
+                r"(?P<connection>connection=)(?P<connectionString>[\w]+)",
+                re.IGNORECASE,
             )
-            request_url = p.sub(r"\g<connection>" + connection_name, request_url)
+            request_url = p.sub(
+                r"\g<connection>" + connection_name, request_url
+            )
 
         return request_url

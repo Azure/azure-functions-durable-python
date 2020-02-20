@@ -7,7 +7,9 @@ def generator_function(context):
 
     json_rule = {
         "condition": {"wait_events": ["A", "B"], "logic": "and"},
-        "satisfied": [{"activity_func_name": "SuccessActions", "args": {"name": "Tokyo"}}],
+        "satisfied": [
+            {"activity_func_name": "SuccessActions", "args": {"name": "Tokyo"}}
+        ],
     }
 
     tasks = []

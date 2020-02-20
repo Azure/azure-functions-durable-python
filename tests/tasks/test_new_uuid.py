@@ -7,7 +7,9 @@ from azure.durable_functions.tasks.new_uuid import (
     URL_NAMESPACE,
     _create_deterministic_uuid,
 )
-from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
+from azure.durable_functions.models.DurableOrchestrationContext import (
+    DurableOrchestrationContext,
+)
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 
 

@@ -53,7 +53,9 @@ def find_event_raised(state, name):
     tasks = [
         e
         for e in state
-        if e.event_type == HistoryEventType.EVENT_RAISED and e.Name == name and not e.is_processed
+        if e.event_type == HistoryEventType.EVENT_RAISED
+        and e.Name == name
+        and not e.is_processed
     ]
 
     if len(tasks) == 0:

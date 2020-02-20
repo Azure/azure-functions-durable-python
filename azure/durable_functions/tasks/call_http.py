@@ -45,7 +45,9 @@ def call_http(
     else:
         json_content = content
 
-    request = DurableHttpRequest(method, uri, json_content, headers, token_source)
+    request = DurableHttpRequest(
+        method, uri, json_content, headers, token_source
+    )
 
     new_action = CallHttpAction(request)
 

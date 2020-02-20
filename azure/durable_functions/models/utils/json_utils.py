@@ -4,7 +4,10 @@ from ...constants import DATETIME_STRING_FORMAT
 
 
 def add_attrib(
-    json_dict: Dict[str, Any], object_, attribute_name: str, alt_name: str = None,
+    json_dict: Dict[str, Any],
+    object_,
+    attribute_name: str,
+    alt_name: str = None,
 ):
     """Add the value of the attribute from the object to the dictionary.
 
@@ -18,11 +21,16 @@ def add_attrib(
     alt_name: An alternate name to provide to the attribute in the in the dictionary
     """
     if hasattr(object_, attribute_name):
-        json_dict[alt_name or attribute_name] = getattr(object_, attribute_name)
+        json_dict[alt_name or attribute_name] = getattr(
+            object_, attribute_name
+        )
 
 
 def add_datetime_attrib(
-    json_dict: Dict[str, Any], object_, attribute_name: str, alt_name: str = None,
+    json_dict: Dict[str, Any],
+    object_,
+    attribute_name: str,
+    alt_name: str = None,
 ):
     """Add the value of the attribute from the object to the dictionary converted into a string.
 
@@ -34,13 +42,16 @@ def add_datetime_attrib(
     alt_name: An alternate name to provide to the attribute in the in the dictionary
     """
     if hasattr(object_, attribute_name):
-        json_dict[alt_name or attribute_name] = getattr(object_, attribute_name).strftime(
-            DATETIME_STRING_FORMAT
-        )
+        json_dict[alt_name or attribute_name] = getattr(
+            object_, attribute_name
+        ).strftime(DATETIME_STRING_FORMAT)
 
 
 def add_json_attrib(
-    json_dict: Dict[str, Any], object_, attribute_name: str, alt_name: str = None,
+    json_dict: Dict[str, Any],
+    object_,
+    attribute_name: str,
+    alt_name: str = None,
 ):
     """Add the results of the to_json() function call of the attribute from the object to the dict.
 
