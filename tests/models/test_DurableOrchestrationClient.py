@@ -3,9 +3,8 @@ import json
 from azure.durable_functions.models.DurableOrchestrationClient \
     import DurableOrchestrationClient
 from tests.conftest import replace_stand_in_bits
+from tests.test_utils.constants import RPC_BASE_URL
 from unittest.mock import Mock
-
-RPC_BASE_URL = "http://127.0.0.1:17071/durabletask/"
 
 
 # noinspection PyProtectedMember

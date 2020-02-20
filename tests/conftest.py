@@ -1,5 +1,7 @@
 import pytest
 import json
+
+from tests.test_utils.constants import RPC_BASE_URL
 from azure.durable_functions.models.DurableOrchestrationBindings import \
     DurableOrchestrationBindings
 
@@ -7,8 +9,6 @@ from azure.durable_functions.models.DurableOrchestrationBindings import \
 TASK_HUB_NAME = "DurableFunctionsHub"
 BASE_URL = "http://localhost:7071/runtime/webhooks/durabletask"
 AUTH_CODE = "iDFeaQCSAIuXoodl6/w3rdvHZ6Nl7yJwRrHfeInNWDJjuiunhxk8dQ=="
-BASE_RPC_URL = "http://127.0.0.1:17071/durabletask/"
-
 
 def get_binding_string():
     binding = {
@@ -39,7 +39,7 @@ def get_binding_string():
             "purgeHistoryDeleteUri": f"{BASE_URL}/instances/INSTANCEID?taskHub="
                                      f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}"
         },
-        "rpcBaseUrl": BASE_RPC_URL
+        "rpcBaseUrl": RPC_BASE_URL
     }
     binding_string = json.dumps(binding)
 
