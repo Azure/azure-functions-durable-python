@@ -1,10 +1,17 @@
 import json
+import pytest
+from typing import Any
 
 from azure.durable_functions.models.DurableOrchestrationClient \
     import DurableOrchestrationClient
 from tests.conftest import replace_stand_in_bits
 from tests.test_utils.constants import RPC_BASE_URL
 from unittest.mock import Mock
+
+
+TEST_INSTANCE_ID = 'abc1234'
+TEST_CREATED_TIME = '2020-01-01T05:00:00Z'
+TEST_LAST_UPDATED_TIME = '2020-01-01T05:00:00Z'
 
 
 # noinspection PyProtectedMember
@@ -89,3 +96,22 @@ def test_create_check_status_response(binding_string):
         assert v == returned_response.headers.get(k)
     assert expected_response.get("status_code") == returned_response.status_code
     assert expected_response.get("body") == returned_response.get_body().decode()
+
+
+async def get_202_response(url: str, data: Any = None):
+    assert url == f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}"
+    response = [202, json.dumps(dict(createdTime=TEST_CREATED_TIME,
+                                     lastUpdatedTime=TEST_LAST_UPDATED_TIME,
+                                     runtimeStatus="Running"))]
+
+    return response
+
+
+@pytest.mark.asyncio
+async def test_get_status_success(binding_string):
+    client = DurableOrchestrationClient(binding_string)
+    client._get_async_request = get_202_response
+
+    result = await client.get_status(TEST_INSTANCE_ID)
+    assert result is not None
+    assert result.runtime_status == "Running"

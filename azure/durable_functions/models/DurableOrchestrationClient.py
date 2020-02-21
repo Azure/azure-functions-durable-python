@@ -1,7 +1,9 @@
 import json
 import aiohttp
-from typing import List
+from typing import List, Any
 from urllib.parse import urlparse
+
+from .GetStatusOptions import GetStatusOptions
 from ..models import DurableOrchestrationBindings
 from .DurableOrchestrationStatus import DurableOrchestrationStatus
 import azure.functions as func
@@ -57,14 +59,12 @@ class DurableOrchestrationClient:
         request_url = self._get_start_new_url(
             instance_id=instance_id, orchestration_function_name=orchestration_function_name)
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(request_url,
-                                    json=self._get_json_input(client_input)) as response:
-                data = await response.json()
-                if response.status <= 202 and data:
-                    return data["id"]
-                else:
-                    return None
+        response = await self._post_async_request(request_url, self._get_json_input(client_input))
+
+        if response[0] <= 202 and response[1]:
+            return response[1]["id"]
+        else:
+            return None
 
     def create_check_status_response(self, request, instance_id):
         """Create a HttpResponse that contains useful information for \
@@ -153,24 +153,23 @@ class DurableOrchestrationClient:
         request_url = self._get_raise_event_url(
             instance_id, event_name, task_hub_name, connection_name)
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(request_url, json=json.dumps(event_data)) as response:
-                switch_statement = {
-                    202: lambda: None,
-                    410: lambda: None,
-                    404: lambda: f"No instance with ID {instance_id} found.",
-                    400: lambda: "Only application/json request content is supported"
-                }
-                has_error_message = switch_statement.get(
-                    response.status, lambda: "Webhook returned unrecognized status code"
-                                             + f" {response.status}")
-                error_message = has_error_message()
-                if error_message:
-                    raise Exception(error_message)
+        response = await self._post_async_request(request_url, json.dumps(event_data))
 
-    def get_status(self, instance_id: str, show_history: bool = None,
-                   show_history_output: bool = None,
-                   show_input: bool = None) -> DurableOrchestrationStatus:
+        switch_statement = {
+            202: lambda: None,
+            410: lambda: None,
+            404: lambda: f"No instance with ID {instance_id} found.",
+            400: lambda: "Only application/json request content is supported"
+        }
+        has_error_message = switch_statement.get(
+            response[0], lambda: f"Webhook returned unrecognized status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+
+    async def get_status(self, instance_id: str, show_history: bool = None,
+                         show_history_output: bool = None,
+                         show_input: bool = None) -> DurableOrchestrationStatus:
         """Get the status of the specified orchestration instance.
 
         Parameters
@@ -189,7 +188,26 @@ class DurableOrchestrationClient:
         DurableOrchestrationStatus
             The status of the requested orchestration instance
         """
-        raise NotImplementedError("This is a placeholder.")
+        options = GetStatusOptions(instance_id=instance_id, show_history=show_history,
+                                   show_history_output=show_history_output, show_input=show_input)
+        request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
+        response = await self._get_async_request(request_url)
+        switch_statement = {
+            200: lambda: None,  # instance completed
+            202: lambda: None,  # instance in progress
+            400: lambda: None,  # instance failed or terminated
+            404: lambda: None,  # instance not found or pending
+            500: lambda: None   # instance failed with unhandled exception
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+        else:
+            return DurableOrchestrationStatus.from_json(response[1])
 
     @staticmethod
     def _get_json_input(client_input: object) -> object:
@@ -203,6 +221,21 @@ class DurableOrchestrationClient:
         value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
         value_url = value_url.replace(value_url_origin, request_url_origin)
         return value_url
+
+    @staticmethod
+    async def _post_async_request(url: str, data: Any = None) -> [int, Any]:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url,
+                                    json=data) as response:
+                data = await response.json()
+                return [response.status, data]
+
+    @staticmethod
+    async def _get_async_request(url: str) -> [int, Any]:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                data = await response.json()
+                return [response.status, data]
 
     def _get_start_new_url(self, instance_id, orchestration_function_name):
         instance_path = f'/{instance_id}' if instance_id is not None else ''
