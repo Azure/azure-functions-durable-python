@@ -35,9 +35,8 @@ def test_all_the_args():
                     lastUpdatedTime=TEST_LAST_UPDATED_TIME, input=TEST_INPUT, output=TEST_OUTPUT,
                     runtimeStatus=TEST_RUNTIME_STATUS, customStatus=TEST_CUSTOM_STATUS,
                     history=history)
-    response_as_string = json.dumps(response)
 
-    result = DurableOrchestrationStatus.from_json(response_as_string)
+    result = DurableOrchestrationStatus.from_json(response)
 
     assert result.runtime_status == TEST_RUNTIME_STATUS
     assert result.custom_status == TEST_CUSTOM_STATUS

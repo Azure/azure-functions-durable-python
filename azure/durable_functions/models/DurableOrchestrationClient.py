@@ -1,8 +1,10 @@
 import json
 import aiohttp
 from typing import List, Any
+from datetime import datetime
 from urllib.parse import urlparse
 
+from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from .GetStatusOptions import GetStatusOptions
 from ..models import DurableOrchestrationBindings
 from .DurableOrchestrationStatus import DurableOrchestrationStatus
@@ -197,7 +199,7 @@ class DurableOrchestrationClient:
             202: lambda: None,  # instance in progress
             400: lambda: None,  # instance failed or terminated
             404: lambda: None,  # instance not found or pending
-            500: lambda: None   # instance failed with unhandled exception
+            500: lambda: None  # instance failed with unhandled exception
         }
 
         has_error_message = switch_statement.get(
@@ -208,6 +210,68 @@ class DurableOrchestrationClient:
             raise Exception(error_message)
         else:
             return DurableOrchestrationStatus.from_json(response[1])
+
+    async def get_status_all(self) -> List[DurableOrchestrationStatus]:
+        """Get the status of all orchestration instances.
+
+        Returns
+        -------
+        DurableOrchestrationStatus
+            The status of the requested orchestration instances
+        """
+        options = GetStatusOptions()
+        request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
+        response = await self._get_async_request(request_url)
+        switch_statement = {
+            200: lambda: None,  # instance completed
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+        else:
+            return [DurableOrchestrationStatus.from_json(o) for o in response[1]]
+
+    async def get_status_by(self, created_time_from: datetime = None,
+                            created_time_to: datetime = None,
+                            runtime_status: List[OrchestrationRuntimeStatus] = None) \
+            -> List[DurableOrchestrationStatus]:
+        """Get the status of all orchestration instances that match the specified conditions.
+
+        Parameters
+        ----------
+        created_time_from : datetime
+            The ID of the orchestration instance to query.
+        created_time_to: datetime
+            Boolean marker for including execution history in the response.
+        runtime_status: List[OrchestrationRuntimeStatus]
+            Boolean marker for including output in the execution history response.
+
+        Returns
+        -------
+        DurableOrchestrationStatus
+            The status of the requested orchestration instances
+        """
+        options = GetStatusOptions(created_time_from=created_time_from,
+                                   created_time_to=created_time_to,
+                                   runtime_status=runtime_status)
+        request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
+        response = await self._get_async_request(request_url)
+        switch_statement = {
+            200: lambda: None,  # instance completed
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+        else:
+            return [DurableOrchestrationStatus.from_json(o) for o in response[1]]
 
     @staticmethod
     def _get_json_input(client_input: object) -> object:

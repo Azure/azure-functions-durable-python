@@ -1,7 +1,6 @@
 from datetime import datetime
 from dateutil.parser import parse as dt_parse
 from typing import Any, List
-import json
 
 from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 
@@ -33,24 +32,24 @@ class DurableOrchestrationStatus:
                 self.__setattr__(key, value)
 
     @classmethod
-    def from_json(cls, json_string: str):
+    def from_json(cls, json_obj: Any):
         """Convert the value passed into a new instance of the class.
 
         Parameters
         ----------
-        json_string: str
-            Context passed a JSON serializable value to be converted into an instance of the class
+        json_obj: any
+            JSON object to be converted into an instance of the class
 
         Returns
         -------
         DurableOrchestrationStatus
             New instance of the durable orchestration status class
         """
-        try:
-            json_dict = json.loads(json_string)
-        except json.JSONDecodeError:
-            json_dict = dict(message=json_string)
-        return cls(**json_dict)
+        if isinstance(json_obj, str):
+            return cls(message=json_obj)
+        else:
+            return cls(**json_obj)
+
 
     @property
     def name(self) -> str:

@@ -2,6 +2,7 @@ import json
 import pytest
 from typing import Any
 
+from azure.durable_functions.models.OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from azure.durable_functions.models.DurableOrchestrationClient \
     import DurableOrchestrationClient
 from tests.conftest import replace_stand_in_bits
@@ -103,17 +104,17 @@ def test_create_check_status_response(binding_string):
 
 async def get_202_response(url: str, data: Any = None):
     assert url == f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}"
-    response = [202, json.dumps(dict(createdTime=TEST_CREATED_TIME,
-                                     lastUpdatedTime=TEST_LAST_UPDATED_TIME,
-                                     runtimeStatus="Running"))]
+    response = [202, dict(createdTime=TEST_CREATED_TIME,
+                          lastUpdatedTime=TEST_LAST_UPDATED_TIME,
+                          runtimeStatus="Running")]
     return response
 
 
 async def get_200_response(url: str, data: Any = None):
     assert url == f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}"
-    response = [200, json.dumps(dict(createdTime=TEST_CREATED_TIME,
-                                     lastUpdatedTime=TEST_LAST_UPDATED_TIME,
-                                     runtimeStatus="Completed"))]
+    response = [200, dict(createdTime=TEST_CREATED_TIME,
+                          lastUpdatedTime=TEST_LAST_UPDATED_TIME,
+                          runtimeStatus="Completed")]
     return response
 
 
@@ -142,7 +143,7 @@ async def get_501_response(url: str, data: Any = None):
 
 
 @pytest.mark.asyncio
-async def test_get_202_status_success(binding_string):
+async def test_get_202_get_status_success(binding_string):
     client = DurableOrchestrationClient(binding_string)
     client._get_async_request = get_202_response
 
@@ -152,7 +153,7 @@ async def test_get_202_status_success(binding_string):
 
 
 @pytest.mark.asyncio
-async def test_get_200_status_success(binding_string):
+async def test_get_200_get_status_success(binding_string):
     client = DurableOrchestrationClient(binding_string)
     client._get_async_request = get_200_response
 
@@ -163,7 +164,7 @@ async def test_get_200_status_success(binding_string):
 
 # noinspection PyUnresolvedReferences
 @pytest.mark.asyncio
-async def test_get_500_status_failed(binding_string):
+async def test_get_500_get_status_failed(binding_string):
     client = DurableOrchestrationClient(binding_string)
     client._get_async_request = get_500_response
 
@@ -174,7 +175,7 @@ async def test_get_500_status_failed(binding_string):
 
 # noinspection PyUnresolvedReferences
 @pytest.mark.asyncio
-async def test_get_400_status_failed(binding_string):
+async def test_get_400_get_status_failed(binding_string):
     client = DurableOrchestrationClient(binding_string)
     client._get_async_request = get_400_response
 
@@ -185,7 +186,7 @@ async def test_get_400_status_failed(binding_string):
 
 # noinspection PyUnresolvedReferences
 @pytest.mark.asyncio
-async def test_get_404_status_failed(binding_string):
+async def test_get_404_get_status_failed(binding_string):
     client = DurableOrchestrationClient(binding_string)
     client._get_async_request = get_404_response
 
@@ -196,9 +197,81 @@ async def test_get_404_status_failed(binding_string):
 
 # noinspection PyUnresolvedReferences
 @pytest.mark.asyncio
-async def test_get_501_status_failed(binding_string):
+async def test_get_501_get_status_failed(binding_string):
     client = DurableOrchestrationClient(binding_string)
     client._get_async_request = get_501_response
 
     with pytest.raises(Exception):
         await client.get_status(TEST_INSTANCE_ID)
+
+
+async def get_status_by_200_response(url: str, data: Any = None):
+    assert url == f"{RPC_BASE_URL}instances/?runtimeStatus=Running"
+    response = [200, [dict(createdTime=TEST_CREATED_TIME,
+                           lastUpdatedTime=TEST_LAST_UPDATED_TIME,
+                           runtimeStatus="Running"),
+                      dict(createdTime=TEST_CREATED_TIME,
+                           lastUpdatedTime=TEST_LAST_UPDATED_TIME,
+                           runtimeStatus="Running")
+                      ]]
+    return response
+
+
+async def get_status_by_500_response(url: str, data: Any = None):
+    assert url == f"{RPC_BASE_URL}instances/?runtimeStatus=Running"
+    response = [500, MESSAGE_500]
+    return response
+
+
+async def get_status_all_200_response(url: str, data: Any = None):
+    assert url == f"{RPC_BASE_URL}instances/"
+    response = [200, [dict(createdTime=TEST_CREATED_TIME,
+                           lastUpdatedTime=TEST_LAST_UPDATED_TIME,
+                           runtimeStatus="Running"),
+                      dict(createdTime=TEST_CREATED_TIME,
+                           lastUpdatedTime=TEST_LAST_UPDATED_TIME,
+                           runtimeStatus="Completed")
+                      ]]
+    return response
+
+
+async def get_status_all_500_response(url: str, data: Any = None):
+    assert url == f"{RPC_BASE_URL}instances/"
+    response = [500, MESSAGE_500]
+    return response
+
+
+@pytest.mark.asyncio
+async def test_get_200_get_status_by_success(binding_string):
+    client = DurableOrchestrationClient(binding_string)
+    client._get_async_request = get_status_by_200_response
+
+    result = await client.get_status_by(runtime_status=[OrchestrationRuntimeStatus.Running])
+    assert result is not None
+
+
+@pytest.mark.asyncio
+async def test_get_500_get_status_by_failed(binding_string):
+    client = DurableOrchestrationClient(binding_string)
+    client._get_async_request = get_status_by_500_response
+
+    with pytest.raises(Exception):
+        await client.get_status_by(runtime_status=[OrchestrationRuntimeStatus.Running])
+
+
+@pytest.mark.asyncio
+async def test_get_200_get_status_all_success(binding_string):
+    client = DurableOrchestrationClient(binding_string)
+    client._get_async_request = get_status_all_200_response
+
+    result = await client.get_status_all()
+    assert result is not None
+
+
+@pytest.mark.asyncio
+async def test_get_500_get_status_all_failed(binding_string):
+    client = DurableOrchestrationClient(binding_string)
+    client._get_async_request = get_status_all_500_response
+
+    with pytest.raises(Exception):
+        await client.get_status_all()
