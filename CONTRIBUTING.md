@@ -70,8 +70,7 @@ The following extensions should be installed if using Visual Studio Code for deb
 
 ### Setting up durable-py debugging
 
-- Create a Durable Functions Orchestrator for FunctionChaining pattern using [starter templates](https://docs.microsoft.com/en-us/azure/azure-functions/durable/quickstart-xxxxxxxxxxxx) (#TODO: this is needed but we dont seem to have it)
-  Note: In this starter template, ignore the line that says: "On a Mac or Linux computer, you must set the AzureWebJobsStorage property to the connection string of an existing Azure storage account". We will be setting up the AzureWebJobsStorage property to `UseDevelopmentStorage=true`
+- Create a Durable Functions Orchestrator for FunctionChaining (TODO: this step requires a link to a step-by-step guide on how to do this)
 
 - In host.json, remove the extensionsBundle portion to enable specific version debugging. Provide a hub name (else remove the entire extensions portion to default to DurableFunctionsHub) Here's how the host.json should look like:
 
