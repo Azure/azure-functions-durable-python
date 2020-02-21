@@ -20,8 +20,9 @@ class DurableOrchestrationStatus:
                  **kwargs):
         self._name: str = name
         self._instance_id: str = instanceId
-        self._created_time: datetime = dt_parse(createdTime)
-        self._last_updated_time: datetime = dt_parse(lastUpdatedTime)
+        self._created_time: datetime = dt_parse(createdTime) if createdTime is not None else None
+        self._last_updated_time: datetime = dt_parse(lastUpdatedTime) \
+            if lastUpdatedTime is not None else None
         self._input: Any = input
         self._output: Any = output
         self._runtime_status: OrchestrationRuntimeStatus = runtimeStatus
@@ -45,7 +46,10 @@ class DurableOrchestrationStatus:
         DurableOrchestrationStatus
             New instance of the durable orchestration status class
         """
-        json_dict = json.loads(json_string)
+        try:
+            json_dict = json.loads(json_string)
+        except json.JSONDecodeError:
+            json_dict = dict(message=json_string)
         return cls(**json_dict)
 
     @property
