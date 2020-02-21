@@ -1,5 +1,5 @@
 from typing import List
-from ..interfaces.IAction import IAction
+from azure.durable_functions.models.actions.Action import Action
 from datetime import datetime
 
 
@@ -19,7 +19,7 @@ class TaskSet:
     def __init__(self, is_completed, actions, result, is_faulted=False,
                  timestamp=None, exception=None):
         self._is_completed: bool = is_completed
-        self._actions: List[IAction] = actions
+        self._actions: List[Action] = actions
         self._result = result
         self._is_faulted: bool = is_faulted
         self._timestamp: datetime = timestamp
@@ -39,7 +39,7 @@ class TaskSet:
         return self._is_faulted
 
     @property
-    def actions(self) -> List[IAction]:
+    def actions(self) -> List[Action]:
         """Get the scheduled action represented by the task.
 
         _Internal use only._

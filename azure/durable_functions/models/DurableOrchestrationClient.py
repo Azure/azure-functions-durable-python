@@ -1,9 +1,9 @@
 import json
-import re
 import aiohttp
 from typing import List
 from urllib.parse import urlparse
-from azure.durable_functions.models import DurableOrchestrationBindings
+from ..models import DurableOrchestrationBindings
+from .DurableOrchestrationStatus import DurableOrchestrationStatus
 import azure.functions as func
 
 
@@ -33,24 +33,30 @@ class DurableOrchestrationClient:
     async def start_new(self,
                         orchestration_function_name: str,
                         instance_id: str,
-                        client_input):
+                        client_input: object):
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
         existing instance will be silently replaced by this new instance.
 
-        :param orchestration_function_name: The name of the orchestrator
-        function to start.
-        :param instance_id: The ID to use for the new orchestration instance.
-        If no instance id is specified, the Durable Functions extension will
-        generate a random GUID (recommended).
-        :param client_input: JSON-serializable input value for the orchestrator
-        function.
-        :return: The ID of the new orchestration instance.
+        Parameters
+        ----------
+        orchestration_function_name : str
+            The name of the orchestrator function to start.
+        instance_id : str
+            The ID to use for the new orchestration instance. If no instance id is specified,
+            the Durable Functions extension will generate a random GUID (recommended).
+        client_input : object
+            JSON-serializable input value for the orchestrator function.
+
+        Returns
+        -------
+        str
+            The ID of the new orchestration instance if successful, None if not.
         """
         request_url = self._get_start_new_url(
-            instance_id,
-            orchestration_function_name)
+            instance_id=instance_id, orchestration_function_name=orchestration_function_name)
+
         async with aiohttp.ClientSession() as session:
             async with session.post(request_url,
                                     json=self._get_json_input(client_input)) as response:
@@ -157,10 +163,33 @@ class DurableOrchestrationClient:
                 }
                 has_error_message = switch_statement.get(
                     response.status, lambda: "Webhook returned unrecognized status code"
-                    + f" {response.status}")
+                                             + f" {response.status}")
                 error_message = has_error_message()
                 if error_message:
                     raise Exception(error_message)
+
+    def get_status(self, instance_id: str, show_history: bool = None,
+                   show_history_output: bool = None,
+                   show_input: bool = None) -> DurableOrchestrationStatus:
+        """Get the status of the specified orchestration instance.
+
+        Parameters
+        ----------
+        instance_id : str
+            The ID of the orchestration instance to query.
+        show_history: bool
+            Boolean marker for including execution history in the response.
+        show_history_output: bool
+            Boolean marker for including output in the execution history response.
+        show_input: bool
+            Boolean marker for including the input in the response.
+
+        Returns
+        -------
+        DurableOrchestrationStatus
+            The status of the requested orchestration instance
+        """
+        raise NotImplementedError("This is a placeholder.")
 
     @staticmethod
     def _get_json_input(client_input: object) -> object:
@@ -176,26 +205,23 @@ class DurableOrchestrationClient:
         return value_url
 
     def _get_start_new_url(self, instance_id, orchestration_function_name):
-        request_url = self._orchestration_bindings.creation_urls['createNewInstancePostUri']
-        request_url = request_url.replace(self._function_name_placeholder,
-                                          orchestration_function_name)
-        request_url = request_url.replace(self._instance_id_placeholder,
-                                          f'/{instance_id}'
-                                          if instance_id is not None else '')
+        instance_path = f'/{instance_id}' if instance_id is not None else ''
+        request_url = f'{self._orchestration_bindings.rpc_base_url}orchestrators/' \
+                      f'{orchestration_function_name}{instance_path}'
         return request_url
 
     def _get_raise_event_url(self, instance_id, event_name, task_hub_name, connection_name):
-        id_placeholder = self._orchestration_bindings.management_urls["id"]
-        request_url = self._orchestration_bindings.management_urls["sendEventPostUri"].replace(
-            id_placeholder, instance_id)
-        request_url = request_url.replace(self._event_name_placeholder, event_name)
+        request_url = f'{self._orchestration_bindings.rpc_base_url}' \
+                      f'instances/{instance_id}/raiseEvent/{event_name}'
+
+        query = []
         if task_hub_name:
-            request_url = request_url.replace(
-                self._orchestration_bindings.task_hub_name, task_hub_name)
+            query.append(f'taskHub={task_hub_name}')
 
         if connection_name:
-            p = re.compile(
-                r'(?P<connection>connection=)(?P<connectionString>[\w]+)', re.IGNORECASE)
-            request_url = p.sub(r'\g<connection>' + connection_name, request_url)
+            query.append(f'connection={connection_name}')
+
+        if len(query) > 0:
+            request_url += "?" + "&".join(query)
 
         return request_url
