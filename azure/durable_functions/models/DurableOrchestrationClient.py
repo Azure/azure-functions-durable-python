@@ -244,11 +244,12 @@ class DurableOrchestrationClient:
         Parameters
         ----------
         created_time_from : datetime
-            The ID of the orchestration instance to query.
+            Return orchestration instances which were created after this Date.
         created_time_to: datetime
-            Boolean marker for including execution history in the response.
+            Return orchestration instances which were created before this Date.
         runtime_status: List[OrchestrationRuntimeStatus]
-            Boolean marker for including output in the execution history response.
+            Return orchestration instances which match any of the runtimeStatus values
+            in this list.
 
         Returns
         -------
