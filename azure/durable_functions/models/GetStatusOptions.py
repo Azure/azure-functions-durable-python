@@ -7,7 +7,7 @@ from azure.durable_functions.models.OrchestrationRuntimeStatus import Orchestrat
 
 
 class GetStatusOptions:
-    """Class used to collect the options for getting orchestration status"""
+    """Class used to collect the options for getting orchestration status."""
 
     def __init__(self, instance_id: str = None, task_hub_name: str = None,
                  connection_name: str = None, show_history: bool = None,
@@ -36,6 +36,18 @@ class GetStatusOptions:
             GetStatusOptions._add_arg(url, name, date_as_string)
 
     def to_url(self, base_url: str) -> str:
+        """Get the url based on the options selected.
+
+        Parameters
+        ----------
+        base_url: str
+            The base url to prepend to the url path
+
+        Returns
+        -------
+        str
+            The Url used to get orchestration status information
+        """
         url = furl(f"{base_url}instances/{self._instance_id if self._instance_id else ''}")
 
         self._add_arg(url, 'taskHub', self._task_hub_name)

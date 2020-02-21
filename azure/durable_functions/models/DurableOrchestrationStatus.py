@@ -50,7 +50,6 @@ class DurableOrchestrationStatus:
         else:
             return cls(**json_obj)
 
-
     @property
     def name(self) -> str:
         """Get the orchestrator function name."""
