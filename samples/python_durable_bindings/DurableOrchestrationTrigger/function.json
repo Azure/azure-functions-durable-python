@@ -4,8 +4,7 @@
     {
       "name": "context",
       "type": "orchestrationTrigger",
-      "direction": "in",
-      "dataType": "string"
+      "direction": "in"
     }
   ],
   "disabled": false

@@ -1,10 +1,13 @@
-import logging
-import azure.durable_functions as df
 import json
+import logging
 
-def generator_function(context):
+import azure.durable_functions as df
+import azure.functions as func
 
-    json_rule={
+
+def orchestrator_function(context: df.DurableOrchestrationContext):
+
+    json_rule = {
         "condition": {
             "wait_events": ["A","B"],
             "logic": "and"
@@ -22,12 +25,12 @@ def generator_function(context):
     tasks = []
     for event in json_rule["condition"]["wait_events"]:
         tasks.append(context.wait_for_external_event(event))
-    
+
     if json_rule["condition"]["logic"] == 'and':
         yield context.task_all(tasks)
-    elif json_rule["condition"]["logic"] == 'or': 
+    elif json_rule["condition"]["logic"] == 'or':
         yield context.task_any(tasks)
-    
+
     output = []
     for action in json_rule["satisfied"]:
         result = yield context.call_activity(action["activity_func_name"], json.dumps(action["args"]))
@@ -36,17 +39,4 @@ def generator_function(context):
     return output
 
 
-def main(context: str):
-    """This function creates the orchestration and provides
-    the durable framework with the core orchestration logic
-    
-    Arguments:
-        context {str} -- Function context containing the orchestration API's 
-        and current context of the long running workflow.
-    
-    Returns:
-        OrchestratorState - State of current orchestration
-    """
-    orchestrate = df.Orchestrator.create(generator_function)
-    result = orchestrate(context)
-    return result
+main = df.Orchestrator.create(orchestrator_function)
