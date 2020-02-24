@@ -3,7 +3,7 @@
 ## General
 
 - Helps start contributions to Durable Functions in Python
-- Helps setup development environment across platforms for Durable Functions in JavaScript
+- Helps setup development environment across platforms for Durable Functions in Python
 
 ## Pre-reqs
 
