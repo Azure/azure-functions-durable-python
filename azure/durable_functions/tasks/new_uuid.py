@@ -11,7 +11,6 @@ def _create_deterministic_uuid(namespace_value: str, name: str) -> str:
     return str(uuid5(namespace_uuid, name))
 
 
-# noinspection PyProtectedMember
 def new_uuid(context: DurableOrchestrationContext) -> str:
     """Create a new UUID that is safe for replay within an orchestration or operation.
 

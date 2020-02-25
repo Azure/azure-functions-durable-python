@@ -9,7 +9,7 @@ from tests.conftest import replace_stand_in_bits
 from tests.test_utils.constants import RPC_BASE_URL
 from unittest.mock import Mock
 
-TEST_INSTANCE_ID = 'abc1234'
+TEST_INSTANCE_ID = '2e2568e7-a906-43bd-8364-c81733c5891e'
 TEST_CREATED_TIME = '2020-01-01T05:00:00Z'
 TEST_LAST_UPDATED_TIME = '2020-01-01T05:00:00Z'
 MESSAGE_400 = 'instance failed or terminated'
@@ -18,10 +18,9 @@ MESSAGE_500 = 'instance failed with unhandled exception'
 MESSAGE_501 = "well we didn't expect that"
 
 
-# noinspection PyProtectedMember
 def test_get_start_new_url(binding_string):
     client = DurableOrchestrationClient(binding_string)
-    instance_id = "abc123"
+    instance_id = "2e2568e7-a906-43bd-8364-c81733c5891e"
     function_name = "my_function"
     start_new_url = client._get_start_new_url(instance_id, function_name)
     expected_url = replace_stand_in_bits(
@@ -29,13 +28,11 @@ def test_get_start_new_url(binding_string):
     assert expected_url == start_new_url
 
 
-# noinspection PyProtectedMember
 def test_get_input_returns_none_when_none_supplied():
     result = DurableOrchestrationClient._get_json_input(None)
     assert result is None
 
 
-# noinspection PyProtectedMember
 def test_get_input_returns_json_string(binding_string):
     input_ = json.loads(binding_string)
     result = DurableOrchestrationClient._get_json_input(input_)
@@ -43,10 +40,9 @@ def test_get_input_returns_json_string(binding_string):
     assert input_as_string == result
 
 
-# noinspection PyProtectedMember
 def test_get_raise_event_url(binding_string):
     client = DurableOrchestrationClient(binding_string)
-    instance_id = "abc123"
+    instance_id = "2e2568e7-a906-43bd-8364-c81733c5891e"
     event_name = "test_event_name"
     task_hub_name = "test_task_hub"
     connection_name = "test_connection"
@@ -62,27 +58,32 @@ def test_get_raise_event_url(binding_string):
 
 def test_create_check_status_response(binding_string):
     client = DurableOrchestrationClient(binding_string)
-    instance_id = "abc123"
+    instance_id = "2e2568e7-a906-43bd-8364-c81733c5891e"
     request = Mock(url="http://test_azure.net/api/orchestrators/DurableOrchestrationTrigger")
     returned_response = client.create_check_status_response(request, instance_id)
 
     http_management_payload = {
-        "id": "abc123",
+        "id": instance_id,
         "statusQueryGetUri":
-            r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123?taskHub"
+            r"http://test_azure.net/runtime/webhooks/durabletask/instances/"
+            r"2e2568e7-a906-43bd-8364-c81733c5891e?taskHub"
             r"=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
         "sendEventPostUri":
-            r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123/raiseEvent/{"
+            r"http://test_azure.net/runtime/webhooks/durabletask/instances/"
+            r"2e2568e7-a906-43bd-8364-c81733c5891e/raiseEvent/{"
             r"eventName}?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
         "terminatePostUri":
-            r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123/terminate"
+            r"http://test_azure.net/runtime/webhooks/durabletask/instances/"
+            r"2e2568e7-a906-43bd-8364-c81733c5891e/terminate"
             r"?reason={text}&taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
         "rewindPostUri":
-            r"http://test_azure.net/runtime/webhooks/durabletask/instances/abc123/rewind?reason"
+            r"http://test_azure.net/runtime/webhooks/durabletask/instances/"
+            r"2e2568e7-a906-43bd-8364-c81733c5891e/rewind?reason"
             r"={text}&taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
         "purgeHistoryDeleteUri":
             r"http://test_azure.net/runtime/webhooks/durabletask/instances/"
-            r"abc123?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE"
+            r"2e2568e7-a906-43bd-8364-c81733c5891e"
+            r"?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE"
     }
     for key, _ in http_management_payload.items():
         http_management_payload[key] = replace_stand_in_bits(http_management_payload[key])
@@ -162,7 +163,6 @@ async def test_get_200_get_status_success(binding_string):
     assert result.runtime_status == "Completed"
 
 
-# noinspection PyUnresolvedReferences
 @pytest.mark.asyncio
 async def test_get_500_get_status_failed(binding_string):
     client = DurableOrchestrationClient(binding_string)
@@ -173,7 +173,6 @@ async def test_get_500_get_status_failed(binding_string):
     assert result.message == MESSAGE_500
 
 
-# noinspection PyUnresolvedReferences
 @pytest.mark.asyncio
 async def test_get_400_get_status_failed(binding_string):
     client = DurableOrchestrationClient(binding_string)
@@ -184,7 +183,6 @@ async def test_get_400_get_status_failed(binding_string):
     assert result.message == MESSAGE_400
 
 
-# noinspection PyUnresolvedReferences
 @pytest.mark.asyncio
 async def test_get_404_get_status_failed(binding_string):
     client = DurableOrchestrationClient(binding_string)
@@ -195,7 +193,6 @@ async def test_get_404_get_status_failed(binding_string):
     assert result.message == MESSAGE_404
 
 
-# noinspection PyUnresolvedReferences
 @pytest.mark.asyncio
 async def test_get_501_get_status_failed(binding_string):
     client = DurableOrchestrationClient(binding_string)

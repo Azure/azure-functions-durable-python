@@ -32,7 +32,6 @@ class Orchestrator:
         self.fn: Callable[[DurableOrchestrationContext], Iterator[Any]] = activity_func
         self.customStatus: Any = None
 
-    # noinspection PyAttributeOutsideInit,PyUnboundLocalVariable
     def handle(self, context: DurableOrchestrationContext):
         """Handle the orchestration of the user defined generator function.
 

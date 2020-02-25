@@ -1,14 +1,15 @@
 import json
-import aiohttp
-from typing import List, Any
 from datetime import datetime
+from typing import List
 from urllib.parse import urlparse
 
-from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
-from .GetStatusOptions import GetStatusOptions
-from ..models import DurableOrchestrationBindings
-from .DurableOrchestrationStatus import DurableOrchestrationStatus
 import azure.functions as func
+
+from .DurableOrchestrationStatus import DurableOrchestrationStatus
+from .GetStatusOptions import GetStatusOptions
+from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
+from ..models import DurableOrchestrationBindings
+from .utils.http_utils import get_async_request, post_async_request
 
 
 class DurableOrchestrationClient:
@@ -33,6 +34,8 @@ class DurableOrchestrationClient:
         self._show_input_query_key: str = "showInput"
         self._orchestration_bindings: DurableOrchestrationBindings = \
             DurableOrchestrationBindings.from_json(context)
+        self._post_async_request = lambda u, d: post_async_request(u, d)
+        self._get_async_request = lambda u: get_async_request(u)
 
     async def start_new(self,
                         orchestration_function_name: str,
@@ -286,21 +289,6 @@ class DurableOrchestrationClient:
         value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
         value_url = value_url.replace(value_url_origin, request_url_origin)
         return value_url
-
-    @staticmethod
-    async def _post_async_request(url: str, data: Any = None) -> [int, Any]:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url,
-                                    json=data) as response:
-                data = await response.json()
-                return [response.status, data]
-
-    @staticmethod
-    async def _get_async_request(url: str) -> [int, Any]:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                data = await response.json()
-                return [response.status, data]
 
     def _get_start_new_url(self, instance_id, orchestration_function_name):
         instance_path = f'/{instance_id}' if instance_id is not None else ''

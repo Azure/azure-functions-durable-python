@@ -12,7 +12,6 @@ class DurableOrchestrationStatus:
     """
 
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
-    # noinspection PyPep8Naming,PyShadowingBuiltins
     def __init__(self, name: str = None, instanceId: str = None, createdTime: str = None,
                  lastUpdatedTime: str = None, input: Any = None, output: Any = None,
                  runtimeStatus: str = None, customStatus: Any = None, history: List[Any] = None,

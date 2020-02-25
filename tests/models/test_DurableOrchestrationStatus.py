@@ -1,6 +1,6 @@
-import json
 from datetime import datetime
 from typing import Dict, Any
+
 from dateutil.parser import parse as dt_parse
 
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
@@ -8,7 +8,7 @@ from azure.durable_functions.models.DurableOrchestrationStatus import DurableOrc
 from azure.durable_functions.models.history import HistoryEventType
 
 TEST_NAME = 'what ever I want it to be'
-TEST_INSTANCE_ID = 'abc1234'
+TEST_INSTANCE_ID = '2e2568e7-a906-43bd-8364-c81733c5891e'
 TEST_CREATED_TIME = '2020-01-01T05:00:00Z'
 TEST_LAST_UPDATED_TIME = '2020-01-01T05:00:00Z'
 TEST_INPUT = 'My Input'
@@ -48,3 +48,11 @@ def test_all_the_args():
     assert result.name == TEST_NAME
     assert result.history[0]['EventType'] == HistoryEventType.ORCHESTRATOR_STARTED
     assert result.history[1]['EventType'] == HistoryEventType.EXECUTION_STARTED
+
+
+def test_no_args():
+    response = ''
+
+    result = DurableOrchestrationStatus.from_json(response)
+
+    assert result is not None
