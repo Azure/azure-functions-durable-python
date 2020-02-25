@@ -44,3 +44,23 @@ async def get_async_request(url: str) -> [int, Any]:
         async with session.get(url) as response:
             data = await response.json()
             return [response.status, data]
+
+
+@staticmethod
+async def delete_async_request(url: str) -> [int, Any]:
+    """Delete the data from the url provided.
+
+    Parameters
+    ----------
+    url: str
+        url to delete the data from
+
+    Returns
+    -------
+    [int, Any]
+        Tuple with the Response status code and the data returned from the request
+    """
+    async with aiohttp.ClientSession() as session:
+        async with session.delete(url) as response:
+            data = await response.json()
+            return [response.status, data]

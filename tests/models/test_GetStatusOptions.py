@@ -2,7 +2,7 @@ from furl import furl
 from datetime import datetime, timedelta
 
 from azure.durable_functions.models import OrchestrationRuntimeStatus
-from azure.durable_functions.models.GetStatusOptions import GetStatusOptions
+from azure.durable_functions.models.RpcManagementOptions import RpcManagementOptions
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 from tests.test_utils.constants import RPC_BASE_URL
 
@@ -20,7 +20,7 @@ def assert_urls_match(expected, result):
 
 def test_just_instance_id():
     instance_id = 'test1234'
-    options = GetStatusOptions(instance_id=instance_id)
+    options = RpcManagementOptions(instance_id=instance_id)
     result = options.to_url(RPC_BASE_URL)
     expected = f"{RPC_BASE_URL}instances/{instance_id}"
     assert_urls_match(expected=expected, result=result)
@@ -28,8 +28,8 @@ def test_just_instance_id():
 
 def test_instance_id_with_optional_booleans():
     instance_id = 'test1234'
-    options = GetStatusOptions(instance_id=instance_id, show_history=True,
-                               show_history_output=True, show_input=True)
+    options = RpcManagementOptions(instance_id=instance_id, show_history=True,
+                                   show_history_output=True, show_input=True)
     result = options.to_url(RPC_BASE_URL)
     expected = f"{RPC_BASE_URL}instances/{instance_id}?" \
                "showHistory=True&showHistoryOutput=True&showInput=True"
@@ -40,7 +40,7 @@ def test_instance_id_with_optional_booleans():
 def test_just_the_strings():
     task_hub_name = 'my_hub'
     connection_name = 'my_connection'
-    options = GetStatusOptions(connection_name=connection_name, task_hub_name=task_hub_name)
+    options = RpcManagementOptions(connection_name=connection_name, task_hub_name=task_hub_name)
     result = options.to_url(RPC_BASE_URL)
     expected = f"{RPC_BASE_URL}instances/?connectionName={connection_name}&taskHub={task_hub_name}"
 
@@ -49,7 +49,7 @@ def test_just_the_strings():
 
 def test_one_runtime_status():
     runtime_status = [OrchestrationRuntimeStatus.Running]
-    options = GetStatusOptions(runtime_status=runtime_status)
+    options = RpcManagementOptions(runtime_status=runtime_status)
     result = options.to_url(RPC_BASE_URL)
     expected = f"{RPC_BASE_URL}instances/?runtimeStatus=Running"
 
@@ -58,7 +58,7 @@ def test_one_runtime_status():
 
 def test_two_runtime_status():
     runtime_status = [OrchestrationRuntimeStatus.Running, OrchestrationRuntimeStatus.Completed]
-    options = GetStatusOptions(runtime_status=runtime_status)
+    options = RpcManagementOptions(runtime_status=runtime_status)
     result = options.to_url(RPC_BASE_URL)
     expected = f"{RPC_BASE_URL}instances/?runtimeStatus=Running,Completed"
 
@@ -68,8 +68,8 @@ def test_two_runtime_status():
 def test_datetime_status():
     created_time_from = datetime.now()
     created_time_to = created_time_from + timedelta(minutes=1)
-    options = GetStatusOptions(created_time_from=created_time_from,
-                               created_time_to=created_time_to)
+    options = RpcManagementOptions(created_time_from=created_time_from,
+                                   created_time_to=created_time_to)
     result = options.to_url(RPC_BASE_URL)
     from_as_string = created_time_from.strftime(DATETIME_STRING_FORMAT)
     to_as_string = created_time_to.strftime(DATETIME_STRING_FORMAT)

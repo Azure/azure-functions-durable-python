@@ -1,8 +1,9 @@
 from datetime import datetime
 from dateutil.parser import parse as dt_parse
-from typing import Any, List
+from typing import Any, List, Dict
 
 from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
+from .utils.json_utils import add_attrib, add_datetime_attrib
 
 
 class DurableOrchestrationStatus:
@@ -48,6 +49,26 @@ class DurableOrchestrationStatus:
             return cls(message=json_obj)
         else:
             return cls(**json_obj)
+
+    def to_json(self) -> Dict[str, Any]:
+        """Convert object into a json dictionary.
+
+        Returns
+        -------
+        Dict[str, Any]
+            The instance of the class converted into a json dictionary
+        """
+        json = {}
+        add_attrib(json, self, 'name')
+        add_attrib(json, self, 'instance_id', 'instanceId')
+        add_datetime_attrib(json, self, 'created_time', 'createdTime')
+        add_datetime_attrib(json, self, 'last_updated_time', 'lastUpdatedTime')
+        add_attrib(json, self, 'output')
+        add_attrib(json, self, 'input_', 'input')
+        add_attrib(json, self, 'runtime_status', 'runtimeStatus')
+        add_attrib(json, self, 'custom_status', 'customStatus')
+        add_attrib(json, self, 'history')
+        return json
 
     @property
     def name(self) -> str:

@@ -6,7 +6,7 @@ from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 from azure.durable_functions.models.OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 
 
-class GetStatusOptions:
+class RpcManagementOptions:
     """Class used to collect the options for getting orchestration status."""
 
     def __init__(self, instance_id: str = None, task_hub_name: str = None,
@@ -33,7 +33,7 @@ class GetStatusOptions:
     def _add_date_arg(url: furl, name: str, value: datetime):
         if value:
             date_as_string = value.strftime(DATETIME_STRING_FORMAT)
-            GetStatusOptions._add_arg(url, name, date_as_string)
+            RpcManagementOptions._add_arg(url, name, date_as_string)
 
     def to_url(self, base_url: str) -> str:
         """Get the url based on the options selected.
