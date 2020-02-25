@@ -30,6 +30,6 @@ class CallActivityWithRetryAction:
 
         add_attrib(json_dict, self, 'action_type', 'actionType')
         add_attrib(json_dict, self, 'function_name', 'functionName')
-        add_attrib(json_dict, self, 'input', 'input')
+        add_attrib(json_dict, self, 'input_', 'input')
         add_json_attrib(json_dict, self, 'retry_options', 'retryOptions')
         return json_dict
