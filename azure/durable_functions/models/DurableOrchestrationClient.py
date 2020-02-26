@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from typing import List, Any
 import time
-from urllib.parse import urlparse
+from urllib.parse import urlparse, quote
 
 import azure.functions as func
 
@@ -296,18 +296,7 @@ class DurableOrchestrationClient:
         """
         request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}"
         response = await self._delete_async_request(request_url)
-        switch_statement = {
-            200: PurgeHistoryResult.from_json(response[1]),  # instance completed
-            404: PurgeHistoryResult(0),  # instance not found
-        }
-
-        result = switch_statement.get(
-            response[0],
-            f"The operation failed with an unexpected status code {response[0]}")
-        if isinstance(result, PurgeHistoryResult):
-            return result
-        else:
-            raise Exception(result)
+        return self._parse_purge_instance_history_response(response)
 
     async def purge_instance_history_by(self, created_time_from: datetime = None,
                                         created_time_to: datetime = None,
@@ -335,18 +324,7 @@ class DurableOrchestrationClient:
                                        runtime_status=runtime_status)
         request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
         response = await self._delete_async_request(request_url)
-        switch_statement = {
-            200: PurgeHistoryResult.from_json(response[1]),  # instance completed
-            404: PurgeHistoryResult(0),  # instance not found
-        }
-
-        result = switch_statement.get(
-            response[0],
-            f"The operation failed with an unexpected status code {response[0]}")
-        if isinstance(result, PurgeHistoryResult):
-            return result
-        else:
-            raise Exception(result)
+        return self._parse_purge_instance_history_response(response)
 
     async def terminate(self, instance_id: str, reason: str):
         """Terminate the specified orchestration instance.
@@ -363,8 +341,8 @@ class DurableOrchestrationClient:
         None
         """
         request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}/" \
-                      f"terminate?reason{reason}"
-        response = await self._post_async_request(request_url)
+                      f"terminate?reason={quote(reason)}"
+        response = await self._post_async_request(request_url, None)
         switch_statement = {
             202: lambda: None,  # instance in progress
             410: lambda: None,  # instance failed or terminated
@@ -464,6 +442,22 @@ class DurableOrchestrationClient:
         value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
         value_url = value_url.replace(value_url_origin, request_url_origin)
         return value_url
+
+    @staticmethod
+    def _parse_purge_instance_history_response(response: [int, Any]):
+        switch_statement = {
+            200: lambda: PurgeHistoryResult.from_json(response[1]),  # instance completed
+            404: lambda: PurgeHistoryResult(instancesDeleted=0),  # instance not found
+        }
+
+        switch_result = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        result = switch_result()
+        if isinstance(result, PurgeHistoryResult):
+            return result
+        else:
+            raise Exception(result)
 
     def _get_start_new_url(self, instance_id, orchestration_function_name):
         instance_path = f'/{instance_id}' if instance_id is not None else ''

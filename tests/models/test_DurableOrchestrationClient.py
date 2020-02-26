@@ -1,6 +1,7 @@
 import json
-import pytest
 from typing import Any
+
+import pytest
 
 from azure.durable_functions.models.OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from azure.durable_functions.models.DurableOrchestrationClient \
@@ -23,7 +24,15 @@ class MockRequest:
         self._expected_url = expected_url
         self._response = response
 
-    async def get_response(self, url: str):
+    async def get(self, url: str):
+        assert url == self._expected_url
+        return self._response
+
+    async def delete(self, url: str):
+        assert url == self._expected_url
+        return self._response
+
+    async def post(self, url: str, data: Any = None):
         assert url == self._expected_url
         return self._response
 
@@ -120,7 +129,7 @@ async def test_get_202_get_status_success(binding_string):
                                                    lastUpdatedTime=TEST_LAST_UPDATED_TIME,
                                                    runtimeStatus="Running")])
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = mock_request.get_response
+    client._get_async_request = mock_request.get
 
     result = await client.get_status(TEST_INSTANCE_ID)
     assert result is not None
@@ -134,7 +143,7 @@ async def test_get_200_get_status_success(binding_string):
                                                    lastUpdatedTime=TEST_LAST_UPDATED_TIME,
                                                    runtimeStatus="Completed")])
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = mock_request.get_response
+    client._get_async_request = mock_request.get
 
     result = await client.get_status(TEST_INSTANCE_ID)
     assert result is not None
@@ -146,7 +155,7 @@ async def test_get_500_get_status_failed(binding_string):
     mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}",
                                response=[500, MESSAGE_500])
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = mock_request.get_response
+    client._get_async_request = mock_request.get
 
     result = await client.get_status(TEST_INSTANCE_ID)
     assert result is not None
@@ -158,7 +167,7 @@ async def test_get_400_get_status_failed(binding_string):
     mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}",
                                response=[400, MESSAGE_400])
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = mock_request.get_response
+    client._get_async_request = mock_request.get
 
     result = await client.get_status(TEST_INSTANCE_ID)
     assert result is not None
@@ -170,7 +179,7 @@ async def test_get_404_get_status_failed(binding_string):
     mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}",
                                response=[404, MESSAGE_404])
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = mock_request.get_response
+    client._get_async_request = mock_request.get
 
     result = await client.get_status(TEST_INSTANCE_ID)
     assert result is not None
@@ -182,7 +191,7 @@ async def test_get_501_get_status_failed(binding_string):
     mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}",
                                response=[501, MESSAGE_501])
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = mock_request.get_response
+    client._get_async_request = mock_request.get
 
     with pytest.raises(Exception):
         await client.get_status(TEST_INSTANCE_ID)
@@ -199,7 +208,7 @@ async def test_get_200_get_status_by_success(binding_string):
                                                     runtimeStatus="Running")
                                                ]])
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = mock_request.get_response
+    client._get_async_request = mock_request.get
 
     result = await client.get_status_by(runtime_status=[OrchestrationRuntimeStatus.Running])
     assert result is not None
@@ -211,7 +220,7 @@ async def test_get_500_get_status_by_failed(binding_string):
     mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/?runtimeStatus=Running",
                                response=[500, MESSAGE_500])
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = mock_request.get_response
+    client._get_async_request = mock_request.get
 
     with pytest.raises(Exception):
         await client.get_status_by(runtime_status=[OrchestrationRuntimeStatus.Running])
@@ -228,10 +237,11 @@ async def test_get_200_get_status_all_success(binding_string):
                                                     runtimeStatus="Running")
                                                ]])
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = mock_request.get_response
+    client._get_async_request = mock_request.get
 
     result = await client.get_status_all()
     assert result is not None
+    assert len(result) == 2
 
 
 @pytest.mark.asyncio
@@ -239,7 +249,136 @@ async def test_get_500_get_status_all_failed(binding_string):
     mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/",
                                response=[500, MESSAGE_500])
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = mock_request.get_response
+    client._get_async_request = mock_request.get
 
     with pytest.raises(Exception):
         await client.get_status_all()
+
+
+@pytest.mark.asyncio
+async def test_delete_200_purge_instance_history(binding_string):
+    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}",
+                               response=[200, dict(instancesDeleted=1)])
+    client = DurableOrchestrationClient(binding_string)
+    client._delete_async_request = mock_request.delete
+
+    result = await client.purge_instance_history(TEST_INSTANCE_ID)
+    assert result is not None
+    assert result.instances_deleted == 1
+
+
+@pytest.mark.asyncio
+async def test_delete_404_purge_instance_history(binding_string):
+    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}",
+                               response=[404, MESSAGE_404])
+    client = DurableOrchestrationClient(binding_string)
+    client._delete_async_request = mock_request.delete
+
+    result = await client.purge_instance_history(TEST_INSTANCE_ID)
+    assert result is not None
+    assert result.instances_deleted == 0
+
+
+@pytest.mark.asyncio
+async def test_delete_500_purge_instance_history(binding_string):
+    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}",
+                               response=[500, MESSAGE_500])
+    client = DurableOrchestrationClient(binding_string)
+    client._delete_async_request = mock_request.delete
+
+    with pytest.raises(Exception):
+        await client.purge_instance_history(TEST_INSTANCE_ID)
+
+
+@pytest.mark.asyncio
+async def test_delete_200_purge_instance_history_by(binding_string):
+    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/?runtimeStatus=Running",
+                               response=[200, dict(instancesDeleted=1)])
+    client = DurableOrchestrationClient(binding_string)
+    client._delete_async_request = mock_request.delete
+
+    result = await client.purge_instance_history_by(
+        runtime_status=[OrchestrationRuntimeStatus.Running])
+    assert result is not None
+    assert result.instances_deleted == 1
+
+
+@pytest.mark.asyncio
+async def test_delete_404_purge_instance_history_by(binding_string):
+    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/?runtimeStatus=Running",
+                               response=[404, MESSAGE_404])
+    client = DurableOrchestrationClient(binding_string)
+    client._delete_async_request = mock_request.delete
+
+    result = await client.purge_instance_history_by(
+        runtime_status=[OrchestrationRuntimeStatus.Running])
+    assert result is not None
+    assert result.instances_deleted == 0
+
+
+@pytest.mark.asyncio
+async def test_delete_500_purge_instance_history_by(binding_string):
+    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/?runtimeStatus=Running",
+                               response=[500, MESSAGE_500])
+    client = DurableOrchestrationClient(binding_string)
+    client._delete_async_request = mock_request.delete
+
+    with pytest.raises(Exception):
+        await client.purge_instance_history_by(
+            runtime_status=[OrchestrationRuntimeStatus.Running])
+
+
+@pytest.mark.asyncio
+async def test_post_202_terminate(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/terminate?reason={reason}",
+        response=[202, None])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    result = await client.terminate(TEST_INSTANCE_ID, raw_reason)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_post_410_terminate(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/terminate?reason={reason}",
+        response=[410, None])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    result = await client.terminate(TEST_INSTANCE_ID, raw_reason)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_post_404_terminate(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/terminate?reason={reason}",
+        response=[404, MESSAGE_404])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    with pytest.raises(Exception):
+        await client.terminate(TEST_INSTANCE_ID, raw_reason)
+
+
+@pytest.mark.asyncio
+async def test_post_500_terminate(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/terminate?reason={reason}",
+        response=[500, MESSAGE_500])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    with pytest.raises(Exception):
+        await client.terminate(TEST_INSTANCE_ID, raw_reason)
