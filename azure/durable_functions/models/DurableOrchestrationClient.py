@@ -380,13 +380,12 @@ class DurableOrchestrationClient:
             The timeout between checks for output from the durable function.
             The default value is 1 second.
         """
-
         if retry_interval_in_milliseconds > timeout_in_milliseconds:
             raise Exception(f'Total timeout {timeout_in_milliseconds} (ms) should be bigger than '
                             f'retry timeout {retry_interval_in_milliseconds} (ms)')
 
         checking = True
-        start_time = time.time_ns()
+        start_time = time.time()
 
         while checking:
             status = await self.get_status(instance_id)
@@ -394,36 +393,37 @@ class DurableOrchestrationClient:
             if status:
                 switch_statement = {
                     OrchestrationRuntimeStatus.Completed:
-                        self._create_http_response(200, status.output),
+                        lambda: self._create_http_response(200, status.output),
                     OrchestrationRuntimeStatus.Canceled:
-                        self._create_http_response(200, status.to_json()),
+                        lambda: self._create_http_response(200, status.to_json()),
                     OrchestrationRuntimeStatus.Terminated:
-                        self._create_http_response(200, status.to_json()),
+                        lambda: self._create_http_response(200, status.to_json()),
                     OrchestrationRuntimeStatus.Failed:
-                        self._create_http_response(500, status.to_json()),
+                        lambda: self._create_http_response(500, status.to_json()),
                 }
 
-                result = switch_statement.get(status.runtime_status)
+                result = switch_statement.get(OrchestrationRuntimeStatus(status.runtime_status))
                 if result:
-                    return result
+                    return result()
 
-            elapsed = time.time_ns() - start_time
+            elapsed = time.time() - start_time
             elapsed_in_milliseconds = elapsed * 1000
             if elapsed_in_milliseconds < timeout_in_milliseconds:
                 remaining_time = timeout_in_milliseconds - elapsed_in_milliseconds
                 sleep_time = retry_interval_in_milliseconds \
                     if remaining_time > retry_interval_in_milliseconds else remaining_time
                 sleep_time /= 1000
-                await time.sleep(sleep_time)
+                time.sleep(sleep_time)
             else:
                 return self.create_check_status_response(request, instance_id)
 
     @staticmethod
     def _create_http_response(status_code: int, body: Any) -> func.HttpResponse:
-        body_as_json = json.dumps(body)
+        body_as_json = body if isinstance(body, str) else json.dumps(body)
         response_args = {
-            "status": status_code,
+            "status_code": status_code,
             "body": body_as_json,
+            "mimetype": "application/json",
             "headers": {
                 "Content-Type": "application/json",
             }

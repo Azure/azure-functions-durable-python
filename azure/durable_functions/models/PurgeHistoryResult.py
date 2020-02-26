@@ -3,6 +3,7 @@ from typing import Any
 
 class PurgeHistoryResult:
     """Information provided when the request to purge history has been made."""
+
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     def __init__(self, instancesDeleted: int, **kwargs):
         self._instances_deleted: int = instancesDeleted
