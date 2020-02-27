@@ -74,12 +74,12 @@ setup(
         'aiohttp==3.6.2',
         'requests==2.22.0',
         'furl==2.1.0',
-        'azure-functions==1.0.8',
+        'azure-functions==1.1.0',
     ],
     install_requires=[
         'grpcio~=1.22.0',
         'grpcio-tools~=1.22.0',
-        'azure-functions==1.0.8',
+        'azure-functions==1.1.0',
         'python-dateutil==2.8.0',
         'requests==2.22.0',
         'aiohttp==3.6.2'

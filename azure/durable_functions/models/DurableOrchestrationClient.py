@@ -1,7 +1,8 @@
 import json
 from datetime import datetime
 from typing import List, Any
-import time
+from time import time
+from asyncio import sleep
 from urllib.parse import urlparse, quote
 
 import azure.functions as func
@@ -385,7 +386,7 @@ class DurableOrchestrationClient:
                             f'retry timeout {retry_interval_in_milliseconds} (ms)')
 
         checking = True
-        start_time = time.time()
+        start_time = time()
 
         while checking:
             status = await self.get_status(instance_id)
@@ -406,14 +407,14 @@ class DurableOrchestrationClient:
                 if result:
                     return result()
 
-            elapsed = time.time() - start_time
+            elapsed = time() - start_time
             elapsed_in_milliseconds = elapsed * 1000
             if elapsed_in_milliseconds < timeout_in_milliseconds:
                 remaining_time = timeout_in_milliseconds - elapsed_in_milliseconds
                 sleep_time = retry_interval_in_milliseconds \
                     if remaining_time > retry_interval_in_milliseconds else remaining_time
                 sleep_time /= 1000
-                time.sleep(sleep_time)
+                await sleep(sleep_time)
             else:
                 return self.create_check_status_response(request, instance_id)
 
