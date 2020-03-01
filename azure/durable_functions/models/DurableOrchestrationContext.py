@@ -25,6 +25,7 @@ class DurableOrchestrationContext:
                  history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
                  parentInstanceId: str, **kwargs):
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
+        self._input: str = kwargs["input"]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
@@ -156,6 +157,11 @@ class DurableOrchestrationContext:
             instance ID>:<#>`
         """
         raise NotImplementedError("This is a placeholder.")
+
+    def get_input(self) -> str:
+        """Get the orchestration input.
+        """
+        return self._input
 
     def new_uuid(self) -> str:
         """Create a new UUID that is safe for replay within an orchestration or operation.
