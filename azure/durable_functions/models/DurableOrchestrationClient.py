@@ -1,6 +1,6 @@
 import json
 import aiohttp
-from typing import List
+from typing import List, Awaitable
 from urllib.parse import urlparse
 from ..models import DurableOrchestrationBindings
 from .DurableOrchestrationStatus import DurableOrchestrationStatus
@@ -33,7 +33,7 @@ class DurableOrchestrationClient:
     async def start_new(self,
                         orchestration_function_name: str,
                         instance_id: str,
-                        client_input: object) -> str:
+                        client_input: object) -> Awaitable[str]:
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
