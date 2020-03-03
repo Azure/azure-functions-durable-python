@@ -13,6 +13,8 @@ from .models import (
 from .models.history import HistoryEventType
 from .tasks import should_suspend
 
+import azure.functions as func
+
 
 class Orchestrator:
     """Durable Orchestration Class.
@@ -132,5 +134,11 @@ class Orchestrator:
         Callable[[Any], str]
             Handle function of the newly created orchestration client
         """
-        return lambda context: \
-            Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context))
+
+        def handle(context: func.OrchestrationContext) -> str:
+            context_body = getattr(context, "body", None)
+            if context_body is None:
+                context_body = context
+            return Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context_body))
+
+        return handle

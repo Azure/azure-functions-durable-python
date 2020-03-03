@@ -77,7 +77,7 @@ setup(
     install_requires=[
         'grpcio~=1.22.0',
         'grpcio-tools~=1.22.0',
-        'azure-functions==1.0.8',
+        'azure-functions>=1.2.0',
         'python-dateutil==2.8.0',
         'requests==2.22.0',
         'aiohttp==3.6.2'
