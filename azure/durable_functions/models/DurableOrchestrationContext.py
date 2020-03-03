@@ -63,7 +63,7 @@ class DurableOrchestrationContext:
         # (consistent with Python Functions generic trigger/input bindings)
         if (isinstance(input, Dict)):
             input = json.dumps(input)
-        self._input:str = input
+        self._input: str = input
 
     @classmethod
     def from_json(cls, json_string: str):
@@ -164,8 +164,7 @@ class DurableOrchestrationContext:
         raise NotImplementedError("This is a placeholder.")
 
     def get_input(self) -> str:
-        """Get the orchestration input.
-        """
+        """Get the orchestration input."""
         return self._input
 
     def new_uuid(self) -> str:
