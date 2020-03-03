@@ -23,9 +23,8 @@ class DurableOrchestrationContext:
     # noinspection PyPep8Naming
     def __init__(self,
                  history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
-                 parentInstanceId: str, **kwargs):
+                 parentInstanceId: str, input: Any = None, **kwargs):
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
-        self._input: str = kwargs["input"]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
@@ -59,6 +58,12 @@ class DurableOrchestrationContext:
         self._new_uuid_counter = 0
         self.actions: List[List[Action]] = []
         self._function_context: FunctionContext = FunctionContext(**kwargs)
+
+        # make _input always a string
+        # (consistent with Python Functions generic trigger/input bindings)
+        if (isinstance(input, Dict)):
+            input = json.dumps(input)
+        self._input:str = input
 
     @classmethod
     def from_json(cls, json_string: str):
