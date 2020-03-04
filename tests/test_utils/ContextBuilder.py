@@ -100,7 +100,7 @@ class ContextBuilder:
         add_attrib(json_dict, self, 'instance_id', 'instanceId')
         add_attrib(json_dict, self, 'parent_instance_id', 'parentInstanceId')
         add_attrib(json_dict, self, 'is_replaying', 'isReplaying')
-        add_attrib(json_dict, self, 'input_')
+        add_attrib(json_dict, self, 'input_', "input")
 
         history_list_as_dict = self.get_history_list_as_dict()
         json_dict['history'] = history_list_as_dict

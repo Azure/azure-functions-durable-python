@@ -1,4 +1,5 @@
 import pytest
+import json
 from dateutil.parser import parse as dt_parse
 
 from azure.durable_functions.models.DurableOrchestrationContext \
@@ -54,3 +55,26 @@ def test_added_function_context_args():
     assert durable_context.function_context is not None
     for key in additional_attributes:
         assert additional_attributes[key] == getattr(durable_context.function_context, key)
+
+
+def test_get_input_none(starting_context):
+    assert None == starting_context.get_input()
+
+
+def test_get_input_string():
+    builder = ContextBuilder('test_function_context')
+    builder.input_ = 'Seattle'
+    context = DurableOrchestrationContext.from_json(builder.to_json_string())
+
+    assert 'Seattle' == context.get_input()
+
+
+def test_get_input_json_str():
+    builder = ContextBuilder('test_function_context')
+    builder.input_ = { 'city': 'Seattle' }
+    context = DurableOrchestrationContext.from_json(builder.to_json_string())
+
+    result = context.get_input()
+
+    result_dict = json.loads(result)
+    assert 'Seattle' == result_dict['city']
