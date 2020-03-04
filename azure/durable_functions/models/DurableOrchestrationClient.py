@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import List, Any
+from typing import List, Any, Awaitable
 from time import time
 from asyncio import sleep
 from urllib.parse import urlparse, quote
