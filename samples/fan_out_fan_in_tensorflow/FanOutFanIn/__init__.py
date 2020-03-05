@@ -1,11 +1,13 @@
 import json
+
+import azure.functions as func
 import azure.durable_functions as df
 
 
 def _get_classify_images_tasks(config, image_list, context):
     """Get list of tasks that breaks down the execution of the predications.
 
-    will create a list of tasks to perform that is split evenly across the 
+    will create a list of tasks to perform that is split evenly across the
     different instances
 
     Arguments:
@@ -35,10 +37,10 @@ def _get_classify_images_tasks(config, image_list, context):
     return tasks
 
 
-def generator_function(context):
+def orchestrator_function(context: df.DurableOrchestrationContext):
     """Get the generator that will need to be orchestrated by durable functions.
 
-    This function will get a list of images to do a prediction of, fan out the 
+    This function will get a list of images to do a prediction of, fan out the
     prediction tasks then summarize the results
 
     Arguments:
@@ -74,9 +76,4 @@ def generator_function(context):
     return summary
 
 
-def main(context: str):
-    orchestrate = df.Orchestrator.create(generator_function)
-
-    result = orchestrate(context)
-
-    return result
+main = df.Orchestrator.create(orchestrator_function)
