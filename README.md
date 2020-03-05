@@ -1,7 +1,7 @@
 |Branch|Status|
 |---|---|
-|master|[![Build Status](https://csefy19.visualstudio.com/Durable%20Functions%20Python%20OSS/_apis/build/status/Azure.azure-functions-durable-python?branchName=master)](https://csefy19.visualstudio.com/Durable%20Functions%20Python%20OSS/_build/latest?definitionId=39&branchName=master)|
-|dev|[![Build Status](https://csefy19.visualstudio.com/Durable%20Functions%20Python%20OSS/_apis/build/status/Azure.azure-functions-durable-python?branchName=dev)](https://csefy19.visualstudio.com/Durable%20Functions%20Python%20OSS/_build/latest?definitionId=39&branchName=dev)|
+|master|[![Build Status](https://azfunc.visualstudio.com/Azure%20Functions%20Python/_apis/build/status/Azure%20Functions%20Durable%20Python?branchName=master)](https://azfunc.visualstudio.com/Azure%20Functions%20Python/_build/latest?definitionId=44&branchName=master)|
+|dev|[![Build Status](https://azfunc.visualstudio.com/Azure%20Functions%20Python/_apis/build/status/Azure%20Functions%20Durable%20Python?branchName=dev)](https://azfunc.visualstudio.com/Azure%20Functions%20Python/_build/latest?definitionId=44&branchName=dev)|
 
 # Durable Functions for Python
 
@@ -34,7 +34,7 @@ You can follow the instructions below to get started with a function chaining ex
     - [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator) (Windows) or an actual Azure storage account (Mac or Linux)
     - Python 3.6 or later
 
-2. [Create an Azure Functions app.](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-python) 
+2. [Create an Azure Functions app.](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-python)
 
 3. Install the Durable Functions extension
 
