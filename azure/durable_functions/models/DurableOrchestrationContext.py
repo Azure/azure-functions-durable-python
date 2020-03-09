@@ -20,7 +20,6 @@ class DurableOrchestrationContext:
     """
 
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
-    # noinspection PyPep8Naming
     def __init__(self,
                  history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
                  parentInstanceId: str, input: Any = None, **kwargs):

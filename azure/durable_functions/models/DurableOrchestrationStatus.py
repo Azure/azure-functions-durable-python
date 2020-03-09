@@ -1,9 +1,9 @@
 from datetime import datetime
 from dateutil.parser import parse as dt_parse
-from typing import Any, List
-import json
+from typing import Any, List, Dict
 
 from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
+from .utils.json_utils import add_attrib, add_datetime_attrib
 
 
 class DurableOrchestrationStatus:
@@ -13,14 +13,15 @@ class DurableOrchestrationStatus:
     """
 
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
-    # noinspection PyPep8Naming,PyShadowingBuiltins
-    def __init__(self, name: str, instanceId: str, createdTime: str, lastUpdatedTime: str,
-                 input: Any, output: Any, runtimeStatus: str, customStatus: Any = None,
-                 history: List[Any] = None, **kwargs):
+    def __init__(self, name: str = None, instanceId: str = None, createdTime: str = None,
+                 lastUpdatedTime: str = None, input: Any = None, output: Any = None,
+                 runtimeStatus: str = None, customStatus: Any = None, history: List[Any] = None,
+                 **kwargs):
         self._name: str = name
         self._instance_id: str = instanceId
-        self._created_time: datetime = dt_parse(createdTime)
-        self._last_updated_time: datetime = dt_parse(lastUpdatedTime)
+        self._created_time: datetime = dt_parse(createdTime) if createdTime is not None else None
+        self._last_updated_time: datetime = dt_parse(lastUpdatedTime) \
+            if lastUpdatedTime is not None else None
         self._input: Any = input
         self._output: Any = output
         self._runtime_status: OrchestrationRuntimeStatus = runtimeStatus
@@ -31,21 +32,43 @@ class DurableOrchestrationStatus:
                 self.__setattr__(key, value)
 
     @classmethod
-    def from_json(cls, json_string: str):
+    def from_json(cls, json_obj: Any):
         """Convert the value passed into a new instance of the class.
 
         Parameters
         ----------
-        json_string: str
-            Context passed a JSON serializable value to be converted into an instance of the class
+        json_obj: any
+            JSON object to be converted into an instance of the class
 
         Returns
         -------
         DurableOrchestrationStatus
             New instance of the durable orchestration status class
         """
-        json_dict = json.loads(json_string)
-        return cls(**json_dict)
+        if isinstance(json_obj, str):
+            return cls(message=json_obj)
+        else:
+            return cls(**json_obj)
+
+    def to_json(self) -> Dict[str, Any]:
+        """Convert object into a json dictionary.
+
+        Returns
+        -------
+        Dict[str, Any]
+            The instance of the class converted into a json dictionary
+        """
+        json = {}
+        add_attrib(json, self, 'name')
+        add_attrib(json, self, 'instance_id', 'instanceId')
+        add_datetime_attrib(json, self, 'created_time', 'createdTime')
+        add_datetime_attrib(json, self, 'last_updated_time', 'lastUpdatedTime')
+        add_attrib(json, self, 'output')
+        add_attrib(json, self, 'input_', 'input')
+        add_attrib(json, self, 'runtime_status', 'runtimeStatus')
+        add_attrib(json, self, 'custom_status', 'customStatus')
+        add_attrib(json, self, 'history')
+        return json
 
     @property
     def name(self) -> str:

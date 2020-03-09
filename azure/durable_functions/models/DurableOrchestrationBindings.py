@@ -12,7 +12,6 @@ class DurableOrchestrationBindings:
     """
 
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
-    # noinspection PyPep8Naming
     def __init__(self, taskHubName: str, creationUrls: Dict[str, str],
                  managementUrls: Dict[str, str], rpcBaseUrl: str = None, **kwargs):
         self._task_hub_name: str = taskHubName

@@ -5,10 +5,10 @@ from tests.test_utils.constants import RPC_BASE_URL
 from azure.durable_functions.models.DurableOrchestrationBindings import \
     DurableOrchestrationBindings
 
-
 TASK_HUB_NAME = "DurableFunctionsHub"
 BASE_URL = "http://localhost:7071/runtime/webhooks/durabletask"
 AUTH_CODE = "iDFeaQCSAIuXoodl6/w3rdvHZ6Nl7yJwRrHfeInNWDJjuiunhxk8dQ=="
+
 
 def get_binding_string():
     binding = {

@@ -32,7 +32,6 @@ def base_expected_state(output=None) -> OrchestratorState:
     return OrchestratorState(is_done=False, actions=[], output=output)
 
 
-# noinspection PyProtectedMember
 def add_hello_action(state: OrchestratorState, input_: str):
     retry_options = RETRY_OPTIONS
     action = CallActivityWithRetryAction(
