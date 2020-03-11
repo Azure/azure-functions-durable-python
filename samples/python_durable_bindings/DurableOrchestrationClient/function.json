@@ -14,12 +14,12 @@
     },
     {
       "direction": "out",
-      "name": "message", 
+      "name": "message",
       "type": "http"
     },
     {
       "name": "starter",
-      "type": "orchestrationClient",
+      "type": "durableClient",
       "direction": "in",
       "datatype": "string"
     }

@@ -14,13 +14,19 @@ def call_activity_task(
         input_: Any = None) -> Task:
     """Determine the state of Scheduling an activity for execution.
 
-    :param state: The list of history events to search to determine the current
-    state of the activity.
-    :param name: The name of the activity function to schedule.
-    :param input_:The JSON-serializable input to pass to the activity
-    function.
-    :return: A Durable Task that completes when the called activity
-    function completes or fails.
+    Parameters
+    ----------
+    state: List[HistoryEvent]
+        The list of history events to search to determine the current state of the activity.
+    name: str
+        The name of the activity function to schedule.
+    input_: Any
+        The JSON-serializable input to pass to the activity function.
+
+    Returns
+    -------
+    Task
+        A Durable Task that completes when the called activity function completes or fails.
     """
     new_action = CallActivityAction(name, input_)
 

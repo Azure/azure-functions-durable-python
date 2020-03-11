@@ -13,6 +13,8 @@ from .models import (
 from .models.history import HistoryEventType
 from .tasks import should_suspend
 
+import azure.functions as func
+
 
 class Orchestrator:
     """Durable Orchestration Class.
@@ -32,7 +34,6 @@ class Orchestrator:
         self.fn: Callable[[DurableOrchestrationContext], Iterator[Any]] = activity_func
         self.customStatus: Any = None
 
-    # noinspection PyAttributeOutsideInit,PyUnboundLocalVariable
     def handle(self, context: DurableOrchestrationContext):
         """Handle the orchestration of the user defined generator function.
 
@@ -118,11 +119,25 @@ class Orchestrator:
                 self.durable_context.decision_started_event.timestamp
 
     @classmethod
-    def create(cls, fn):
+    def create(cls, fn: Callable[[DurableOrchestrationContext], Iterator[Any]]) \
+            -> Callable[[Any], str]:
         """Create an instance of the orchestration class.
 
-        :param fn: Generator function that needs orchestration
-        :return: Handle function of the newly created orchestration client
+        Parameters
+        ----------
+        fn: Callable[[DurableOrchestrationContext], Iterator[Any]]
+            Generator function that needs orchestration
+
+        Returns
+        -------
+        Callable[[Any], str]
+            Handle function of the newly created orchestration client
         """
-        return lambda context: \
-            Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context))
+
+        def handle(context: func.OrchestrationContext) -> str:
+            context_body = getattr(context, "body", None)
+            if context_body is None:
+                context_body = context
+            return Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context_body))
+
+        return handle

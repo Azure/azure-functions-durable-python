@@ -69,16 +69,16 @@ setup(
     license='MIT',
     setup_requires=[
         'grpcio~=1.22.0',
-        'grpcio-tools~=1.22.0',
-        'python-dateutil==2.8.0',
-        'requests==2.22.0',
+        'grpcio-tools~=1.22.0'
     ],
     install_requires=[
         'grpcio~=1.22.0',
         'grpcio-tools~=1.22.0',
+        'azure-functions>=1.2.0',
         'python-dateutil==2.8.0',
         'requests==2.22.0',
-        'aiohttp==3.6.2'
+        'aiohttp==3.6.2',
+        'furl==2.1.0'
     ],
     include_package_data=True,
     cmdclass={

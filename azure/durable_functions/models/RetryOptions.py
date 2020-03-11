@@ -23,27 +23,36 @@ class RetryOptions:
                              "must be greater than 0.")
 
     @property
-    def first_retry_interval_in_milliseconds(self):
+    def first_retry_interval_in_milliseconds(self) -> int:
         """Get the first retry interval (ms).
 
         Must be greater than 0
 
-        :return: The value indicating the first retry interval
+        Returns
+        -------
+        int
+            The value indicating the first retry interval
         """
         return self._first_retry_interval_in_milliseconds
 
     @property
-    def max_number_of_attempts(self):
+    def max_number_of_attempts(self) -> int:
         """Get Max Number of Attempts.
 
-        :return: Value indicating the max number of attempts to retry
+        Returns
+        -------
+        int
+            Value indicating the max number of attempts to retry
         """
         return self._max_number_of_attempts
 
     def to_json(self) -> Dict[str, Any]:
         """Convert object into a json dictionary.
 
-        :return: The instance of the class converted into a json dictionary
+        Returns
+        -------
+        Dict[str, Any]
+            The instance of the class converted into a json dictionary
         """
         json_dict = {}
 

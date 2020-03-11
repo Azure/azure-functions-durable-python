@@ -1,10 +1,18 @@
 import json
-import re
-import aiohttp
-from typing import List
-from urllib.parse import urlparse
-from azure.durable_functions.models import DurableOrchestrationBindings
+from datetime import datetime
+from typing import List, Any, Awaitable
+from time import time
+from asyncio import sleep
+from urllib.parse import urlparse, quote
+
 import azure.functions as func
+
+from .PurgeHistoryResult import PurgeHistoryResult
+from .DurableOrchestrationStatus import DurableOrchestrationStatus
+from .RpcManagementOptions import RpcManagementOptions
+from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
+from ..models import DurableOrchestrationBindings
+from .utils.http_utils import get_async_request, post_async_request, delete_async_request
 
 
 class DurableOrchestrationClient:
@@ -29,36 +37,43 @@ class DurableOrchestrationClient:
         self._show_input_query_key: str = "showInput"
         self._orchestration_bindings: DurableOrchestrationBindings = \
             DurableOrchestrationBindings.from_json(context)
+        self._post_async_request = lambda u, d: post_async_request(u, d)
+        self._get_async_request = lambda u: get_async_request(u)
+        self._delete_async_request = lambda u: delete_async_request(u)
 
     async def start_new(self,
                         orchestration_function_name: str,
                         instance_id: str,
-                        client_input):
+                        client_input: object) -> Awaitable[str]:
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
         existing instance will be silently replaced by this new instance.
 
-        :param orchestration_function_name: The name of the orchestrator
-        function to start.
-        :param instance_id: The ID to use for the new orchestration instance.
-        If no instance id is specified, the Durable Functions extension will
-        generate a random GUID (recommended).
-        :param client_input: JSON-serializable input value for the orchestrator
-        function.
-        :return: The ID of the new orchestration instance.
+        Parameters
+        ----------
+        orchestration_function_name : str
+            The name of the orchestrator function to start.
+        instance_id : str
+            The ID to use for the new orchestration instance. If no instance id is specified,
+            the Durable Functions extension will generate a random GUID (recommended).
+        client_input : object
+            JSON-serializable input value for the orchestrator function.
+
+        Returns
+        -------
+        str
+            The ID of the new orchestration instance if successful, None if not.
         """
         request_url = self._get_start_new_url(
-            instance_id,
-            orchestration_function_name)
-        async with aiohttp.ClientSession() as session:
-            async with session.post(request_url,
-                                    json=self._get_json_input(client_input)) as response:
-                data = await response.json()
-                if response.status <= 202 and data:
-                    return data["id"]
-                else:
-                    return None
+            instance_id=instance_id, orchestration_function_name=orchestration_function_name)
+
+        response = await self._post_async_request(request_url, self._get_json_input(client_input))
+
+        if response[0] <= 202 and response[1]:
+            return response[1]["id"]
+        else:
+            return None
 
     def create_check_status_response(self, request, instance_id):
         """Create a HttpResponse that contains useful information for \
@@ -147,20 +162,274 @@ class DurableOrchestrationClient:
         request_url = self._get_raise_event_url(
             instance_id, event_name, task_hub_name, connection_name)
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(request_url, json=json.dumps(event_data)) as response:
+        response = await self._post_async_request(request_url, json.dumps(event_data))
+
+        switch_statement = {
+            202: lambda: None,
+            410: lambda: None,
+            404: lambda: f"No instance with ID {instance_id} found.",
+            400: lambda: "Only application/json request content is supported"
+        }
+        has_error_message = switch_statement.get(
+            response[0], lambda: f"Webhook returned unrecognized status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+
+    async def get_status(self, instance_id: str, show_history: bool = None,
+                         show_history_output: bool = None,
+                         show_input: bool = None) -> DurableOrchestrationStatus:
+        """Get the status of the specified orchestration instance.
+
+        Parameters
+        ----------
+        instance_id : str
+            The ID of the orchestration instance to query.
+        show_history: bool
+            Boolean marker for including execution history in the response.
+        show_history_output: bool
+            Boolean marker for including output in the execution history response.
+        show_input: bool
+            Boolean marker for including the input in the response.
+
+        Returns
+        -------
+        DurableOrchestrationStatus
+            The status of the requested orchestration instance
+        """
+        options = RpcManagementOptions(instance_id=instance_id, show_history=show_history,
+                                       show_history_output=show_history_output,
+                                       show_input=show_input)
+        request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
+        response = await self._get_async_request(request_url)
+        switch_statement = {
+            200: lambda: None,  # instance completed
+            202: lambda: None,  # instance in progress
+            400: lambda: None,  # instance failed or terminated
+            404: lambda: None,  # instance not found or pending
+            500: lambda: None  # instance failed with unhandled exception
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+        else:
+            return DurableOrchestrationStatus.from_json(response[1])
+
+    async def get_status_all(self) -> List[DurableOrchestrationStatus]:
+        """Get the status of all orchestration instances.
+
+        Returns
+        -------
+        DurableOrchestrationStatus
+            The status of the requested orchestration instances
+        """
+        options = RpcManagementOptions()
+        request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
+        response = await self._get_async_request(request_url)
+        switch_statement = {
+            200: lambda: None,  # instance completed
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+        else:
+            return [DurableOrchestrationStatus.from_json(o) for o in response[1]]
+
+    async def get_status_by(self, created_time_from: datetime = None,
+                            created_time_to: datetime = None,
+                            runtime_status: List[OrchestrationRuntimeStatus] = None) \
+            -> List[DurableOrchestrationStatus]:
+        """Get the status of all orchestration instances that match the specified conditions.
+
+        Parameters
+        ----------
+        created_time_from : datetime
+            Return orchestration instances which were created after this Date.
+        created_time_to: datetime
+            Return orchestration instances which were created before this Date.
+        runtime_status: List[OrchestrationRuntimeStatus]
+            Return orchestration instances which match any of the runtimeStatus values
+            in this list.
+
+        Returns
+        -------
+        DurableOrchestrationStatus
+            The status of the requested orchestration instances
+        """
+        options = RpcManagementOptions(created_time_from=created_time_from,
+                                       created_time_to=created_time_to,
+                                       runtime_status=runtime_status)
+        request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
+        response = await self._get_async_request(request_url)
+        switch_statement = {
+            200: lambda: None,  # instance completed
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+        else:
+            return [DurableOrchestrationStatus.from_json(o) for o in response[1]]
+
+    async def purge_instance_history(self, instance_id: str) -> PurgeHistoryResult:
+        """Delete the history of the specified orchestration instance.
+
+        Parameters
+        ----------
+        instance_id : str
+            The ID of the orchestration instance to delete.
+
+        Returns
+        -------
+        PurgeHistoryResult
+            The results of the request to delete the orchestration instance
+        """
+        request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}"
+        response = await self._delete_async_request(request_url)
+        return self._parse_purge_instance_history_response(response)
+
+    async def purge_instance_history_by(self, created_time_from: datetime = None,
+                                        created_time_to: datetime = None,
+                                        runtime_status: List[OrchestrationRuntimeStatus] = None) \
+            -> PurgeHistoryResult:
+        """Delete the history of all orchestration instances that match the specified conditions.
+
+        Parameters
+        ----------
+        created_time_from : datetime
+            Delete orchestration history which were created after this Date.
+        created_time_to: datetime
+            Delete orchestration history which were created before this Date.
+        runtime_status: List[OrchestrationRuntimeStatus]
+            Delete orchestration instances which match any of the runtimeStatus values
+            in this list.
+
+        Returns
+        -------
+        PurgeHistoryResult
+            The results of the request to purge history
+        """
+        options = RpcManagementOptions(created_time_from=created_time_from,
+                                       created_time_to=created_time_to,
+                                       runtime_status=runtime_status)
+        request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
+        response = await self._delete_async_request(request_url)
+        return self._parse_purge_instance_history_response(response)
+
+    async def terminate(self, instance_id: str, reason: str):
+        """Terminate the specified orchestration instance.
+
+        Parameters
+        ----------
+        instance_id : str
+            The ID of the orchestration instance to query.
+        reason: str
+            The reason for terminating the instance.
+
+        Returns
+        -------
+        None
+        """
+        request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}/" \
+                      f"terminate?reason={quote(reason)}"
+        response = await self._post_async_request(request_url, None)
+        switch_statement = {
+            202: lambda: None,  # instance in progress
+            410: lambda: None,  # instance failed or terminated
+            404: lambda: lambda: f"No instance with ID '{instance_id}' found.",
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+
+    async def wait_for_completion_or_create_check_status_response(
+            self, request, instance_id: str, timeout_in_milliseconds: int = 10000,
+            retry_interval_in_milliseconds: int = 1000) -> func.HttpResponse:
+        """Create an HTTP response.
+
+        The response either contains a payload of management URLs for a non-completed instance or
+        contains the payload containing the output of the completed orchestration.
+
+        If the orchestration does not complete within the specified timeout, then the HTTP response
+        will be identical to that of [[createCheckStatusResponse]].
+
+        Parameters
+        ----------
+        request
+            The HTTP request that triggered the current function.
+        instance_id:
+            The unique ID of the instance to check.
+        timeout_in_milliseconds:
+            Total allowed timeout for output from the durable function.
+            The default value is 10 seconds.
+        retry_interval_in_milliseconds:
+            The timeout between checks for output from the durable function.
+            The default value is 1 second.
+        """
+        if retry_interval_in_milliseconds > timeout_in_milliseconds:
+            raise Exception(f'Total timeout {timeout_in_milliseconds} (ms) should be bigger than '
+                            f'retry timeout {retry_interval_in_milliseconds} (ms)')
+
+        checking = True
+        start_time = time()
+
+        while checking:
+            status = await self.get_status(instance_id)
+
+            if status:
                 switch_statement = {
-                    202: lambda: None,
-                    410: lambda: None,
-                    404: lambda: f"No instance with ID {instance_id} found.",
-                    400: lambda: "Only application/json request content is supported"
+                    OrchestrationRuntimeStatus.Completed:
+                        lambda: self._create_http_response(200, status.output),
+                    OrchestrationRuntimeStatus.Canceled:
+                        lambda: self._create_http_response(200, status.to_json()),
+                    OrchestrationRuntimeStatus.Terminated:
+                        lambda: self._create_http_response(200, status.to_json()),
+                    OrchestrationRuntimeStatus.Failed:
+                        lambda: self._create_http_response(500, status.to_json()),
                 }
-                has_error_message = switch_statement.get(
-                    response.status, lambda: "Webhook returned unrecognized status code"
-                    + f" {response.status}")
-                error_message = has_error_message()
-                if error_message:
-                    raise Exception(error_message)
+
+                result = switch_statement.get(OrchestrationRuntimeStatus(status.runtime_status))
+                if result:
+                    return result()
+
+            elapsed = time() - start_time
+            elapsed_in_milliseconds = elapsed * 1000
+            if elapsed_in_milliseconds < timeout_in_milliseconds:
+                remaining_time = timeout_in_milliseconds - elapsed_in_milliseconds
+                sleep_time = retry_interval_in_milliseconds \
+                    if remaining_time > retry_interval_in_milliseconds else remaining_time
+                sleep_time /= 1000
+                await sleep(sleep_time)
+            else:
+                return self.create_check_status_response(request, instance_id)
+
+    @staticmethod
+    def _create_http_response(status_code: int, body: Any) -> func.HttpResponse:
+        body_as_json = body if isinstance(body, str) else json.dumps(body)
+        response_args = {
+            "status_code": status_code,
+            "body": body_as_json,
+            "mimetype": "application/json",
+            "headers": {
+                "Content-Type": "application/json",
+            }
+        }
+        return func.HttpResponse(**response_args)
 
     @staticmethod
     def _get_json_input(client_input: object) -> object:
@@ -175,27 +444,40 @@ class DurableOrchestrationClient:
         value_url = value_url.replace(value_url_origin, request_url_origin)
         return value_url
 
+    @staticmethod
+    def _parse_purge_instance_history_response(response: [int, Any]):
+        switch_statement = {
+            200: lambda: PurgeHistoryResult.from_json(response[1]),  # instance completed
+            404: lambda: PurgeHistoryResult(instancesDeleted=0),  # instance not found
+        }
+
+        switch_result = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        result = switch_result()
+        if isinstance(result, PurgeHistoryResult):
+            return result
+        else:
+            raise Exception(result)
+
     def _get_start_new_url(self, instance_id, orchestration_function_name):
-        request_url = self._orchestration_bindings.creation_urls['createNewInstancePostUri']
-        request_url = request_url.replace(self._function_name_placeholder,
-                                          orchestration_function_name)
-        request_url = request_url.replace(self._instance_id_placeholder,
-                                          f'/{instance_id}'
-                                          if instance_id is not None else '')
+        instance_path = f'/{instance_id}' if instance_id is not None else ''
+        request_url = f'{self._orchestration_bindings.rpc_base_url}orchestrators/' \
+                      f'{orchestration_function_name}{instance_path}'
         return request_url
 
     def _get_raise_event_url(self, instance_id, event_name, task_hub_name, connection_name):
-        id_placeholder = self._orchestration_bindings.management_urls["id"]
-        request_url = self._orchestration_bindings.management_urls["sendEventPostUri"].replace(
-            id_placeholder, instance_id)
-        request_url = request_url.replace(self._event_name_placeholder, event_name)
+        request_url = f'{self._orchestration_bindings.rpc_base_url}' \
+                      f'instances/{instance_id}/raiseEvent/{event_name}'
+
+        query = []
         if task_hub_name:
-            request_url = request_url.replace(
-                self._orchestration_bindings.task_hub_name, task_hub_name)
+            query.append(f'taskHub={task_hub_name}')
 
         if connection_name:
-            p = re.compile(
-                r'(?P<connection>connection=)(?P<connectionString>[\w]+)', re.IGNORECASE)
-            request_url = p.sub(r'\g<connection>' + connection_name, request_url)
+            query.append(f'connection={connection_name}')
+
+        if len(query) > 0:
+            request_url += "?" + "&".join(query)
 
         return request_url

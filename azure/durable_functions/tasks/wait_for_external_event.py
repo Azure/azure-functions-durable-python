@@ -1,4 +1,3 @@
-import logging
 from typing import List
 
 from ..models.Task import (
@@ -27,11 +26,10 @@ def wait_for_external_event_task(
         Returns a completed task if the expected event was raised.
         Returns a not completed task if the expected event has not occurred yet.
     """
-    logging.warning(f"!!!wait_for_external_event_task name={name}")
     new_action = WaitForExternalEventAction(name)
     event_raised = find_event_raised(state, name)
     set_processed([event_raised])
-    if (event_raised):
+    if event_raised:
         return Task(
             is_completed=True,
             is_faulted=False,

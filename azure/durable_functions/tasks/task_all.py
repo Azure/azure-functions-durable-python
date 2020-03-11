@@ -1,11 +1,20 @@
+from typing import List
+from ..models.Task import Task
 from ..models.TaskSet import TaskSet
 
 
-def task_all(tasks):
+def task_all(tasks: List[Task]):
     """Determine the state of scheduling the activities for execution with retry options.
 
-    :param tasks: The tasks to evaluate their current state.
-    :return: A Durable Task Set that reports the state of running all of the tasks within it.
+    Parameters
+    ----------
+    tasks: List[Task]
+        The tasks to evaluate their current state.
+
+    Returns
+    -------
+    TaskSet
+        A Durable Task Set that reports the state of running all of the tasks within it.
     """
     all_actions = []
     results = []

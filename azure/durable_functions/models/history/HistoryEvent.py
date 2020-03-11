@@ -7,7 +7,6 @@ class HistoryEvent:
     """Used to communicate state relevant information from the durable extension to the client."""
 
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
-    # noinspection PyPep8Naming
     def __init__(self, EventType: HistoryEventType, EventId: int, IsPlayed: bool, Timestamp: str,
                  **kwargs):
         self._event_type: HistoryEventType = EventType
@@ -25,7 +24,8 @@ class HistoryEvent:
 
         Returns
         -------
-        HistoryEventType: The type of history event
+        HistoryEventType
+            The type of history event
         """
         return self._event_type
 
@@ -35,7 +35,8 @@ class HistoryEvent:
 
         Returns
         -------
-        int: value that represents the event sequence
+        int
+            The value that represents the event sequence
         """
         return self._event_id
 
@@ -45,7 +46,8 @@ class HistoryEvent:
 
         Returns
         -------
-        bool: Value indicating
+        bool
+            Value indicating whether the event has been played
         """
         return self._is_played
 
@@ -55,7 +57,8 @@ class HistoryEvent:
 
         Returns
         -------
-        bool: Value indicating whether the orchestrator has processed the event
+        bool
+            Value indicating whether the orchestrator has processed the event
         """
         return self._is_processed
 
@@ -65,7 +68,8 @@ class HistoryEvent:
 
         Parameters
         ----------
-        value: value to set the property to
+        bool
+            Value to set the property to
         """
         self._is_processed = value
 
@@ -75,6 +79,7 @@ class HistoryEvent:
 
         Returns
         -------
-        datetime: Value indicating the the time the event occurred
+        datetime
+            Value indicating the the time the event occurred
         """
         return self._timestamp
