@@ -1,6 +1,7 @@
 import logging
-import azure.functions as func
+
 from azure.durable_functions import DurableOrchestrationClient
+import azure.functions as func
 
 
 async def main(req: func.HttpRequest, starter: str):

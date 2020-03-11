@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ..interfaces import IAction
+from .actions import Action
 
 
 class Task:
@@ -20,7 +20,7 @@ class Task:
                  result=None, timestamp=None, id_=None, exc=None):
         self._is_completed: bool = is_completed
         self._is_faulted: bool = is_faulted
-        self._action: IAction = action
+        self._action: Action = action
         self._result = result
         self._timestamp: datetime = timestamp
         self._id = id_
@@ -40,7 +40,7 @@ class Task:
         return self._is_faulted
 
     @property
-    def action(self) -> IAction:
+    def action(self) -> Action:
         """Get the scheduled action represented by the task.
 
         _Internal use only._

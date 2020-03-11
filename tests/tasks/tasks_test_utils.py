@@ -7,6 +7,7 @@ def assert_tasks_equal(task1, task2):
     assert task1.action == task2.action
     assert str(task1.exception) == str(task2.exception)
 
+
 def assert_taskset_equal(taskset1, taskset2):
     assert taskset1.is_completed == taskset2.is_completed
     assert taskset1.is_faulted == taskset2.is_faulted

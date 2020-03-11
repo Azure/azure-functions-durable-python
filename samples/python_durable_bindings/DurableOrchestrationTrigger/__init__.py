@@ -3,12 +3,12 @@ import logging
 import azure.durable_functions as df
 
 
-def generator_function(context):
+def orchestrator_function(context: df.DurableOrchestrationContext):
     outputs = []
 
-    task1 = yield context.callActivity("DurableActivity", "One")
-    task2 = yield context.callActivity("DurableActivity", "Two")
-    task3 = yield context.callActivity("DurableActivity", "Three")
+    task1 = yield context.call_activity("DurableActivity", "One")
+    task2 = yield context.call_activity("DurableActivity", "Two")
+    task3 = yield context.call_activity("DurableActivity", "Three")
 
     outputs.append(task1)
     outputs.append(task2)
@@ -17,12 +17,4 @@ def generator_function(context):
     return outputs
 
 
-def main(context: str):
-    logging.warning("Durable Orchestration Trigger: " + context)
-    orchestrate = df.Orchestrator.create(generator_function)
-    logging.warning("!!!type(orchestrate) " + str(type(orchestrate)))
-    result = orchestrate(context)
-    logging.warning("!!!serialized json : " + result)
-    logging.warning("!!!type(result) " + str(type(result)))
-
-    return result
+main = df.Orchestrator.create(orchestrator_function)

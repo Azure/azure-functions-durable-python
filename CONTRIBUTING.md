@@ -11,8 +11,6 @@ Thanks for taking the time to contribute to Durable Functions in [Python](https:
 - [Continuous Integration Guidelines & Conventions](#continuous-integration-guidelines-&-conventions)
 - [Getting Help](#getting-help)
 
-
-
 ## What should I know before I get started
 - [Durable Functions Overview](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview)
 - [Durable Functions Application Patterns](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=csharp#application-patterns)

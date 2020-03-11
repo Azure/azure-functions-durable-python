@@ -46,7 +46,8 @@ class ManagedIdentityTokenSource(TokenSource):
 
         Returns
         -------
-        The instance of the class converted into a json dictionary
+        Dict[str, Any]
+            The instance of the class converted into a json dictionary
         """
         json_dict = {}
         add_attrib(json_dict, self, 'resource')
