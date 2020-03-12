@@ -64,7 +64,7 @@ class BuildModule(build.build):
 setup(
     name='azure-functions-durable',
     packages=find_packages(exclude=("tests", "samples")),
-    version='1.0.1ab',
+    version='1.0.2',
     description='Durable Functions Support For Python Functionapp',
     license='MIT',
     setup_requires=[

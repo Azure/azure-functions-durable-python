@@ -4,7 +4,9 @@ on:
   pull_request:
     branches:
     - master
-
+  push:
+    branch:
+    - dev
 jobs:
   build:
 
@@ -29,3 +31,12 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+    
+    - name: Create distribution
+      run: |
+        pip install wheel
+        python setup.py clean --all
+        python setup.py build
+        python setup.py bdist_wheel
+      
+
