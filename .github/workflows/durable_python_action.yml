@@ -35,7 +35,7 @@ jobs:
     
   build-n-publish:
     name: Build and publish Python 🐍 distributions 📦 to PyPI and TestPyPI
-    runs-on: ubuntu-latest4
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
     - name: Set up Python 3.6.x
@@ -45,10 +45,11 @@ jobs:
   
     - name: Create distribution
       run: |
-      pip install wheel
-      python setup.py clean --all
-      python setup.py bdist_wheel
-    
+        pip install wheel
+        python setup.py clean --all
+        python setup.py build
+        python setup.py bdist_wheel
+      
     - name: Publish distribution 📦 to Test PyPI
       uses: pypa/gh-action-pypi-publish@master
       with:
