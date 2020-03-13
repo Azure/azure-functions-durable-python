@@ -37,9 +37,9 @@ class DurableOrchestrationClient:
         self._show_input_query_key: str = "showInput"
         self._orchestration_bindings: DurableOrchestrationBindings = \
             DurableOrchestrationBindings.from_json(context)
-        self._post_async_request = lambda u, d: post_async_request(u, d)
-        self._get_async_request = lambda u: get_async_request(u)
-        self._delete_async_request = lambda u: delete_async_request(u)
+        self._post_async_request = post_async_request
+        self._get_async_request = get_async_request
+        self._delete_async_request = delete_async_request
 
     async def start_new(self,
                         orchestration_function_name: str,
