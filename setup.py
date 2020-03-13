@@ -42,7 +42,9 @@ setup(
     install_requires=[
         'azure-functions>=1.2.0',
         'aiohttp>=3.6.2',
-        'requests==2.*'
+        'requests==2.*',
+        'python-dateutil>=2.8.0',
+        'furl>=2.1.0'
     ],
     extra_requires=[
         'flake8==3.7.8',
