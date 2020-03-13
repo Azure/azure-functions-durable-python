@@ -3,7 +3,6 @@ from typing import Any
 import aiohttp
 
 
-@staticmethod
 async def post_async_request(url: str, data: Any = None) -> [int, Any]:
     """Post request with the data provided to the url provided.
 
@@ -26,7 +25,6 @@ async def post_async_request(url: str, data: Any = None) -> [int, Any]:
             return [response.status, data]
 
 
-@staticmethod
 async def get_async_request(url: str) -> [int, Any]:
     """Get the data from the url provided.
 
@@ -46,7 +44,6 @@ async def get_async_request(url: str) -> [int, Any]:
             return [response.status, data]
 
 
-@staticmethod
 async def delete_async_request(url: str) -> [int, Any]:
     """Delete the data from the url provided.
 

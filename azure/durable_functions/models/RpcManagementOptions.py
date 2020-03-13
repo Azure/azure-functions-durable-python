@@ -1,5 +1,4 @@
 from datetime import datetime
-from furl import furl
 from typing import Any, List
 
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
@@ -25,15 +24,15 @@ class RpcManagementOptions:
         self._show_input = show_input
 
     @staticmethod
-    def _add_arg(url: furl, name: str, value: Any):
+    def _add_arg(query: List[str], name: str, value: Any):
         if value:
-            url.args[name] = value
+            query.append(f'{name}={value}')
 
     @staticmethod
-    def _add_date_arg(url: furl, name: str, value: datetime):
+    def _add_date_arg(query: List[str], name: str, value: datetime):
         if value:
             date_as_string = value.strftime(DATETIME_STRING_FORMAT)
-            RpcManagementOptions._add_arg(url, name, date_as_string)
+            RpcManagementOptions._add_arg(query, name, date_as_string)
 
     def to_url(self, base_url: str) -> str:
         """Get the url based on the options selected.
@@ -48,17 +47,22 @@ class RpcManagementOptions:
         str
             The Url used to get orchestration status information
         """
-        url = furl(f"{base_url}instances/{self._instance_id if self._instance_id else ''}")
+        url = f"{base_url}instances/{self._instance_id if self._instance_id else ''}"
 
-        self._add_arg(url, 'taskHub', self._task_hub_name)
-        self._add_arg(url, 'connectionName', self._connection_name)
-        self._add_arg(url, 'showInput', self._show_input)
-        self._add_arg(url, 'showHistory', self._show_history)
-        self._add_arg(url, 'showHistoryOutput', self._show_history_output)
-        self._add_date_arg(url, 'createdTimeFrom', self._created_time_from)
-        self._add_date_arg(url, 'createdTimeTo', self._created_time_to)
+        query = []
+
+        self._add_arg(query, 'taskHub', self._task_hub_name)
+        self._add_arg(query, 'connectionName', self._connection_name)
+        self._add_arg(query, 'showInput', self._show_input)
+        self._add_arg(query, 'showHistory', self._show_history)
+        self._add_arg(query, 'showHistoryOutput', self._show_history_output)
+        self._add_date_arg(query, 'createdTimeFrom', self._created_time_from)
+        self._add_date_arg(query, 'createdTimeTo', self._created_time_to)
         if self._runtime_status is not None and len(self._runtime_status) > 0:
             runtime_status = ",".join(r.value for r in self._runtime_status)
-            self._add_arg(url, 'runtimeStatus', runtime_status)
+            self._add_arg(query, 'runtimeStatus', runtime_status)
 
-        return url.url
+        if len(query) > 0:
+            url += "?" + "&".join(query)
+
+        return url
