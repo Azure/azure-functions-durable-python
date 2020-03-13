@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.0b2
+
+### Fixed
+- [Remove staticmethod definitions](https://github.com/Azure/azure-functions-durable-python/issues/65)
+
 ## 1.0.0b1
 
 ### Added
