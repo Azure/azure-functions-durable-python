@@ -47,7 +47,6 @@ jobs:
       run: |
       pip install wheel
       python setup.py clean --all
-      python setup.py build
       python setup.py bdist_wheel
     
     - name: Publish distribution 📦 to Test PyPI
