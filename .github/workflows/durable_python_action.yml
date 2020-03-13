@@ -32,11 +32,29 @@ jobs:
       run: |
         pytest
     
+    
+  build-n-publish:
+    name: Build and publish Python 🐍 distributions 📦 to PyPI and TestPyPI
+    runs-on: ubuntu-latest4
+    steps:
+    - uses: actions/checkout@master
+    - name: Set up Python 3.6.x
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6.x
+  
     - name: Create distribution
       run: |
-        pip install wheel
-        python setup.py clean --all
-        python setup.py build
-        python setup.py bdist_wheel
-      
+      pip install wheel
+      python setup.py clean --all
+      python setup.py build
+      python setup.py bdist_wheel
+    
+    - name: Publish distribution 📦 to Test PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.test_pypi_password }}
+        repository_url: https://test.pypi.org/legacy/
+
 
