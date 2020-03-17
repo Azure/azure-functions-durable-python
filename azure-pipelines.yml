@@ -7,8 +7,6 @@
 #  - componentArtifactName (added to the script)
 ###########################################################################
 
-name: $(Date:yyyyMMdd)$(Rev:.r)
-
 trigger: 
   branches:
     include:
