@@ -88,9 +88,7 @@ stages:
       displayName: 'Install publish dependencies'
       #pip install artifacts-keyring --pre
 
-    - task: TwineAuthenticate@1
-      inputs:
-        artifactFeed: $(System.TeamProject)/$(pypiFeed)
+    
 
     - script: 'cat $(PYPIRC_PATH)'
       displayName: 'Cat pypirc'
@@ -99,5 +97,5 @@ stages:
       displayName: 'list whl files'
 
 
-    - script: 'python -m twine upload --config-file $(PYPIRC_PATH) $(Pipeline.Workspace)/$(componentArtifactName)/*.whl'
+    - script: 'python -m twine upload --repository-url https://test.pypi.org/legacy/ -u __token__ -p pypi-AgENdGVzdC5weXBpLm9yZwIkYmZlZTY4ZWYtYzBjOS00NWRiLTk4ZDgtOGExZDE4MmFkMjVjAAIleyJwZXJtaXNzaW9ucyI6ICJ1c2VyIiwgInZlcnNpb24iOiAxfQAABiBmCanfIz5Cj4dGeI7JoDvbAf3fmVsziZS48hHNekdUGQ $(Pipeline.Workspace)/$(componentArtifactName)/*.whl'
       displayName: 'Upload to pypi'
