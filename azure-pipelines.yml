@@ -95,5 +95,9 @@ stages:
     - script: 'cat $(PYPIRC_PATH)'
       displayName: 'Cat pypirc'
 
+    - script: 'ls $(componentArtifactName)/*'
+      displayName: 'list whl files'
+
+
     - script: 'python -m twine upload --config-file $(PYPIRC_PATH) $(Pipeline.Workspace)/$(componentArtifactName)/*.whl'
       displayName: 'Upload to pypi'
