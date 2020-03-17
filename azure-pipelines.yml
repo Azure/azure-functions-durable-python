@@ -15,9 +15,9 @@ trigger:
 
 variables:     
   agentPool: 'ubuntu-latest' # 'Ubuntu-16.04'
-  python.version: '3.7'
+  python.version: '3.6'
   ##pypiFeed: 
-  baseFolder: azure
+  baseFolder: .
   componentArtifactName: 'azure_functions_durable'
   
 
