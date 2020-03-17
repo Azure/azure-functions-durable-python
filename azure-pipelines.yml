@@ -95,7 +95,7 @@ stages:
     - script: 'cat $(PYPIRC_PATH)'
       displayName: 'Cat pypirc'
 
-    - script: 'ls $(componentArtifactName)/*'
+    - script: 'ls *'
       displayName: 'list whl files'
 
 
