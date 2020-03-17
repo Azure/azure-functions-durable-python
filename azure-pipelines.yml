@@ -1,42 +1,103 @@
-# Python package
-# Create and test a Python package on multiple Python versions.
-# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+# CI pipeline for master branch commits:
+# * builds python package
+# * publishes python package
+###########################################################################
+# Requires the following varibles to be defined for the pipeline on the ADO UI
+#  - baseFolder 
+#  - componentArtifactName (added to the script)
+###########################################################################
 
-trigger:
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: 
   branches:
     include:
     - master
-    - dev
+  paths:
+    include:
+    - azure/*
 
-pool:
-  vmImage: 'ubuntu-latest'
-strategy:
-  matrix:
-    Python36:
-      python.version: '3.6'
+variables:     
+  agentPool: 'ubuntu-latest' # 'Ubuntu-16.04'
+  python.version: '3.7'
+  ##pypiFeed: 
+  baseFolder: azure
+  componentArtifactName: 'azure_functions_durable'
+  
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+stages:
+- stage: Build
+  displayName: Build PyPi Artifact
+  jobs:
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+  - job: Build_Durable_Functions
+    displayName: Build Python Package
+    pool: 
+      vmImage: $(agentPool)
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install wheel
+      workingDirectory: $(baseFolder) 
+      displayName: 'Install dependencies'
 
-- script: |
-    python setup.py build
-  displayName: 'Autogenerate gRPC Python files'
+    - script: |
+        python setup.py clean --all
+        python setup.py build
+      displayName: 'Autogenerate gRPC Python files'
 
-- script: |
-    cd azure
-    flake8 . --count --show-source --statistics
-  displayName: 'Run lint test with flake8'
+    - script: |
+        python setup.py sdist bdist bdist_wheel
+      workingDirectory: $(baseFolder) 
+      displayName: 'Building'
 
-- script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+    - script: |
+        cd azure
+        flake8 . --count --show-source --statistics
+      displayName: 'Run lint test with flake8'
+
+    - script: |
+        pip install pytest pytest-azurepipelines
+        pytest
+      displayName: 'pytest'
+    # - task: CopyFiles@2
+    #   inputs:
+    #     sourceFolder: $(baseFolder)
+    #     contents: '*.pypirc' 
+    #     targetFolder: $(baseFolder)/dist
+
+    - upload: dist
+      displayName: 'Publish Build Artifacts'
+      artifact: $(componentArtifactName)
+
+- stage: Publish
+  displayName: Publish to PyPi Feed
+  jobs:
+  - job: PublishPythonArtifact
+    displayName: Publish Python Artifact
+    pool: 
+      vmImage: $(agentPool)
+    steps:
+    - download: current
+      displayName: 'Download Component artifact'
+      artifact: $(componentArtifactName)
+      patterns: '**/*.whl'
+
+    - script: |
+        pip install twine
+      displayName: 'Install publish dependencies'
+      #pip install artifacts-keyring --pre
+
+    - task: TwineAuthenticate@1
+      inputs:
+        artifactFeed: $(System.TeamProject)/$(pypiFeed)
+
+    - script: 'cat $(PYPIRC_PATH)'
+      displayName: 'Cat pypirc'
+
+    - script: 'python -m twine upload --config-file $(PYPIRC_PATH) $(Pipeline.Workspace)/$(componentArtifactName)/*.whl'
+      displayName: 'Upload to pypi'
