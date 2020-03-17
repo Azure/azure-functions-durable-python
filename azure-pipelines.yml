@@ -11,9 +11,7 @@ trigger:
   branches:
     include:
     - master
-  paths:
-    include:
-    - azure/*
+
 
 variables:     
   agentPool: 'ubuntu-latest' # 'Ubuntu-16.04'
