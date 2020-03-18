@@ -1,11 +1,7 @@
-# CI pipeline for master branch commits:
-# * builds python package
-# * publishes python package
-###########################################################################
-# Requires the following varibles to be defined for the pipeline on the ADO UI
-#  - baseFolder 
-#  - componentArtifactName (added to the script)
-###########################################################################
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger: 
   branches:
@@ -16,7 +12,6 @@ trigger:
 variables:     
   agentPool: 'ubuntu-latest' # 'Ubuntu-16.04'
   python.version: '3.6'
-  ##pypiFeed: 
   baseFolder: .
   componentArtifactName: 'azure_functions_durable'
   
