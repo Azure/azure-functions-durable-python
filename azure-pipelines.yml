@@ -64,23 +64,3 @@ stages:
     - upload: dist
       displayName: 'Publish Build Artifacts'
       artifact: $(componentArtifactName)
-
-- stage: Publish
-  displayName: Publish to PyPi Feed
-  jobs:
-  - job: PublishPythonArtifact
-    displayName: Publish Python Artifact
-    pool: 
-      vmImage: $(agentPool)
-    steps:
-    - download: current
-      displayName: 'Download Component artifact'
-      artifact: $(componentArtifactName)
-      patterns: '**/*.whl'
-
-    - script: |
-        pip install twine
-      displayName: 'Install publish dependencies'
-
-    - script: 'python -m twine upload --repository-url https://test.pypi.org/legacy/ -u __token__ -p pypi-AgENdGVzdC5weXBpLm9yZwIkYmZlZTY4ZWYtYzBjOS00NWRiLTk4ZDgtOGExZDE4MmFkMjVjAAIleyJwZXJtaXNzaW9ucyI6ICJ1c2VyIiwgInZlcnNpb24iOiAxfQAABiBmCanfIz5Cj4dGeI7JoDvbAf3fmVsziZS48hHNekdUGQ $(Pipeline.Workspace)/$(componentArtifactName)/*.whl'
-      displayName: 'Upload to pypi'
