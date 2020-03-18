@@ -60,11 +60,6 @@ stages:
         pip install pytest pytest-azurepipelines
         pytest
       displayName: 'pytest'
-    # - task: CopyFiles@2
-    #   inputs:
-    #     sourceFolder: $(baseFolder)
-    #     contents: '*.pypirc' 
-    #     targetFolder: $(baseFolder)/dist
 
     - upload: dist
       displayName: 'Publish Build Artifacts'
