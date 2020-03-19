@@ -49,7 +49,7 @@ stages:
       displayName: 'pytest'
 
     - script: |
-        python setup.py sdist bdist bdist_wheel
+        python setup.py sdist bdist_wheel
       workingDirectory: $(baseFolder) 
       displayName: 'Building'
     - task: PublishBuildArtifacts@1
