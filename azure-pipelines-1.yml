@@ -1,0 +1,61 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger: 
+  branches:
+    include:
+    - dev
+
+
+variables:     
+  agentPool: 'ubuntu-latest' # 'Ubuntu-16.04'
+  python.version: '3.6'
+  baseFolder: .
+  componentArtifactName: 'azure_functions_durable'
+  
+
+stages:
+- stage: Build
+  displayName: Build PyPi Artifact
+  jobs:
+
+  - job: Build_Durable_Functions
+    displayName: Build Python Package
+    pool: 
+      vmImage: $(agentPool)
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install wheel
+      workingDirectory: $(baseFolder) 
+      displayName: 'Install dependencies'
+
+    - script: |
+        python setup.py clean --all
+        python setup.py build
+      displayName: 'Autogenerate gRPC Python files'
+
+    - script: |
+        python setup.py sdist bdist bdist_wheel
+      workingDirectory: $(baseFolder) 
+      displayName: 'Building'
+
+    - script: |
+        cd azure
+        flake8 . --count --show-source --statistics
+      displayName: 'Run lint test with flake8'
+
+    - script: |
+        pip install pytest pytest-azurepipelines
+        pytest
+      displayName: 'pytest'
+
+    - upload: dist
+      displayName: 'Publish Build Artifacts'
+      artifact: $(componentArtifactName)
