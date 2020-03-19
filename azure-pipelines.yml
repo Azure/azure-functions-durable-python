@@ -7,6 +7,7 @@ trigger:
   branches:
     include:
     - master
+    - dev
 
 
 variables:     
@@ -37,16 +38,6 @@ stages:
       displayName: 'Install dependencies'
 
     - script: |
-        python setup.py clean --all
-        python setup.py build
-      displayName: 'Autogenerate gRPC Python files'
-
-    - script: |
-        python setup.py sdist bdist bdist_wheel
-      workingDirectory: $(baseFolder) 
-      displayName: 'Building'
-
-    - script: |
         cd azure
         flake8 . --count --show-source --statistics
       displayName: 'Run lint test with flake8'
@@ -55,6 +46,11 @@ stages:
         pip install pytest pytest-azurepipelines
         pytest
       displayName: 'pytest'
+
+    - script: |
+        python setup.py sdist bdist bdist_wheel
+      workingDirectory: $(baseFolder) 
+      displayName: 'Building'
 
     - upload: dist
       displayName: 'Publish Build Artifacts'
