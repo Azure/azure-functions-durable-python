@@ -51,12 +51,10 @@ stages:
         python setup.py sdist bdist bdist_wheel
       workingDirectory: $(baseFolder) 
       displayName: 'Building'
-
-
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: dist'
       inputs:
         PathtoPublish: dist
-        ArtifactName: dist
+        ArtifactName: $(componentArtifactName)
     
 
