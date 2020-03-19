@@ -57,6 +57,6 @@ stages:
       displayName: 'Publish Artifact: dist'
       inputs:
         PathtoPublish: dist
-        ArtifactName: $(componentArtifactName)
+        ArtifactName: dist
     
 
