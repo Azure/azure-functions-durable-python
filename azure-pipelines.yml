@@ -14,7 +14,8 @@ variables:
   agentPool: 'ubuntu-latest' # 'Ubuntu-16.04'
   python.version: '3.6'
   baseFolder: .
-  componentArtifactName: 'azure_functions_durable'
+  #componentArtifactName: 'azure_functions_durable'
+  componentArtifactName: 'dist'
   
 
 stages:
