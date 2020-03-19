@@ -52,6 +52,11 @@ stages:
       workingDirectory: $(baseFolder) 
       displayName: 'Building'
 
-    - upload: dist
-      displayName: 'Publish Build Artifacts'
-      artifact: $(componentArtifactName)
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: dist'
+      inputs:
+        PathtoPublish: dist
+        ArtifactName: $(componentArtifactName)
+    
+
