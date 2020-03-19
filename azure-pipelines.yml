@@ -14,8 +14,8 @@ variables:
   agentPool: 'ubuntu-latest' # 'Ubuntu-16.04'
   python.version: '3.6'
   baseFolder: .
-  #componentArtifactName: 'azure_functions_durable'
-  componentArtifactName: 'dist'
+  componentArtifactName: 'azure_functions_durable'
+  #componentArtifactName: 'dist'
   
 
 stages:
@@ -56,6 +56,6 @@ stages:
       displayName: 'Publish Artifact: dist'
       inputs:
         PathtoPublish: dist
-        #ArtifactName: $(componentArtifactName)
+        ArtifactName: $(componentArtifactName)
     
 
