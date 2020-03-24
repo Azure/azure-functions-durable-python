@@ -1,17 +1,20 @@
 from datetime import datetime, timedelta
 import json
-
 from .predict import predict_image_from_url
 
 
-def main(value):
+def main(value: str) -> str:
     """Classify the list of images based on whether they are a dog or cat
     
-    Arguments:
-        value list of image URLs to predict
+    Parameters
+    ----------
+    value: str
+        List of image URLs to predict
     
-    Returns:
-        List of the of the results of the predictions
+    Returns
+    -------
+    str
+        JSON-formatted string of the prediction results
     """
     images = json.loads(value)
 

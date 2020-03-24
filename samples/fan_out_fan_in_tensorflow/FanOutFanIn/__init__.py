@@ -1,21 +1,27 @@
 import json
-
+from typing import List
 import azure.functions as func
 import azure.durable_functions as df
 
 
-def _get_classify_images_tasks(config, image_list, context):
+def _get_classify_images_tasks(config: dict, image_list: List[str], context: df.DurableOrchestrationContext):
     """Get list of tasks that breaks down the execution of the predications.
 
     will create a list of tasks to perform that is split evenly across the
     different instances
 
-    Arguments:
-        config describes how the tasks will be split
-        image_list the list of images to predict
-        context the durable context to call the activities from
+    Parameters
+    ----------
+    config: dict
+        Describes how the tasks will be split
+    image_list: List[str]
+        The list of images to classify
+    context: df.DurableOrchestrationContext
+        The Durable context to call the activities from
 
-    Returns:
+    Returns
+    -------
+    tasks: List
         List of tasks to perform
     """
     image_count_per_instance = int(
@@ -26,7 +32,7 @@ def _get_classify_images_tasks(config, image_list, context):
     start = 0
     increment = image_count_per_instance
 
-    for i in range(config['instances']):
+    for _ in range(config['instances']):
         instance_images = image_list[start:increment]
         tasks.append(
             context.call_activity("ClassifyImage",
@@ -43,14 +49,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     This function will get a list of images to do a prediction of, fan out the
     prediction tasks then summarize the results
 
-    Arguments:
-        context The durable context to perform the activities with
+    Parameters
+    ----------
+    context: df.DurableOrchestrationContext
+        The Durable context to perform the activities with
 
-    Returns:
+    Returns
+    -------
+    summary
         A summary of the prediction results
 
-    Yields:
-        tasks that need to be performed by the durable orchestrator
+    Yields
+    -------
+        Tasks that need to be performed by the Durable orchestrator
     """
     config = {
         "instances": 5,  # The number of instances to fan out the prediction tasks
