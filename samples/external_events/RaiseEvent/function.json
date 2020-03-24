@@ -13,7 +13,7 @@
     },
     {
       "name": "starter",
-      "type": "durableClient",
+      "type": "orchestrationClient",
       "direction": "in",
       "datatype": "string"
     },
