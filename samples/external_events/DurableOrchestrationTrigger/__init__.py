@@ -26,6 +26,9 @@ def orchestrator_function(context: df.DurableOrchestrationContext) -> List[str]:
         tasks to complete, or until one of the tasks completes.
     """
 
+
+    logging.debug("Creating the orchestrator function")
+
     json_rule = {
         "condition": {
             "wait_events": ["A","B"],
@@ -44,10 +47,13 @@ def orchestrator_function(context: df.DurableOrchestrationContext) -> List[str]:
     tasks = []
     for event in json_rule["condition"]["wait_events"]:
         tasks.append(context.wait_for_external_event(event))
+        logging.debug("Added event {} to list of tasks".format(event))
 
     if json_rule["condition"]["logic"] == 'and':
+        logging.info("A logical <and> rule was found")
         yield context.task_all(tasks)
     elif json_rule["condition"]["logic"] == 'or':
+        logging.info("A logical <or> rule was found")
         yield context.task_any(tasks)
 
     output = []

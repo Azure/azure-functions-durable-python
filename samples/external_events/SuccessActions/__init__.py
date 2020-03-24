@@ -15,6 +15,8 @@ def main(args: str) -> str:
     str
         A 'Hello-string' to the argument passed in via args
     """
-    logging.warning(f"Activity Triggered: SuccessActions")
+    logging.info(f"Activity Triggered: SuccessActions")
+
     args= json.loads(args)
+    logging.info("Activity arguments: {}".format(args))
     return f'Hello {args["name"]}'
