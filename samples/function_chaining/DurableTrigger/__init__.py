@@ -25,6 +25,6 @@ async def main(req: func.HttpRequest, starter: str, message):
     function_name = req.route_params.get('functionName')
     logging.info(starter)
     client = DurableOrchestrationClient(starter)
-    instance_id = await client.start_new(function_name, None, None)
+    instance_id = await client.start_new(function_name)
     response = client.create_check_status_response(req, instance_id)
     message.set(response)

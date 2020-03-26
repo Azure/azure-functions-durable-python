@@ -28,6 +28,6 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     client = DurableOrchestrationClient(starter)
 
     logging.debug("About to call function {} asyncrounously".format(function_name))
-    instance_id = await client.start_new(function_name, None, None)
+    instance_id = await client.start_new(function_name)
 
     return client.create_check_status_response(req, instance_id)

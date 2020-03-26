@@ -43,8 +43,8 @@ class DurableOrchestrationClient:
 
     async def start_new(self,
                         orchestration_function_name: str,
-                        instance_id: str,
-                        client_input: object) -> Awaitable[str]:
+                        instance_id: str = None,
+                        client_input: object = None) -> Awaitable[str]:
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
