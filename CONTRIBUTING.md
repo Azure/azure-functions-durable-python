@@ -1,5 +1,5 @@
 # Contributor Onboarding
-Thanks for taking the time to contribute to Durable Functions in [Python](https://www.python.org/)
+Thank you for taking the time to contribute to Durable Functions in [Python](https://www.python.org/)
 
 ## Table of Contents
 
@@ -14,6 +14,7 @@ Thanks for taking the time to contribute to Durable Functions in [Python](https:
 ## What should I know before I get started
 - [Durable Functions Overview](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview)
 - [Durable Functions Application Patterns](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=csharp#application-patterns)
+- [Azure Functions Python Overview](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-azure-function-azure-cli?tabs=bash%2Cbrowser&pivots=programming-language-python)
 
 ## Pre-requisites
 
@@ -56,38 +57,74 @@ The following extensions should be installed if using Visual Studio Code for deb
 - Python support for Visual Studio Code (Python for VSCode extension)
 - Azure Functions Extensions for Visual Studio Code v0.19.1 and above.
 - autoDocString to generate documentation strings for Python API definitions.
- 
+
+### Python Virtual Environment
+
+- Make sure a Python virtual environment is setup. If you are using VS Code, the Azure Functions Extension project will set one up for you. Alternately, you can set it up through command line as well.
+Note: Conda based environments are not yet supported in Azure Functions.
 
 ### Setting up durable-py debugging
 
-- Use starter sample from this folder (TBD: add folder name).
 
-- If you want to debug a specific version of the Durable Extension, make the following changes: In host.json, remove the extensionsBundle portion to enable specific version debugging. 
-- Provide a hub name (else remove the entire extensions portion to default to DurableFunctionsHub) Here's how the host.json should look like:
+1.  Git clone your fork and use any starter sample from this [folder] in your fork (https://github.com/Azure/azure-functions-durable-python/tree/dev/samples/) and open this folder in your VS Code editor.
+
+2. Initialize this folder as an Azure Functions project using the VS Code Extension using these [instructions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-vs-code?pivots=programming-language-python). This step will create a Python virtual environment if one doesn't exist already.
+
+3. Add a local.settings.json file
+
+```
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "<your connection string>",
+    "FUNCTIONS_WORKER_RUNTIME": "python"
+  }
+}
+```
+
+4. Add a host.json file that looks like this
+
+```
+{
+  "version": "2.0",
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[1.*, 2.0.0)"
+  }
+}
+```
+
+5. Optionally, if you want to specify a custom task hub name, say MyTaskHub, you can add that in the host.json file like this:
 
 ```
 {
   "version": "2.0",
   "extensions": {
     "durableTask": {
-      "hubName": "{hubName}"
+      "hubName": "MyTaskHub"
     }
+  },
+  "extensionBundle": {
+    ...
   }
 }
 ```
 
-- `func extensions install` (this will install an extensions.csproj that contains the version of DurableTask as seen below)
+6. For debugging, install the code using an editable pip install like this, in the VS Code Terminal:
 
-```xml <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="1.8.2" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.1.0" />
-  </ItemGroup>
 ```
+pip install -e $REPOSITORY_ROOT/
+```
+where REPOSITORY_ROOT is the root folder of the azure-functions-durable-python repository 
+
+7. Set breakpoints and click Run -> Start Debugging in VS Code. This should internally start the Azure Function using `func host start` command.
 
 ### Debugging end-to-end
 
+If you want to debug into the Durable Task or any of the .NET bits, follow instructions below:
+
 1. Open the Azure Storage Explorer and connect to the local storage emulator or the storage account you are using.
-2. In the VSCode editor for durable-py click Debug -> Start Debugging. This will internally start `func host start` through core tools and provides the orchestrator client URL
+2. Make sure the Durable Python debugging is setup already and the debugger has started the `func` process.
 3. In the VSCode editor for DurableTask, click Debug -> .NET Core Attach Process and search for `func host start` process and attach to it.
 4. Add a breakpoint in both editors and continue debugging.
 
@@ -115,10 +152,18 @@ This library uses [numpy docstring convention](https://numpydoc.readthedocs.io/e
 
 
 ## Continuous Integration Guidelines & Conventions
-TBD
+
+This project uses a combination of Azure DevOps and GitHub Actions for CI/CD.
+
+- For each PR request/merge, a continuous integration pipeline will run internally that performs linting and running unit tests on your PR/merge.
+- A GitHub Action will also perform CI tasks against your PR/merge. This is designed to provide more control to the contributor.
+- Releases into PyPI will be curated and performed by a CD pipeline internally. See the Getting Help Section to request a release.
 
 ## Getting help
 
  - Leave comments on your PR and @username for attention
+
+### Requesting a release
+- If you need a release into PyPI, request by raising an issue and tagging @anthonychu
 
 
