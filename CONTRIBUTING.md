@@ -22,7 +22,10 @@ Thank you for taking the time to contribute to Durable Functions in [Python](htt
     - MacOS (or) Windows10 Ubuntu WSL
 - Language Runtimes
     - .NET Core 2.0
-    - Python 3.6.x and higher
+    - \>= Python 3.6.x 
+
+Note: Some ML libraries may not be compatible with newer Python versions. Make sure the library is compatible with the Python version.
+
 - Editor
     - Visual Studio Code
 - Python 3 Tools (pip install)
@@ -32,6 +35,7 @@ Thank you for taking the time to contribute to Durable Functions in [Python](htt
     - [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator) (or) [Create a storage account in Azure](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal)
     - [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools) v2.7.x and above.
     - [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/)
+  
 
 ## Pull Request Change flow
 
@@ -164,6 +168,6 @@ This project uses a combination of Azure DevOps and GitHub Actions for CI/CD.
  - Leave comments on your PR and @username for attention
 
 ### Requesting a release
-- If you need a release into PyPI, request by raising an issue and tagging @anthonychu
+- If you need a release into PyPI, request it by raising an issue and tagging @anthonychu or @davidmrdavid
 
 
