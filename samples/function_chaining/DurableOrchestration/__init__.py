@@ -4,12 +4,12 @@ import azure.functions as func
 import azure.durable_functions as df
 
 
-def orchestrator_function(context):
+def orchestrator_function(context: df.DurableOrchestrationContext):
     """This function provides the core function chaining orchestration logic
 
     Parameters
     ----------
-    context : DurableOrchestrationContext
+    context: DurableOrchestrationContext
         This context has the past history
         and the durable orchestration API's to chain a set of functions
 

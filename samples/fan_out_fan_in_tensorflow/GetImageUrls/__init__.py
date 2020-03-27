@@ -4,14 +4,16 @@ from azure.cognitiveservices.search.imagesearch import ImageSearchClient
 from msrest.authentication import CognitiveServicesCredentials
 
 
-def _get_cognitive_services_client():
+def _get_cognitive_services_client() -> ImageSearchClient:
     """Get the cognitive service client to run the searches against.
 
     Ensure there is a COGNITIVE_KEY and COGNITIVE_ENDPOINT configured in your
     app setting for the function, or your local.settings.json file when running
     locally.
 
-    Returns:
+    Returns
+    -------
+    client: ImageSearchClient
         Cognitive service client
     """
     subscription_key = os.environ.get('COGNITIVE_KEY')
@@ -21,13 +23,17 @@ def _get_cognitive_services_client():
     return client
 
 
-def main(value):
+def main(value: str) -> str:
     """Get a list of image URLs from Bing Search to run predictions against.
 
-    Arguments:
-        value the number of images to get
+    Parameters
+    ----------
+    value: str
+        The number of images to get
 
-    Returns:
+    Returns
+    -------
+    str
         List of image URLs to run the prediction against
     """
     client = _get_cognitive_services_client()

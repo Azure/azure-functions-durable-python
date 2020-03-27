@@ -1,11 +1,30 @@
 import json
 import logging
-
+from typing import List
 import azure.durable_functions as df
 import azure.functions as func
 
 
-def orchestrator_function(context: df.DurableOrchestrationContext):
+def orchestrator_function(context: df.DurableOrchestrationContext) -> List[str]:
+
+    """This function provides the core function chaining orchestration logic
+
+    Parameters
+    ----------
+    context: DurableOrchestrationContext
+        This context has the past history and the durable orchestration API
+
+    Returns
+    -------
+    output: List[str]
+        Returns an array of result by the activity functions.
+
+    Yields
+    -------
+    call_activity: str
+        Yields, depending on the `json_rule`, to wait on either all
+        tasks to complete, or until one of the tasks completes.
+    """
 
 
     logging.debug("Creating the orchestrator function")

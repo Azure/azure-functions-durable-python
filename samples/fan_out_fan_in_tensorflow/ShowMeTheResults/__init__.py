@@ -1,14 +1,17 @@
 import json
 
-
-def main(value):
+def main(value: str) -> str:
     """Get a summary of the results of the predictions.
 
-    Arguments:
-        value List of the predictions
+    Parameters
+    ----------
+    value: str
+        List-formatted string of the predictions
 
-    Returns:
-        JSON serializable string representing the summary of the predictions
+    Returns
+    -------
+    str
+        JSON-formatted string representing the summary of predictions
     """
     results = json.loads(value)
     analysis = {}

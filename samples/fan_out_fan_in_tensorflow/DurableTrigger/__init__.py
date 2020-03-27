@@ -4,10 +4,25 @@ from azure.durable_functions import DurableOrchestrationClient
 import azure.functions as func
 
 
-def main(req: func.HttpRequest, starter: str, message):
+async def main(req: func.HttpRequest, starter: str, message):
+    """This function starts up the orchestrator from an HTTP endpoint
+
+    Parameters
+    ----------
+    req: func.HttpRequest
+        An HTTP Request object, it can be used to parse URL
+        parameters.
+
+    starter: str
+        A JSON-formatted string describing the orchestration context
+
+    message:
+        An azure functions http output binding, it enables us to establish
+        an http response.
+    """
     function_name = req.route_params.get('functionName')
     logging.info(starter)
     client = DurableOrchestrationClient(starter)
-    client.start_new(function_name, None, None)
-    response = func.HttpResponse(status_code=200, body=starter)
+    instance_id = await client.start_new(function_name, None, None)
+    response = client.create_check_status_response(req, instance_id)
     message.set(response)

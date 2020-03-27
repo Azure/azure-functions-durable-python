@@ -21,7 +21,11 @@ async def post_async_request(url: str, data: Any = None) -> [int, Any]:
     async with aiohttp.ClientSession() as session:
         async with session.post(url,
                                 json=data) as response:
-            data = await response.json()
+            # We disable aiohttp's input type validation
+            # as the server may respond with alternative
+            # data encodings. This is potentially unsafe.
+            # More here: https://docs.aiohttp.org/en/stable/client_advanced.html
+            data = await response.json(content_type=None)
             return [response.status, data]
 
 
