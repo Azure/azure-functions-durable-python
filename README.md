@@ -58,16 +58,20 @@ Take a look at this project's [samples directory](./samples/):
 * [Fan-out/Fan-in - TensorFlow](./samples/fan_out_fan_in_tensorflow)
 * [External Events - Human Interaction & Timeouts](./samples/external_events)
 
+### Orchestrator example
+
 ```python
-def generator_function(context):
-    outputs = []
+import azure.durable_functions as df
+
+
+def orchestrator_function(context: df.DurableOrchestrationContext):
     task1 = yield context.call_activity("DurableActivity", "One")
     task2 = yield context.call_activity("DurableActivity", "Two")
     task3 = yield context.call_activity("DurableActivity", "Three")
 
-    outputs.append(task1)
-    outputs.append(task2)
-    outputs.append(task3)
-
+    outputs = [task1, task2, task3]
     return outputs
+
+
+main = df.Orchestrator.create(orchestrator_function)
 ```
