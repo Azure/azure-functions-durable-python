@@ -27,7 +27,7 @@ Durable Functions' function types and features are documented in-depth [here.](h
 
 ## Current limitations
 
-We're actively working on this project as we get closer to a Public Preview announcement of Python support for Durable Functions (expected Q2 CY2020). The following are the current known limitations.
+We're actively working on Python support for Durable Functions and we expect a Public Preview announcement in Q2 CY2020. The following are the current known limitations.
 
 ### Functionality
 
