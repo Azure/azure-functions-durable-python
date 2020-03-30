@@ -3,36 +3,59 @@
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
-trigger:
-- master
+trigger: 
+  branches:
+    include:
+    - master
+    - dev
 
-pool:
-  vmImage: 'ubuntu-latest'
-strategy:
-  matrix:
-    Python36:
-      python.version: '3.6'
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+variables:     
+  agentPool: 'ubuntu-latest' # 'Ubuntu-16.04'
+  python.version: '3.6'
+  baseFolder: .
+  componentArtifactName: 'azure_functions_durable'
+  #componentArtifactName: 'dist'
+  
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+stages:
+- stage: Build
+  displayName: Build PyPi Artifact
+  jobs:
 
-- script: |
-    python setup.py build
-  displayName: 'Autogenerate gRPC Python files'
+  - job: Build_Durable_Functions
+    displayName: Build Python Package
+    pool: 
+      vmImage: $(agentPool)
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install wheel
+      workingDirectory: $(baseFolder) 
+      displayName: 'Install dependencies'
 
-- script: |
-    flake8 . --count --show-source --statistics --exit-zero 
-  displayName: 'Run lint test with flake8'
+    - script: |
+        cd azure
+        flake8 . --count --show-source --statistics
+      displayName: 'Run lint test with flake8'
 
-- script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+    - script: |
+        pip install pytest pytest-azurepipelines
+        pytest
+      displayName: 'pytest'
+
+    - script: |
+        python setup.py sdist bdist_wheel
+      workingDirectory: $(baseFolder) 
+      displayName: 'Building'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: dist'
+      inputs:
+        PathtoPublish: dist
+        ArtifactName: $(componentArtifactName)
+    
+

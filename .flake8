@@ -1,0 +1,9 @@
+[flake8]
+# delete D100 for docstring checks, promotes redundant documentation of what's in class docstring
+# W503 contradicts with pep8 and will soon be fixed by flake8
+ignore = W503, D100
+max-line-length = 99
+docstring-convention = numpy
+exclude =
+    __pycache__,
+    azure/durable_functions/grpc/protobuf/
