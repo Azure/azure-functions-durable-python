@@ -37,7 +37,7 @@ We're actively working on Python support for Durable Functions and we expect a P
 
 ### Tooling
 
-* Python Durable Functions requires updated versions of Azure Functions Core Tools ([3.0.2358](https://github.com/Azure/azure-functions-core-tools/releases/tag/3.0.2358)), templates ([bundle-1.2.0](https://github.com/Azure/azure-functions-templates/releases/tag/bundle-1.2.0)), and extension bundles ([1.2.0](https://github.com/Azure/azure-functions-extension-bundles/releases/tag/1.2.0)) that are not yet released (ETA May 2020). Use the VS Code dev container in the [Getting Started](#getting-started) section to access a development environment with the required versions of the tools installed.
+* Python Durable Functions requires updated versions of Azure Functions Core Tools that includes Python worker [1.1.0](https://github.com/Azure/azure-functions-python-worker/releases/tag/1.1.0), templates ([bundle-1.2.0](https://github.com/Azure/azure-functions-templates/releases/tag/bundle-1.2.0)), and extension bundles ([1.2.0](https://github.com/Azure/azure-functions-extension-bundles/releases/tag/1.2.0)) that are not yet released (ETA May 2020). Use the VS Code dev container in the [Getting Started](#getting-started) section to access a development environment with the required versions of the tools installed.
 
 ### Deployment
 
@@ -47,7 +47,7 @@ We're actively working on Python support for Durable Functions and we expect a P
 
 Follow these instructions to get started with Durable Functions in Python:
 
-**🚀 [Python Durable Functions quickstart](https://github.com/anthonychu/python-durable-preview)**
+**🚀 [Python Durable Functions quickstart](https://aka.ms/pythondurable)**
 
 ## Samples
 
