@@ -25,7 +25,8 @@ class BuildModule(build.build):
 setup(
     name='azure-functions-durable',
     packages=find_packages(exclude=("tests", "samples","scripts")),
-    version='1.0.0b4',
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
     description='Durable Functions For Python',
     classifiers=[
         'License :: OSI Approved :: MIT License',

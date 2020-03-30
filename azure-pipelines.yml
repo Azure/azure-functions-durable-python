@@ -8,7 +8,9 @@ trigger:
     include:
     - master
     - dev
-
+  tags:
+    include:
+    - v*
 
 variables:     
   agentPool: 'ubuntu-latest' # 'Ubuntu-16.04'
