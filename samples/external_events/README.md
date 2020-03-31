@@ -27,13 +27,16 @@ after some initialization logs, you should see something like the following:
 Http Functions:
 
         DurableTrigger: [POST,GET] http://localhost:7071/api/orchestrators/{functionName}
+
+        RaiseEvent: [POST,GET] http://localhost:7071/api/RaiseEvent
+
+
 ```
 
-This indicates that your `DurableTrigger` function can be reached via a `GET` or `POST` request to that URL. `DurableTrigger` starts the function-chaning orchestrator whose name is passed as a parameter to the URL. So, to start the orchestrator, which is named `FanOutFanIn`, make a GET request to `http://127.0.0.1:7071/api/orchestrators/FanOutFanIn`.
+This indicates that your `DurableTrigger` function can be reached via a `GET` or `POST` request to that URL. `DurableTrigger` starts the function-chaning orchestrator whose name is passed as a parameter to the URL. So, to start the orchestrator, which is named `DurableOrchestration`, make a GET request to `http://127.0.0.1:7071/api/orchestrators/DurableOrchestration`.  The second function raises an event.  The combination of these events raised will trigger the final function.  
 
-And that's it! You should see a JSON response with five URLs to monitor the status of the orchestration. To learn more about this, please read [here](TODO)!
-
-### Usage patterns
+### Example Use-cases
+This section showed different implementaion patterns for the trigger function.  These are just some examples to demostrate the appicability of the external event pattern.  
 
 #### 1. Wait for a single external event
   
