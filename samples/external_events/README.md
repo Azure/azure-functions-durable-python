@@ -1,11 +1,44 @@
+# External Events - Sample
+This sample exemplifies how to go about implementing the [Human interactions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=csharp#human) pattern in Python Durable Functions.
 
-  
+## Usage Instructions
 
-# External Events
+### Create a `local.settings.json` file in this directory
+This file stores app settings, connection strings, and other settings used by local development tools. Learn more about it [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#local-settings-file).
+For this sample, you will only need an `AzureWebJobsStorage` connection string, which you can obtain from the Azure portal.
 
-## **wait_for_external_event()**
+With you connection string, your `local.settings.json` file should look as follows, with `<your connection string>` replaced with the connection string you obtained from the Azure portal:
 
-#### **1. Wait for an external event**
+```json
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "<your connection string>",
+    "FUNCTIONS_WORKER_RUNTIME": "python"
+  }
+}
+```
+
+### Run the Sample
+To try this sample, run  `func host start` in this directory. If all the system requirements have been met, and
+after some initialization logs, you should see something like the following:
+
+```bash
+Http Functions:
+
+        DurableTrigger: [POST,GET] http://localhost:7071/api/orchestrators/{functionName}
+
+        RaiseEvent: [POST,GET] http://localhost:7071/api/RaiseEvent
+
+
+```
+
+This indicates that your `DurableTrigger` function can be reached via a `GET` or `POST` request to that URL. `DurableTrigger` starts the function-chaning orchestrator whose name is passed as a parameter to the URL. So, to start the orchestrator, which is named `DurableOrchestration`, make a GET request to `http://127.0.0.1:7071/api/orchestrators/DurableOrchestration`.  The second function raises an event.  The combination of these events raised will trigger the final function.  
+
+### Example Use-cases
+This section shows different implementation patterns for the trigger function.  These are just some examples to demostrate the applicability of the external event pattern.  
+
+#### 1. Wait for a single external event
   
 ```
 def generator_function(context):
@@ -16,7 +49,7 @@ def generator_function(context):
 		return "denied"
 ```
 
-#### **2. Wait for any of the external events**
+#### 2. Wait for any of the external events
 
 ```
 def generator_function(context):
@@ -34,7 +67,7 @@ def generator_function(context):
 ```
 
 
-#### **3. Wait for all of the external events**
+#### 3. Wait for all of the external events
 
 ```
 def generator_function(context):
@@ -46,7 +79,7 @@ def generator_function(context):
 ```
 
 
-## **raise_event()**
+#### 4. Raise an event
 
 For example, you can create a Http triggered function that raises an event to an orchestrator, and call the following:
 ```
@@ -63,7 +96,6 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
 	return func.HttpResponse(f'"{event_name}" event is sent')
 ```
 
-## Example Use Cases: 
 
 ### Define custom rules to handle external events
   Inspired by some real use cases, here is an example of how you can customize your orchestrators. You can pass in different json rulesets in the request body when you create a new orchestrator instance, and customize the new orchestrator to wait for different events. In the provided sample, this json ruleset will be hard coded.
