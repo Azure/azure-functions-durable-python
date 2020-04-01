@@ -36,7 +36,7 @@ Http Functions:
 This indicates that your `DurableTrigger` function can be reached via a `GET` or `POST` request to that URL. `DurableTrigger` starts the function-chaning orchestrator whose name is passed as a parameter to the URL. So, to start the orchestrator, which is named `DurableOrchestration`, make a GET request to `http://127.0.0.1:7071/api/orchestrators/DurableOrchestration`.  The second function raises an event.  The combination of these events raised will trigger the final function.  
 
 ### Example Use-cases
-This section showed different implementaion patterns for the trigger function.  These are just some examples to demostrate the appicability of the external event pattern.  
+This section shows different implementation patterns for the trigger function.  These are just some examples to demostrate the applicability of the external event pattern.  
 
 #### 1. Wait for a single external event
   
@@ -96,9 +96,8 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
 	return func.HttpResponse(f'"{event_name}" event is sent')
 ```
 
-### Example Use Cases
 
-#### Define custom rules to handle external events
+### Define custom rules to handle external events
   Inspired by some real use cases, here is an example of how you can customize your orchestrators. You can pass in different json rulesets in the request body when you create a new orchestrator instance, and customize the new orchestrator to wait for different events. In the provided sample, this json ruleset will be hard coded.
 
 
