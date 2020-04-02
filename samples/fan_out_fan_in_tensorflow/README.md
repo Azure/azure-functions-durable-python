@@ -38,14 +38,3 @@ Http Functions:
 Send a GET request to http://127.0.0.1:7071/api/orchestrators/FanOutFanIn
 
 And that's it! You should see a JSON response with the status URL's.
-
-Note: If the latest Durable Extension (2.2.x) is used,then please use `durableClient` as the type in the function.json file of the orchestration client i.e., DurableTrigger in this case.
-
-```
- {
-      "name": "starter",
-      "type": "durableClient",
-      "direction": "in",
-      "datatype": "string"
-    }
-```
