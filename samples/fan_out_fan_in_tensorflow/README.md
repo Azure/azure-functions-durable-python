@@ -2,7 +2,7 @@
 
 This sample demonstrates how to orchestrate parallel executions of image classification using tensorflow through the Fan In Fan Out Durable orchestration pattern
 
-![architecture_diagram](./FanOutFanIn.jpg) 
+![architecture_diagram](./FanOutFanIn.png) 
 
 ## Pre-requisites
 
