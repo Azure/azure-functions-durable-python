@@ -166,7 +166,7 @@ class DurableOrchestrationClient:
 
         switch_statement = {
             202: lambda: None,
-            410: lambda: None,
+            410: lambda: f"Instance with ID {instance_id} is gone: either completed or failed",
             404: lambda: f"No instance with ID {instance_id} found.",
             400: lambda: "Only application/json request content is supported"
         }
