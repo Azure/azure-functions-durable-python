@@ -162,7 +162,7 @@ class DurableOrchestrationContext:
         """
         raise NotImplementedError("This is a placeholder.")
 
-    def get_input(self, input_type=None) -> str:
+    def get_input(self, input_type=None) -> object:
         """Get the orchestration input."""
         if hasattr(input_type, "from_json"):
             return input_type.from_json(self._input)
