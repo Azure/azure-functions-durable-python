@@ -162,8 +162,10 @@ class DurableOrchestrationContext:
         """
         raise NotImplementedError("This is a placeholder.")
 
-    def get_input(self) -> str:
+    def get_input(self, input_type=None) -> str:
         """Get the orchestration input."""
+        if hasattr(input_type, "from_json"):
+            return input_type.from_json(self._input)
         return self._input
 
     def new_uuid(self) -> str:

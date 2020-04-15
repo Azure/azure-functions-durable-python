@@ -433,6 +433,12 @@ class DurableOrchestrationClient:
 
     @staticmethod
     def _get_json_input(client_input: object) -> object:
+        # if the client_input type has a `to_json` function,
+        # we default to that. This enables users to utilize
+        # custom classes in Durable Functions.
+        client_input_type = type(client_input)
+        if hasattr(client_input_type, "to_json"):
+            return client_input_type.to_json(client_input)
         return json.dumps(client_input) if client_input is not None else None
 
     @staticmethod
