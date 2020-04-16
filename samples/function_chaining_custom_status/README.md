@@ -1,6 +1,8 @@
-# Function Chaining - Sample
+# Function Chaining with Custom Status - Sample
 
-This sample exemplifies how to go about implementing the [Function Chaining](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=csharp#chaining) pattern in Python Durable Functions.
+This sample demonstrates how to go about implementing the [Function Chaining](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=csharp#chaining) pattern in Python Durable Functions.
+
+It additionally demonstrates how to go about setting intermittent status while an orchestation is executing. This enables a user to monitor the status of the orchestration through a custom message set by the user.
 
 ## Usage Instructions
 
