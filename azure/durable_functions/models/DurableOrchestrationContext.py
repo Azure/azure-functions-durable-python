@@ -1,5 +1,6 @@
 import json
 import datetime
+from importlib import import_module
 from typing import List, Any, Dict
 
 from . import (RetryOptions, TaskSet)
@@ -162,11 +163,52 @@ class DurableOrchestrationContext:
         """
         raise NotImplementedError("This is a placeholder.")
 
-    def get_input(self, input_type=None) -> object:
+    def get_input(self) -> str:
         """Get the orchestration input."""
-        if hasattr(input_type, "from_json"):
-            return input_type.from_json(self._input)
-        return self._input
+        def deserialize_custom_object(obj: dict) -> object:
+            """ Deserializes a dictionary encoding a custom object,
+            if it contains class metadata suggesting that it should be
+            decoded further.
+
+            Parameters:
+            ----------
+            obj: dict
+                Dictionary object that potentially encodes a custom class
+
+            Returns:
+            --------
+            object
+                Either the original `obj` dictionary or the custom object it encoded
+
+            Exceptions
+            ----------
+            TypeError
+                If the decoded object does not contain a `from_json` function
+
+            References:
+            ----------
+            https://medium.com/python-pandemonium/json-the-python-way-91aac95d4041
+            """
+            if ("__class__" in obj) and ("__module__" in obj) and ("__data__" in obj):
+                class_name = obj.pop("__class__")
+                module_name = obj.pop("__module__")
+                obj_data = obj.pop("__data__")
+                
+                # Importing the clas
+                module = import_module(module_name)
+                class_ = getattr(module,class_name)
+
+                if not hasattr(class_, "from_json"):
+                    raise TypeError(f"class {type(obj)} does not expose a `from_json` function")
+                
+                # Initialize the object using its `from_json` deserializer
+                obj = class_.from_json(obj_data)
+            else:
+                obj = obj
+            return obj
+        return json.loads(self._input, object_hook=deserialize_custom_object) if self._input is not None else None
+
+
 
     def new_uuid(self) -> str:
         """Create a new UUID that is safe for replay within an orchestration or operation.
