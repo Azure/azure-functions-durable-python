@@ -206,7 +206,7 @@ class DurableOrchestrationContext:
             else:
                 obj = obj
             return obj
-        return json.loads(self._input, object_hook=deserialize_custom_object) if self._input is not None else None
+        return json.loads(self._input, object_hook=deserialize_custom_object) if isinstance(self._input, dict) else self._input
 
 
 
