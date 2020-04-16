@@ -27,6 +27,7 @@ class DurableOrchestrationContext:
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
+        self._custom_status: Any = None
         self._new_uuid_counter: int = 0
         self.call_activity = lambda n, i=None: call_activity_task(
             state=self.histories,
@@ -165,7 +166,7 @@ class DurableOrchestrationContext:
     def get_input(self) -> str:
         """Get the orchestration input."""
         return self._input
-
+    
     def new_uuid(self) -> str:
         """Create a new UUID that is safe for replay within an orchestration or operation.
 
@@ -220,6 +221,22 @@ class DurableOrchestrationContext:
             The first [[Task]] instance to complete.
         """
         raise NotImplementedError("This is a placeholder.")
+    
+    def set_custom_status(self, status: Any):
+        """Custom orchestration status lets you set a custom status value for your orchestrator function.
+        This status is also returned by the orchestration client through the get_status API 
+        
+        Parameters
+        ----------
+        status : str
+            Customized status provided by the orchestrator
+        """
+        self._custom_status = status
+    
+    @property
+    def custom_status(self):
+        """ Get customized status of current orchestration"""
+        return self._custom_status
 
     @property
     def histories(self):
