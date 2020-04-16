@@ -26,7 +26,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     # Chained functions - output of a function is passed as
     # input to the next function in the chain
-    r1 = yield context.call_activity("DurableActivity", "One")
+    r1 = yield context.call_activity("DurableActivity", "Zero")
     context.set_custom_status(f'{r1} ->')
     r2 = yield context.call_activity("DurableActivity", r1)
     context.set_custom_status(f'{r1} -> {r2} ->')

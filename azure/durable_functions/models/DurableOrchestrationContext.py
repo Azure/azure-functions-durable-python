@@ -166,7 +166,7 @@ class DurableOrchestrationContext:
     def get_input(self) -> str:
         """Get the orchestration input."""
         return self._input
-    
+
     def new_uuid(self) -> str:
         """Create a new UUID that is safe for replay within an orchestration or operation.
 
@@ -223,8 +223,9 @@ class DurableOrchestrationContext:
         raise NotImplementedError("This is a placeholder.")
     
     def set_custom_status(self, status: Any):
-        """Custom orchestration status lets you set a custom status value for your orchestrator function.
-        This status is also returned by the orchestration client through the get_status API 
+        """ Set the customized orchestration status for your orchestrator function.
+
+        This status is also returned by the orchestration client through the get_status API
         
         Parameters
         ----------
