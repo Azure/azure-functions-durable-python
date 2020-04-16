@@ -221,22 +221,22 @@ class DurableOrchestrationContext:
             The first [[Task]] instance to complete.
         """
         raise NotImplementedError("This is a placeholder.")
-    
+
     def set_custom_status(self, status: Any):
-        """ Set the customized orchestration status for your orchestrator function.
+        """Set the customized orchestration status for your orchestrator function.
 
         This status is also returned by the orchestration client through the get_status API
-        
+
         Parameters
         ----------
         status : str
             Customized status provided by the orchestrator
         """
         self._custom_status = status
-    
+
     @property
     def custom_status(self):
-        """ Get customized status of current orchestration"""
+        """Get customized status of current orchestration."""
         return self._custom_status
 
     @property
