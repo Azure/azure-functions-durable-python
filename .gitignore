@@ -105,6 +105,7 @@ venv.bak/
 
 # Visual Studio
 .vs/
+.vscode/
 
 # CSharp
 [Oo]bj/
