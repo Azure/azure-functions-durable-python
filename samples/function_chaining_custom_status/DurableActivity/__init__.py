@@ -5,7 +5,7 @@ def main(name: str) -> str:
     
     Parameters
     ----------
-    trumber : int
+    name : str
         key to a dictionary that advances the chain
     
     Returns
@@ -14,10 +14,10 @@ def main(name: str) -> str:
         value in the dictionary as a result
     """
 
+    logging.warning(f"Activity Triggered: {name}")
     switch_statement = {}
     switch_statement["One"] = "Two"
     switch_statement["Two"] = "Three"
-    logging.warning(f"Activity Triggered: {name}")
     try:
         if switch_statement[name]:
             return f'{switch_statement[name]}'

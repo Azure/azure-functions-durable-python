@@ -2,4 +2,3 @@
 .vscode
 local.settings.json
 test
-py3_env
