@@ -128,4 +128,3 @@ obj
 appsettings.json
 local.settings.json
 .python_packages
-py3_env
