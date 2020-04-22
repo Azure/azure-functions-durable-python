@@ -2,7 +2,7 @@ import logging
 
 import azure.functions as func
 import azure.durable_functions as df
-from ..shared_code.MyClasses import SerializableClass
+from ..shared_code.MyClasses import SerializableClass # TODO: this import is highlight 'red' in VSCode, but works at runtime
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
     """This function provides the core function chaining orchestration logic
@@ -21,8 +21,9 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     input_: SerializableClass = context.get_input()
     number: int = input_.show_number()
 
+    
     # throwaway, seems necessary for the orchestration not to fail
-    yield context.call_activity("DurableActivity", "5")
-    return number
+    value = yield context.call_activity("DurableActivity", SerializableClass(24))
+    return 11
 
 main = df.Orchestrator.create(orchestrator_function)

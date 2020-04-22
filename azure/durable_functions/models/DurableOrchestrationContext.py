@@ -11,6 +11,7 @@ from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
     wait_for_external_event_task, continue_as_new, new_uuid, call_http
+from azure.func.__serialization__ import __deserialize_custom_object
 
 
 class DurableOrchestrationContext:
@@ -79,6 +80,8 @@ class DurableOrchestrationContext:
         DurableOrchestrationContext
             New instance of the durable orchestration context class
         """
+        # We should consider parsing the `Input` field here as well,
+        # intead of doing so lazily when `get_input` is called.
         json_dict = json.loads(json_string)
         return cls(**json_dict)
 
@@ -165,48 +168,7 @@ class DurableOrchestrationContext:
 
     def get_input(self) -> str:
         """Get the orchestration input."""
-        def deserialize_custom_object(obj: dict) -> object:
-            """ Deserializes a dictionary encoding a custom object,
-            if it contains class metadata suggesting that it should be
-            decoded further.
-
-            Parameters:
-            ----------
-            obj: dict
-                Dictionary object that potentially encodes a custom class
-
-            Returns:
-            --------
-            object
-                Either the original `obj` dictionary or the custom object it encoded
-
-            Exceptions
-            ----------
-            TypeError
-                If the decoded object does not contain a `from_json` function
-
-            References:
-            ----------
-            https://medium.com/python-pandemonium/json-the-python-way-91aac95d4041
-            """
-            if ("__class__" in obj) and ("__module__" in obj) and ("__data__" in obj):
-                class_name = obj.pop("__class__")
-                module_name = obj.pop("__module__")
-                obj_data = obj.pop("__data__")
-                
-                # Importing the clas
-                module = import_module(module_name)
-                class_ = getattr(module,class_name)
-
-                if not hasattr(class_, "from_json"):
-                    raise TypeError(f"class {type(obj)} does not expose a `from_json` function")
-                
-                # Initialize the object using its `from_json` deserializer
-                obj = class_.from_json(obj_data)
-            else:
-                obj = obj
-            return obj
-        return json.loads(self._input, object_hook=deserialize_custom_object) if isinstance(self._input, dict) else self._input
+        return json.loads(self._input, object_hook=__deserialize_custom_object)
 
 
 

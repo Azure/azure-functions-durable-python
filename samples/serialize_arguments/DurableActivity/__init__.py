@@ -1,6 +1,6 @@
 import logging
 
-def main(name: str) -> str:
+def main(name):
     """Activity function performing a specific step in the chain
     
     Parameters
@@ -14,6 +14,6 @@ def main(name: str) -> str:
         Returns a welcome string
     """
     logging.warning(f"Activity Triggered: {name}")
-    return f'Hello Activity: {name}!'
+    return name
 
     

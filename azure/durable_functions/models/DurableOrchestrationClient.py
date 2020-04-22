@@ -447,46 +447,9 @@ class DurableOrchestrationClient:
         Exceptions
         -----------
         TypeError
-            If the JSON serialization failedm see `serialize_custom_object`
+            If the JSON serialization failed, see `serialize_custom_object`
         """
-        def serialize_custom_object(obj):
-            """ Helper to `__get_json_input` serving as an argument for 
-            `json.dumps`'s `default` parameter. This function gets called
-            when `json.dumps` cannot serialize an object and returns a
-            serializable dictionary containing enough metadata to recontrust
-            the original object.
-
-            Parameters
-            ----------
-            obj: Object
-                The object to serialize
-
-            Returns
-            -------
-            dict_obj: A serializable dictionary with enough metadata to reconstruct `obj`
-
-            Exceptions
-            ----------
-            TypeError:
-                Raise if `obj` does not contain a `to_json` attribute
-
-            References:
-            ----------
-            https://medium.com/python-pandemonium/json-the-python-way-91aac95d4041
-            """
-            # 'safety' guard: raise error if object does not
-            # support serialization
-            if not hasattr(obj, "to_json"):
-                raise TypeError(f"class {type(obj)} does not expose a `to_json` function")
-            # Encode to json using the object's `to_json`
-            obj_type = type(obj)
-            dict_obj = {
-                "__class__" : obj.__class__.__name__,
-                "__module__": obj.__module__,
-                "__data__": obj_type.to_json(obj)
-            }
-            return dict_obj
-        return json.dumps(client_input, default=serialize_custom_object) if client_input is not None else None
+        return json.dumps(client_input, default=__serialize_custom_object) if client_input is not None else None
 
     @staticmethod
     def _replace_url_origin(request_url, value_url):
