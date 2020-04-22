@@ -1,6 +1,5 @@
 import json
 import datetime
-from importlib import import_module
 from typing import List, Any, Dict
 
 from . import (RetryOptions, TaskSet)
@@ -169,8 +168,6 @@ class DurableOrchestrationContext:
     def get_input(self) -> str:
         """Get the orchestration input."""
         return json.loads(self._input, object_hook=__deserialize_custom_object)
-
-
 
     def new_uuid(self) -> str:
         """Create a new UUID that is safe for replay within an orchestration or operation.
