@@ -450,7 +450,9 @@ class DurableOrchestrationClient:
         TypeError
             If the JSON serialization failed, see `serialize_custom_object`
         """
-        return json.dumps(client_input, default=_serialize_custom_object) if client_input is not None else None
+        if client_input is not None:
+            return json.dumps(client_input, default=_serialize_custom_object)
+        return None
 
     @staticmethod
     def _replace_url_origin(request_url, value_url):
