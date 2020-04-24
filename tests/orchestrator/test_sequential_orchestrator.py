@@ -132,3 +132,29 @@ def test_tokyo_and_seattle_and_london_state():
 
     assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
+
+
+def test_tokyo_and_seattle_and_london_with_serialization_state():
+    """ Tests 
+    
+    ...
+    
+    """
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
+    add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function)
+
+    expected_state = base_expected_state(
+        ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    add_hello_action(expected_state, 'London')
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)

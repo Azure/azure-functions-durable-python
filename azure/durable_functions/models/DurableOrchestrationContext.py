@@ -167,7 +167,8 @@ class DurableOrchestrationContext:
 
     def get_input(self) -> str:
         """Get the orchestration input."""
-        return json.loads(self._input, object_hook=_deserialize_custom_object)
+        return None if self._input is None else json.loads(self._input,
+                                                           object_hook=_deserialize_custom_object)
 
     def new_uuid(self) -> str:
         """Create a new UUID that is safe for replay within an orchestration or operation.
