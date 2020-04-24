@@ -434,7 +434,7 @@ class DurableOrchestrationClient:
 
     @staticmethod
     def _get_json_input(client_input: object) -> str:
-        """Serialize the orchestrator's input
+        """Serialize the orchestrator's input.
 
         Parameters:
         ----------
