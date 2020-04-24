@@ -434,19 +434,20 @@ class DurableOrchestrationClient:
 
     @staticmethod
     def _get_json_input(client_input: object) -> str:
-        """Serialize the orchestrator's input.
+        """Serialize the orchestrator input.
 
-        Parameters:
+        Parameters
         ----------
         client_input: object
             The client's input, which we need to serialize
 
-        Returns:
+        Returns
         -------
         str
-            A string represented the JSON-serializatio nof `client_input`
+            A string representing the JSON-serialization of `client_input`
+
         Exceptions
-        -----------
+        ----------
         TypeError
             If the JSON serialization failed, see `serialize_custom_object`
         """
