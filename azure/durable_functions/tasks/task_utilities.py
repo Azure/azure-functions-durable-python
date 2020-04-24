@@ -1,6 +1,7 @@
 import json
 from ..models.history import HistoryEventType
-from azure.func.__serialization__ import __deserialize_custom_object
+from azure.functions._durable_functions import _deserialize_custom_object
+
 
 def should_suspend(partial_result) -> bool:
     """Check the state of the result to determine if the orchestration should suspend."""
@@ -18,11 +19,11 @@ def parse_history_event(directive_result):
     # We provide the ability to deserialize custom objects, because the output of this
     # will be passed directly to the orchestrator as the output of some activity
     if event_type == HistoryEventType.EVENT_RAISED:
-        return json.loads(directive_result.Input, object_hook=__deserialize_custom_object)
+        return json.loads(directive_result.Input, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_CREATED:
-        return json.loads(directive_result.Result, object_hook=__deserialize_custom_object)
+        return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.TASK_COMPLETED:
-        return json.loads(directive_result.Result, object_hook=__deserialize_custom_object)
+        return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     return None
 
 

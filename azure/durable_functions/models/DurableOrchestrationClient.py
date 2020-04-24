@@ -13,6 +13,7 @@ from .RpcManagementOptions import RpcManagementOptions
 from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from ..models import DurableOrchestrationBindings
 from .utils.http_utils import get_async_request, post_async_request, delete_async_request
+from azure.functions._durable_functions import _serialize_custom_object
 
 
 class DurableOrchestrationClient:
@@ -449,7 +450,7 @@ class DurableOrchestrationClient:
         TypeError
             If the JSON serialization failed, see `serialize_custom_object`
         """
-        return json.dumps(client_input, default=__serialize_custom_object) if client_input is not None else None
+        return json.dumps(client_input, default=_serialize_custom_object) if client_input is not None else None
 
     @staticmethod
     def _replace_url_origin(request_url, value_url):

@@ -10,7 +10,7 @@ from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
     wait_for_external_event_task, continue_as_new, new_uuid, call_http
-from azure.func.__serialization__ import __deserialize_custom_object
+from azure.functions._durable_functions import _deserialize_custom_object
 
 
 class DurableOrchestrationContext:
@@ -167,7 +167,7 @@ class DurableOrchestrationContext:
 
     def get_input(self) -> str:
         """Get the orchestration input."""
-        return json.loads(self._input, object_hook=__deserialize_custom_object)
+        return json.loads(self._input, object_hook=_deserialize_custom_object)
 
     def new_uuid(self) -> str:
         """Create a new UUID that is safe for replay within an orchestration or operation.
