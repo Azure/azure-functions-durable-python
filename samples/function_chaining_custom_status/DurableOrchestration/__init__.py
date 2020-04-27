@@ -6,6 +6,8 @@ import azure.durable_functions as df
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
     """This function provides the core function chaining orchestration logic
+    and also sets custom status using which a user can see intermittent status of
+    the orchestration through get_status client URL.
 
     Parameters
     ----------

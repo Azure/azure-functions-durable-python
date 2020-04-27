@@ -1,11 +1,11 @@
 import logging
 
-def main(name: str) -> str:
+def main(key: str) -> str:
     """Activity function performing a specific step in the chain
     
     Parameters
     ----------
-    name : str
+    key : str
         key to a dictionary that advances the chain
     
     Returns
@@ -14,13 +14,13 @@ def main(name: str) -> str:
         value in the dictionary as a result
     """
 
-    logging.warning(f"Activity Triggered: {name}")
+    logging.warning(f"Activity Triggered: {key}")
     switch_statement = {}
     switch_statement["One"] = "Two"
     switch_statement["Two"] = "Three"
     try:
-        if switch_statement[name]:
-            return f'{switch_statement[name]}'
+        if switch_statement[key]:
+            return f'{switch_statement[key]}'
     except KeyError as e:
         return f'One'
 
