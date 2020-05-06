@@ -9,7 +9,7 @@ from .actions import Action
 from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
-    wait_for_external_event_task, continue_as_new, new_uuid, call_http
+    wait_for_external_event_task, continue_as_new, new_uuid, call_http, create_timer_task
 
 
 class DurableOrchestrationContext:
@@ -49,6 +49,7 @@ class DurableOrchestrationContext:
         self.continue_as_new = lambda i: continue_as_new(input_=i)
         self.task_any = lambda t: task_any(tasks=t)
         self.task_all = lambda t: task_all(tasks=t)
+        self.create_timer = lambda d: create_timer_task(state=self.histories,fire_at=d)
         self.decision_started_event: HistoryEvent = \
             [e_ for e_ in self.histories
              if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]
