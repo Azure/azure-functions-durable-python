@@ -1,12 +1,10 @@
 from ..models.Task import Task
-import datetime
+
 
 class TimerTask(Task):
-    """
-    Returned from DurableOrchestrationContext.createTimer if the call
-    is not 'yield-ed". Represents a pending timer.
-    All pending timers must be completed or canceled for an orchestration 
-    to complete.
+    """Represents a pending timer.
+
+    All pending timers must be completed or canceled for an orchestration to complete.
 
     Example: Cancel a timer
     ```
@@ -14,39 +12,30 @@ class TimerTask(Task):
     if not timeout_task.is_completed():
         timeout_task.cancel()
     ```
-    #TODO Write an example for create_timeout
     """
 
-    def __init__(self, action ,is_completed, timestamp, id_):
+    def __init__(self, action, is_completed, timestamp, id_):
         self._action = action,
         self._is_completed = is_completed,
         self._timestamp = timestamp,
         self._id = id_
 
-            # Task(
-            # is_completed=self._is_completed,
-            # is_faulted=False,
-            # action=self._action,
-            # result=None,
-            # timestamp=self._timestamp,
-            # id_=self._id)
+        super().__init__(self._is_completed, False,
+                         self._action, None, self._timestamp, self._id, None)
 
-        super().__init__(self._is_completed,False,self._action,None,self._timestamp,self._id,None)
-    
     def is_cancelled(self) -> bool:
-        """
+        """Check of a timer is cancelled.
+
         Returns
         -------
-        bool: Whether or not the timer has been cancelled
-
+        bool
+            Returns whether a timer has been cancelled or not
         """
         return self._action.is_cancelled
-    
+
     def cancel(self):
-        """
-        Indicates the timer should be cancelled. This request will execute on
-        the next `yield` or `return` statement
-        
+        """Cancel a timer.
+
         Raises
         ------
         ValueError

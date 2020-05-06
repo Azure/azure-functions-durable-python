@@ -1,29 +1,29 @@
 from typing import Any, Dict
 
 from .ActionType import ActionType
-from ..utils.json_utils import add_attrib,add_datetime_attrib
+from ..utils.json_utils import add_attrib, add_datetime_attrib
 import datetime
 
+
 class CreateTimerAction:
-    
-    """
-    Defines the structure of the Create Timer object.
-    
+    """Defines the structure of the Create Timer object.
+
     Returns
     -------
-         Provides the information needed by the durable extension to be able to schedule the activity.
-    
+        Information needed by durable extension to schedule the activity
+
     Raises
     ------
     ValueError
         if the event fired is not of valid datetime object
     """
-    def __init__(self,fire_at: datetime,is_cancelled:bool=False):
-        self.action_type : ActionType = ActionType.CREATE_TIMER
-        self.fire_at:datetime = fire_at
+
+    def __init__(self, fire_at: datetime, is_cancelled: bool = False):
+        self.action_type: ActionType = ActionType.CREATE_TIMER
+        self.fire_at: datetime = fire_at
         self.is_cancelled: bool = is_cancelled
 
-        if not isinstance(self.fire_at,datetime.date):
+        if not isinstance(self.fire_at, datetime.date):
             raise ValueError("fireAt: Expected valid datetime object but got ", self.fire_at)
 
     def to_json(self) -> Dict[str, Any]:
