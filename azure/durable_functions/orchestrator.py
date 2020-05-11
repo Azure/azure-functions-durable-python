@@ -45,23 +45,9 @@ class Orchestrator:
         the durable extension.
         """
         self.durable_context = context
-        self.generator = None
+
+        self.generator = self.fn(self.durable_context)
         suspended = False
-
-        fn_output = self.fn(self.durable_context)
-        # If `fn_output` is not an Iterator, then the orchestrator
-        # function does not make use of its context parameter. If so,
-        # `fn_output` is the return value instead of a generator
-        if isinstance(fn_output, Iterator):
-            self.generator = fn_output
-
-        else:
-            orchestration_state = OrchestratorState(
-                is_done=True,
-                output=fn_output,
-                actions=self.durable_context.actions,
-                custom_status=self.durable_context.custom_status)
-            return orchestration_state.to_json_string()
         try:
             generation_state = self._generate_next(None)
 
