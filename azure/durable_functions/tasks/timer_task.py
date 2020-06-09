@@ -15,9 +15,9 @@ class TimerTask(Task):
     """
 
     def __init__(self, action, is_completed, timestamp, id_):
-        self._action = action,
-        self._is_completed = is_completed,
-        self._timestamp = timestamp,
+        self._action = action
+        self._is_completed = is_completed
+        self._timestamp = timestamp
         self._id = id_
 
         super().__init__(self._is_completed, False,
