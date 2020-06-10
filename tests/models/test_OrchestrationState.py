@@ -23,5 +23,5 @@ def test_single_action_state_to_json_string():
     result = state.to_json_string()
     expected_result = ('{"isDone": false, "actions": [[{"actionType": 0, '
                        '"functionName": "MyFunction", "input": '
-                       '"AwesomeInput"}]]}')
+                       '"\\"AwesomeInput\\""}]]}')
     assert expected_result == result

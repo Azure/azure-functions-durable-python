@@ -9,6 +9,8 @@ import glob
 from setuptools import setup, find_packages
 from distutils.command import build
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 class BuildModule(build.build):
     """Used to build the module."""
@@ -25,8 +27,11 @@ class BuildModule(build.build):
 setup(
     name='azure-functions-durable',
     packages=find_packages(exclude=("tests", "samples","scripts")),
-    version='1.0.0b4',
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
     description='Durable Functions For Python',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',

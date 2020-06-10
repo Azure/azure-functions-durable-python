@@ -10,6 +10,7 @@ from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
     wait_for_external_event_task, continue_as_new, new_uuid, call_http
+from azure.functions._durable_functions import _deserialize_custom_object
 
 
 class DurableOrchestrationContext:
@@ -27,6 +28,7 @@ class DurableOrchestrationContext:
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
+        self._custom_status: Any = None
         self._new_uuid_counter: int = 0
         self.call_activity = lambda n, i=None: call_activity_task(
             state=self.histories,
@@ -78,6 +80,8 @@ class DurableOrchestrationContext:
         DurableOrchestrationContext
             New instance of the durable orchestration context class
         """
+        # We should consider parsing the `Input` field here as well,
+        # intead of doing so lazily when `get_input` is called.
         json_dict = json.loads(json_string)
         return cls(**json_dict)
 
@@ -164,7 +168,8 @@ class DurableOrchestrationContext:
 
     def get_input(self) -> str:
         """Get the orchestration input."""
-        return self._input
+        return None if self._input is None else json.loads(self._input,
+                                                           object_hook=_deserialize_custom_object)
 
     def new_uuid(self) -> str:
         """Create a new UUID that is safe for replay within an orchestration or operation.
@@ -220,6 +225,23 @@ class DurableOrchestrationContext:
             The first [[Task]] instance to complete.
         """
         raise NotImplementedError("This is a placeholder.")
+
+    def set_custom_status(self, status: Any):
+        """Set the customized orchestration status for your orchestrator function.
+
+        This status is also returned by the orchestration client through the get_status API
+
+        Parameters
+        ----------
+        status : str
+            Customized status provided by the orchestrator
+        """
+        self._custom_status = status
+
+    @property
+    def custom_status(self):
+        """Get customized status of current orchestration."""
+        return self._custom_status
 
     @property
     def histories(self):
