@@ -5,7 +5,13 @@ schema = {
         "isDone": {"type": "boolean"},
         "output": {},
         "error": {"type": "string"},
-        "customStatus": {"type": "object"},
+        "customStatus": { 
+                        "anyOf": [
+                        {
+                            "type": "object",
+                        },{
+                            "type": "string",
+                        }] },
         "actions": {
             "type": "array",
             "items": {
