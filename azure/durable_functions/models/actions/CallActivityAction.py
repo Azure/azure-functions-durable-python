@@ -3,6 +3,8 @@ from typing import Any, Dict
 from .Action import Action
 from .ActionType import ActionType
 from ..utils.json_utils import add_attrib
+from json import dumps
+from azure.functions._durable_functions import _serialize_custom_object
 
 
 class CallActivityAction(Action):
@@ -13,7 +15,8 @@ class CallActivityAction(Action):
 
     def __init__(self, function_name: str, input_=None):
         self.function_name: str = function_name
-        self.input_ = input_
+        # It appears that `.input_` needs to be JSON-serializable at this point
+        self.input_ = dumps(input_, default=_serialize_custom_object)
 
         if not self.function_name:
             raise ValueError("function_name cannot be empty")
