@@ -81,6 +81,8 @@ class DurableOrchestrationContext:
         DurableOrchestrationContext
             New instance of the durable orchestration context class
         """
+        # We should consider parsing the `Input` field here as well,
+        # intead of doing so lazily when `get_input` is called.
         json_dict = json.loads(json_string)
         return cls(**json_dict)
 
@@ -167,7 +169,8 @@ class DurableOrchestrationContext:
 
     def get_input(self) -> str:
         """Get the orchestration input."""
-        return self._input
+        return None if self._input is None else json.loads(self._input,
+                                                           object_hook=_deserialize_custom_object)
 
     def new_uuid(self) -> str:
         """Create a new UUID that is safe for replay within an orchestration or operation.

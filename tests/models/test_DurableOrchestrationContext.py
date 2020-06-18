@@ -58,23 +58,22 @@ def test_added_function_context_args():
 
 
 def test_get_input_none(starting_context):
-    assert None == starting_context.get_input()
+    test = starting_context.get_input()
+    assert None == test
 
 
 def test_get_input_string():
     builder = ContextBuilder('test_function_context')
-    builder.input_ = 'Seattle'
+    builder.input_ = json.dumps('Seattle')
     context = DurableOrchestrationContext.from_json(builder.to_json_string())
-
     assert 'Seattle' == context.get_input()
 
 
 def test_get_input_json_str():
     builder = ContextBuilder('test_function_context')
-    builder.input_ = { 'city': 'Seattle' }
+    builder.input_ = json.dumps({ 'city': 'Seattle' })
     context = DurableOrchestrationContext.from_json(builder.to_json_string())
 
     result = context.get_input()
 
-    result_dict = json.loads(result)
-    assert 'Seattle' == result_dict['city']
+    assert 'Seattle' == result['city']
