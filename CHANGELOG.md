@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.0b6
+
+Create timer functionality available
+
+## 1.0.0b5
+
+Object serialization made available
+
 ## 1.0.0b3-b4
 - Release to test CD pipeline with push to PyPI
 
