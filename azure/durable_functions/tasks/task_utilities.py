@@ -1,7 +1,7 @@
 import json
-from datetime import datetime
 from ..models.history import HistoryEventType
 from ..constants import DATETIME_STRING_FORMAT
+
 
 def should_suspend(partial_result) -> bool:
     """Check the state of the result to determine if the orchestration should suspend."""
@@ -116,7 +116,7 @@ def find_task_failed(state, scheduled_task):
     return tasks[0]
 
 
-def find_task_timer_created(state,fire_at):
+def find_task_timer_created(state, fire_at):
     """Locate the Timer Created Task.
 
     Within the state passed, search for an event that has hasn't been processed,
@@ -129,14 +129,15 @@ def find_task_timer_created(state,fire_at):
 
     tasks = []
     for e in state:
-        if e.event_type == HistoryEventType.TIMER_CREATED and hasattr(e,"FireAt"):
+        if e.event_type == HistoryEventType.TIMER_CREATED and hasattr(e, "FireAt"):
             if e.FireAt == fire_at.strftime(DATETIME_STRING_FORMAT):
                 tasks.append(e)
-    
+
     if len(tasks) == 0:
         return None
-    
+
     return tasks[0]
+
 
 def find_task_retry_timer_created(state, failed_task):
     """Locate the Timer Created Task.
