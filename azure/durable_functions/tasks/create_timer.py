@@ -32,8 +32,8 @@ def create_timer_task(state: List[HistoryEvent],
     if timer_fired:
         return TimerTask(
             is_completed=True, action=new_action,
-            timestamp=timer_fired["Timestamp"],
-            id_=timer_fired["TaskScheduledId"])
+            timestamp=timer_fired.timestamp,
+            id_=timer_fired.event_id)
     else:
         return TimerTask(
             is_completed=False, action=new_action,
