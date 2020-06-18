@@ -8,6 +8,7 @@ from .wait_for_external_event import wait_for_external_event_task
 from .continue_as_new import continue_as_new
 from .new_uuid import new_uuid
 from .call_http import call_http
+from .create_timer import create_timer_task
 
 __all__ = [
     'call_activity_task',
@@ -18,5 +19,6 @@ __all__ = [
     'task_all',
     'task_any',
     'should_suspend',
-    'wait_for_external_event_task'
+    'wait_for_external_event_task',
+    'create_timer_task'
 ]

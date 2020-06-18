@@ -1,5 +1,6 @@
 import json
 from ..models.history import HistoryEventType
+from ..constants import DATETIME_STRING_FORMAT
 from azure.functions._durable_functions import _deserialize_custom_object
 
 
@@ -111,6 +112,29 @@ def find_task_failed(state, scheduled_task):
 
     tasks = [e for e in state if e.event_type == HistoryEventType.TASK_FAILED
              and e.TaskScheduledId == scheduled_task.event_id]
+
+    if len(tasks) == 0:
+        return None
+
+    return tasks[0]
+
+
+def find_task_timer_created(state, fire_at):
+    """Locate the Timer Created Task.
+
+    Within the state passed, search for an event that has hasn't been processed,
+    is a timer created task type,
+    and has the an event id that is one higher then Scheduled Id of the provided
+    failed task provided.
+    """
+    if fire_at is None:
+        return None
+
+    tasks = []
+    for e in state:
+        if e.event_type == HistoryEventType.TIMER_CREATED and hasattr(e, "FireAt"):
+            if e.FireAt == fire_at.strftime(DATETIME_STRING_FORMAT):
+                tasks.append(e)
 
     if len(tasks) == 0:
         return None
