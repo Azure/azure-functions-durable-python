@@ -10,6 +10,7 @@ from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
     wait_for_external_event_task, continue_as_new, new_uuid, call_http, create_timer_task
+from azure.functions._durable_functions import _deserialize_custom_object
 
 
 class DurableOrchestrationContext:

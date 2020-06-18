@@ -1,6 +1,7 @@
 import json
 from ..models.history import HistoryEventType
 from ..constants import DATETIME_STRING_FORMAT
+from azure.functions._durable_functions import _deserialize_custom_object
 
 
 def should_suspend(partial_result) -> bool:
