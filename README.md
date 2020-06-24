@@ -15,7 +15,7 @@ You can find more information at the following links:
 
 * [Azure Functions overview](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview)
 * [Azure Functions Python developers guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-python)
-* [Durable Functions overview](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview)
+* [Durable Functions overview](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=python)
 
 A durable function, or _orchestration_, is a solution made up of different types of Azure Functions:
 
@@ -27,27 +27,22 @@ Durable Functions' function types and features are documented in-depth [here.](h
 
 ## Current limitations
 
-We're actively working on Python support for Durable Functions and we expect a Public Preview announcement in Q2 CY2020. The following are the current known limitations.
+Python support for Durable Functions is currently in public preview. The following are the current known limitations.
 
 ### Functionality
 
-* `DurableOrchestrationContext.create_timer()` is not yet supported (coming soon [#35](https://github.com/Azure/azure-functions-durable-python/issues/35))
 * Sub-orchestrations are not yet supported (planned [#62](https://github.com/Azure/azure-functions-durable-python/issues/62))
 * Durable Entities are not yet supported (not yet planned [#96](https://github.com/Azure/azure-functions-durable-python/issues/96))
 
 ### Tooling
 
-* Python Durable Functions requires updated versions of Azure Functions Core Tools that includes Python worker [1.1.0](https://github.com/Azure/azure-functions-python-worker/releases/tag/1.1.0), templates ([bundle-1.2.0](https://github.com/Azure/azure-functions-templates/releases/tag/bundle-1.2.0)), and extension bundles ([1.2.0](https://github.com/Azure/azure-functions-extension-bundles/releases/tag/1.2.0)) that are not yet released (ETA May 2020). Use the VS Code dev container in the [Getting Started](#getting-started) section to access a development environment with the required versions of the tools installed.
-
-### Deployment
-
-* Python Durable Functions requires an updated version of the Azure Functions Python language worker ([1.1.0](https://github.com/Azure/azure-functions-python-worker/releases/tag/1.1.0)) that is not yet available in Azure. Deploy your Python Durable Functions apps in containers (requires Premium or App Service plans). (Linux consumption plan support ETA May 2020)
+* Python Durable Functions requires [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local) version 3.0.2630 or higher.
 
 ## Getting Started
 
 Follow these instructions to get started with Durable Functions in Python:
 
-**🚀 [Python Durable Functions quickstart](https://aka.ms/pythondurable)**
+**🚀 [Python Durable Functions quickstart](https://docs.microsoft.com/azure/azure-functions/durable/quickstart-python-vscode)**
 
 ## Samples
 
