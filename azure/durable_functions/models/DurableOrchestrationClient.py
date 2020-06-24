@@ -74,7 +74,7 @@ class DurableOrchestrationClient:
         if response[0] <= 202 and response[1]:
             return response[1]["id"]
         else:
-            return None
+            raise Exception(f"Failed to start orchestration named \"{orchestration_function_name}\". Did you make a typo?")
 
     def create_check_status_response(self, request, instance_id):
         """Create a HttpResponse that contains useful information for \
