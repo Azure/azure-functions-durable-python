@@ -32,16 +32,15 @@ class DurableOrchestrationStatus:
                 self.__setattr__(key, value)
 
     def __bool__(self):
-        """ Determines if a class is equivalent to True or False, which
-        is helpful when we use a class instance in an if-statement.
-        
+        """Determine if a class resolves to True or False.
+
         We say that a DurableOrchestrationStatus if False if it has a value
         `None` for its `_created_time` value, which should be empty if it
         refers to a non-existent orchestration. This facilitates a clean
         implementation of the Singleton pattern
 
         Returns
-        --------
+        -------
         bool
             True if self._created_time is not None. True otherwise.
         """
