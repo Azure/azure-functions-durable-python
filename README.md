@@ -31,7 +31,6 @@ We're actively working on Python support for Durable Functions and we expect a P
 
 ### Functionality
 
-* `DurableOrchestrationContext.create_timer()` is not yet supported (coming soon [#35](https://github.com/Azure/azure-functions-durable-python/issues/35))
 * Sub-orchestrations are not yet supported (planned [#62](https://github.com/Azure/azure-functions-durable-python/issues/62))
 * Durable Entities are not yet supported (not yet planned [#96](https://github.com/Azure/azure-functions-durable-python/issues/96))
 
