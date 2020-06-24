@@ -4,3 +4,4 @@ tensorflow==1.14
 Pillow
 requests
 azure-cognitiveservices-search-imagesearch
+azure-functions-durable>=1.0.0b5
