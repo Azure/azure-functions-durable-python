@@ -126,5 +126,7 @@ dmypy.json
 bin
 obj
 appsettings.json
-local.settings.json
 .python_packages
+
+# pycharm
+.idea
