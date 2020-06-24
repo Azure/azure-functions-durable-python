@@ -13,6 +13,7 @@ from .RpcManagementOptions import RpcManagementOptions
 from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from ..models import DurableOrchestrationBindings
 from .utils.http_utils import get_async_request, post_async_request, delete_async_request
+from azure.functions._durable_functions import _serialize_custom_object
 
 
 class DurableOrchestrationClient:
@@ -166,7 +167,7 @@ class DurableOrchestrationClient:
 
         switch_statement = {
             202: lambda: None,
-            410: lambda: None,
+            410: lambda: f"Instance with ID {instance_id} is gone: either completed or failed",
             404: lambda: f"No instance with ID {instance_id} found.",
             400: lambda: "Only application/json request content is supported"
         }
@@ -432,8 +433,27 @@ class DurableOrchestrationClient:
         return func.HttpResponse(**response_args)
 
     @staticmethod
-    def _get_json_input(client_input: object) -> object:
-        return json.dumps(client_input) if client_input is not None else None
+    def _get_json_input(client_input: object) -> str:
+        """Serialize the orchestrator input.
+
+        Parameters
+        ----------
+        client_input: object
+            The client's input, which we need to serialize
+
+        Returns
+        -------
+        str
+            A string representing the JSON-serialization of `client_input`
+
+        Exceptions
+        ----------
+        TypeError
+            If the JSON serialization failed, see `serialize_custom_object`
+        """
+        if client_input is not None:
+            return json.dumps(client_input, default=_serialize_custom_object)
+        return None
 
     @staticmethod
     def _replace_url_origin(request_url, value_url):

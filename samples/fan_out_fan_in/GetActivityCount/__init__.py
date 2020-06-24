@@ -1,6 +1,6 @@
 import json
 
-def main(value: str) -> str:
+def main(value: int) -> str:
     """Activity function to generate a range of numbers
 
     Parameters
@@ -14,5 +14,5 @@ def main(value: str) -> str:
         A JSON-formatted string representing the range of values:
         [0-(value -1)]
     """
-    activity_values = [*range(int(value))]
-    return json.dumps(activity_values)
+    activity_values = list(range(value))
+    return activity_values
