@@ -23,13 +23,11 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         tasks to complete, or until one of the tasks completes.
     """
 
-    activity_count = yield context.call_activity("GetActivityCount", 5)
-    activity_list = json.loads(activity_count)
+    activity_list = yield context.call_activity("GetActivityCount", 5)
 
     tasks = [context.call_activity("ParrotValue", i) for i in activity_list]
 
-    tasks_result = yield context.task_all(tasks)
-    values = [int(t) for t in tasks_result]
+    values = yield context.task_all(tasks)
     message = yield context.call_activity("ShowMeTheSum", values)
 
     return message

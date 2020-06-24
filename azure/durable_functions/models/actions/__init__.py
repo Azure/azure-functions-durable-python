@@ -5,6 +5,7 @@ from .CallActivityAction import CallActivityAction
 from .CallActivityWithRetryAction import CallActivityWithRetryAction
 from .WaitForExternalEventAction import WaitForExternalEventAction
 from .CallHttpAction import CallHttpAction
+from .CreateTimerAction import CreateTimerAction
 
 __all__ = [
     'Action',
@@ -12,5 +13,6 @@ __all__ = [
     'CallActivityAction',
     'CallActivityWithRetryAction',
     'CallHttpAction',
-    'WaitForExternalEventAction'
+    'WaitForExternalEventAction',
+    'CreateTimerAction'
 ]

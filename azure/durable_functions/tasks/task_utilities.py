@@ -1,5 +1,7 @@
 import json
 from ..models.history import HistoryEventType
+from ..constants import DATETIME_STRING_FORMAT
+from azure.functions._durable_functions import _deserialize_custom_object
 
 
 def should_suspend(partial_result) -> bool:
@@ -15,12 +17,14 @@ def parse_history_event(directive_result):
     if event_type is None:
         raise ValueError("EventType is not found in task object")
 
+    # We provide the ability to deserialize custom objects, because the output of this
+    # will be passed directly to the orchestrator as the output of some activity
     if event_type == HistoryEventType.EVENT_RAISED:
-        return json.loads(directive_result.Input)
+        return json.loads(directive_result.Input, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_CREATED:
-        return json.loads(directive_result.Result)
+        return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.TASK_COMPLETED:
-        return json.loads(directive_result.Result)
+        return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     return None
 
 
@@ -108,6 +112,29 @@ def find_task_failed(state, scheduled_task):
 
     tasks = [e for e in state if e.event_type == HistoryEventType.TASK_FAILED
              and e.TaskScheduledId == scheduled_task.event_id]
+
+    if len(tasks) == 0:
+        return None
+
+    return tasks[0]
+
+
+def find_task_timer_created(state, fire_at):
+    """Locate the Timer Created Task.
+
+    Within the state passed, search for an event that has hasn't been processed,
+    is a timer created task type,
+    and has the an event id that is one higher then Scheduled Id of the provided
+    failed task provided.
+    """
+    if fire_at is None:
+        return None
+
+    tasks = []
+    for e in state:
+        if e.event_type == HistoryEventType.TIMER_CREATED and hasattr(e, "FireAt"):
+            if e.FireAt == fire_at.strftime(DATETIME_STRING_FORMAT):
+                tasks.append(e)
 
     if len(tasks) == 0:
         return None

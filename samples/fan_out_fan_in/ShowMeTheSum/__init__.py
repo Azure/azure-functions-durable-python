@@ -13,4 +13,4 @@ def main(theSum: int) -> str:
     str
         A string indicating the sum
     """
-    return f"Well that's nice {sum(json.loads(theSum))}"
+    return f"Well that's nice {sum(theSum)}"
