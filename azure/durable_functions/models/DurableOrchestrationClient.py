@@ -74,16 +74,15 @@ class DurableOrchestrationClient:
         if response[0] <= 202 and response[1]:
             return response[1]["id"]
         elif response[0] == 400:
-            # Orchestrator not found
+            # Orchestrator not found, report clean exception
             exception_data = response[1]
             exception_message = exception_data["ExceptionMessage"]
-            stack_trace = exception_data["StackTrace"]
-            exception_message += '\n' + stack_trace
             raise Exception(exception_message)
         else:
             # Catch all: simply surfacing the durable-extension exception
+            # we surface the stack trace too, since this may be a more involed exception
             exception_message = response[1]
-            raise Exception(exception_message))
+            raise Exception(exception_message)
 
     def create_check_status_response(self, request, instance_id):
         """Create a HttpResponse that contains useful information for \
