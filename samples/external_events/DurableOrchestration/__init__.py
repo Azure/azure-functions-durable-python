@@ -58,7 +58,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext) -> List[str]:
 
     output = []
     for action in json_rule["satisfied"]:
-        result = yield context.call_activity(action["activity_func_name"], json.dumps(action["args"]))
+        result = yield context.call_activity(action["activity_func_name"], action["args"])
         output.append(result)
 
     return output

@@ -32,4 +32,4 @@ Http Functions:
 
 This indicates that your `DurableTrigger` function can be reached via a `GET` or `POST` request to that URL. `DurableTrigger` starts the function-chaning orchestrator whose name is passed as a parameter to the URL. So, to start the orchestrator, which is named `CheckActivityTypes`, make a GET request to `http://127.0.0.1:7071/api/orchestrators/CheckActivityTypes`.
 
-And that's it! You should see a JSON response with five URLs to monitor the status of the orchestration. To learn more about this, please read [here](TODO)!
+And that's it! You should see a JSON response with five URLs to monitor the status of the orchestration.

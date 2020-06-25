@@ -1,19 +1,18 @@
 import json
-
-def main(value: str) -> str:
+from typing import List, Dict
+def main(results: List[Dict[str,str]]) -> List[Dict[str, int]]:
     """Get a summary of the results of the predictions.
 
     Parameters
     ----------
-    value: str
-        List-formatted string of the predictions
+    results: List[Dict[str,str]]
+        Predictions
 
     Returns
     -------
-    str
-        JSON-formatted string representing the summary of predictions
+    List[Dict[str, int]]
+        Summary of predictions
     """
-    results = json.loads(value)
     analysis = {}
     analysis['images_processed'] = len(results)
     dogs = [d for d in results if d['tag'] == 'dog']
@@ -22,4 +21,4 @@ def main(value: str) -> str:
     analysis['number_of_dogs'] = len(dogs)
     analysis['number_of_cats'] = len(cats)
     analysis['number_failed'] = len(error)
-    return json.dumps(analysis)
+    return analysis

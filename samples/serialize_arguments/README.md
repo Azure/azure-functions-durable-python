@@ -1,6 +1,12 @@
-# Serializing Arguments - Sample
+# Serializing Custom Classes - Sample
 
-TBD
+This sample illustrates how to create custom classes that can be serialized for usage in Durable Functions for Python.
+To create serializable classes, all we require is for your class to export two static methods: `to_json(<str>)` and `from_json(<str>)`.
+The Durable Functions framework will interally call these classes to serialize and de-serialize your custom class. Therefore, you should
+design these two functions such that calling `from_json` on the result of `to_json` is able to reconstruct your class.
+
+For an example, please review the `shared_code` directory, where we declare a custom class that we call `SerializableClass` which implements
+the required static methods.
 
 ## Usage Instructions
 

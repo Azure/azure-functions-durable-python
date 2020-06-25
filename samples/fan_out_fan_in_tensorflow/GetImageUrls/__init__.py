@@ -1,5 +1,6 @@
 import json
 import os
+from typing import List
 from azure.cognitiveservices.search.imagesearch import ImageSearchClient
 from msrest.authentication import CognitiveServicesCredentials
 
@@ -23,35 +24,34 @@ def _get_cognitive_services_client() -> ImageSearchClient:
     return client
 
 
-def main(value: str) -> str:
+def main(volume: int) -> List[str]:
     """Get a list of image URLs from Bing Search to run predictions against.
 
     Parameters
     ----------
-    value: str
+    volume: int
         The number of images to get
 
     Returns
     -------
-    str
+    List[str]
         List of image URLs to run the prediction against
     """
     client = _get_cognitive_services_client()
 
-    volume_of_images = int(value)
-    increment = volume_of_images if volume_of_images < 100 else 100
+    increment = volume if volume < 100 else 100
     image_urls = []
     offset = 0
     search_term = "dog OR cat"
 
     # search cognitive services until we have the volume of image URLs requested
-    while len(image_urls) < volume_of_images:
+    while len(image_urls) < volume:
         search_results = client.images.search(
             query=search_term, count=increment, offset=offset)
         image_urls.extend(
             [image.content_url for image in search_results.value])
         offset += increment
         increment = increment if offset + \
-            increment < volume_of_images else volume_of_images - offset
+            increment < volume else volume - offset
 
-    return json.dumps(image_urls)
+    return image_urls

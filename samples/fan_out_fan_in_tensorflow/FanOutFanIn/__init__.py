@@ -69,8 +69,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     }
 
     # Get the images that need to predicted
-    image_data = yield context.call_activity("GetImageUrls", config['number_of_images'])
-    image_list = json.loads(image_data)
+    image_list = yield context.call_activity("GetImageUrls", config['number_of_images'])
 
     # break the images done into different tasks to be fan out with
     tasks = _get_classify_images_tasks(config, image_list, context)
@@ -78,8 +77,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     # combine the results of the predictions into a single list
     combined = []
-    for tr in predictions:
-        prediction = json.loads(tr)
+    for prediction in predictions:
         combined.extend(prediction)
 
     # summarize the results
