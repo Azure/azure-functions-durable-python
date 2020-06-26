@@ -2,8 +2,8 @@
   "IsEncrypted": false,
   "Values": {
     "FUNCTIONS_WORKER_RUNTIME": "python",
-    "AzureWebJobsStorage": "<your connection string>",
-    "COGNITIVE_ENDPOINT" : "<your cognitive service endpoint>",
-    "COGNITIVE_KEY" : "<your cognitive service key>"
+    "AzureWebJobsStorage": "",
+    "COGNITIVE_ENDPOINT" : "",
+    "COGNITIVE_KEY" : ""
   }
 }
