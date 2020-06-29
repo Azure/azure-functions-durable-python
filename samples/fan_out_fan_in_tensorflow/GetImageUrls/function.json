@@ -2,7 +2,7 @@
   "scriptFile": "__init__.py",
   "bindings": [
     {
-      "name": "value",
+      "name": "volume",
       "type": "activityTrigger",
       "direction": "in"
     }
