@@ -42,7 +42,7 @@ class DurableOrchestrationStatus:
         Returns
         -------
         bool
-            True if self._created_time is not None. True otherwise.
+            True if self._created_time is not None. False otherwise.
         """
         return self._created_time is not None
 
