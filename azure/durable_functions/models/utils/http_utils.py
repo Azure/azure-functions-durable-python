@@ -44,7 +44,9 @@ async def get_async_request(url: str) -> [int, Any]:
     """
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
-            data = await response.json()
+            data = await response.json(content_type=None)
+            if data is None:
+                data = ""
             return [response.status, data]
 
 

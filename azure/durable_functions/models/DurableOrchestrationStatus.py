@@ -31,6 +31,21 @@ class DurableOrchestrationStatus:
             for key, value in kwargs.items():
                 self.__setattr__(key, value)
 
+    def __bool__(self):
+        """Determine if a class resolves to True or False.
+
+        We say that a DurableOrchestrationStatus if False if it has a value
+        `None` for its `_created_time` value, which should be empty if it
+        refers to a non-existent orchestration. This facilitates a clean
+        implementation of the Singleton pattern
+
+        Returns
+        -------
+        bool
+            True if self._created_time is not None. False otherwise.
+        """
+        return self._created_time is not None
+
     @classmethod
     def from_json(cls, json_obj: Any):
         """Convert the value passed into a new instance of the class.
