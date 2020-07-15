@@ -9,7 +9,8 @@ from .actions import Action
 from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
-    wait_for_external_event_task, continue_as_new, new_uuid, call_http, create_timer_task
+    wait_for_external_event_task, continue_as_new, new_uuid, call_http, create_timer_task, \
+    call_sub_orchestrator_task, call_sub_orchestrator_with_retry_task
 from azure.functions._durable_functions import _deserialize_custom_object
 
 
@@ -40,6 +41,19 @@ class DurableOrchestrationContext:
                 retry_options=o,
                 name=n,
                 input_=i)
+        self.call_sub_orchestrator = \
+            lambda n, i=None, _id=None: call_sub_orchestrator_task(
+                state=self.histories,
+                name=n,
+                input_=i,
+                instance_id=_id)
+        self.call_sub_orchestrator_with_retry = \
+            lambda n, o, i=None, _id=None: call_sub_orchestrator_with_retry_task(
+                state=self.histories,
+                retry_options=o,
+                name=n,
+                input_=i,
+                instance_id=_id)
         self.call_http = lambda method, uri, content=None, headers=None, token_source=None: \
             call_http(
                 state=self.histories, method=method, uri=uri, content=content, headers=headers,
