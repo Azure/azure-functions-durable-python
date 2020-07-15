@@ -21,4 +21,4 @@ def continue_as_new(
     """
     new_action = ContinueAsNewAction(input_)
 
-    return Task(is_completed=False, is_faulted=False, action=new_action)
+    return Task(is_completed=True, is_faulted=False, action=new_action)
