@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import List, Any, Awaitable
+from typing import List, Any, Awaitable, Optional
 from time import time
 from asyncio import sleep
 from urllib.parse import urlparse, quote
@@ -509,3 +509,41 @@ class DurableOrchestrationClient:
             request_url += "?" + "&".join(query)
 
         return request_url
+    
+    async def rewind(self, 
+            instance_id: str, 
+            reason: str,
+            task_hub_name: Optional[str] = None,
+            connection_name: Optional[str] = None):
+        id_placeholder = self._orchestration_bindings.management_urls.copy()["id"]
+        request_url: str = ""
+        if self._orchestration_bindings.rpc_base_url: ## RPCMANAGEMENT OPS??
+            path = "instances/{instance_id}/rewind?reason={reason}"
+            query: List[str] = []
+            if not (task_hub_name is None):
+                query.append(f"taskHub={task_hub_name}")
+            if not (connection_name is None):
+                query.append(f"connection={connection_name}")
+            if len(query) > 0:
+                path += "&" + "&".join(query)
+            
+            request_url = f"{self._orchestration_bindings.rpc_base_url}/" + path
+        else:
+            # TODO: double check this path is safe
+            request_url = self._orchestration_bindings.management_urls.\
+                replace(id_placeholder, instance_id).\
+                replace(self._reason_placeholder, reason)
+        
+        response = self._post_async_request(request_url, None)
+        status: int = response[0]
+        if status == 200:
+            return
+        elif status == 404:
+            ex_msg = f"No instance with ID {instance_id} found."
+            raise Exception(ex_msg)
+        elif status == 410:
+            ex_msg = "The rewind operation is only supported on failed orchestration instances."
+            raise Exception(ex_msg)
+        else:
+            ex_msg = response[1]
+            raise Exception(ex_msg)
