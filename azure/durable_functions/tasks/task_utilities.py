@@ -2,6 +2,7 @@ import json
 from ..models.history import HistoryEventType
 from ..constants import DATETIME_STRING_FORMAT
 from azure.functions._durable_functions import _deserialize_custom_object
+from datetime import datetime
 
 
 def should_suspend(partial_result) -> bool:
@@ -130,10 +131,12 @@ def find_task_timer_created(state, fire_at):
     if fire_at is None:
         return None
 
+    # We remove the timezone metadata, to enable comparisons with timezone-naive datetime objects. This may be dangerous
+    fire_at = fire_at.replace(tzinfo=None)
     tasks = []
     for e in state:
         if e.event_type == HistoryEventType.TIMER_CREATED and hasattr(e, "FireAt"):
-            if e.FireAt == fire_at.strftime(DATETIME_STRING_FORMAT):
+            if datetime.strptime(e.FireAt, DATETIME_STRING_FORMAT) == fire_at:
                 tasks.append(e)
 
     if len(tasks) == 0:
