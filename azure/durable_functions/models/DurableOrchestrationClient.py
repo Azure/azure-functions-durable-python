@@ -142,7 +142,7 @@ class DurableOrchestrationClient:
 
         Returns
         -------
-        dict
+        Dict[str, str]
             a dictionary object of orchestrator instance management urls
         """
         payload = self._orchestration_bindings.management_urls.copy()
