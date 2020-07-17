@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from .Action import Action
 from .ActionType import ActionType
-from .. import DurableHttpRequest
+from ..DurableHttpRequest import DurableHttpRequest
 from ..utils.json_utils import add_attrib, add_json_attrib
 
 
@@ -29,7 +29,7 @@ class CallHttpAction(Action):
         Dict[str, Any]
             The instance of the class converted into a json dictionary
         """
-        json_dict = {}
+        json_dict: Dict[str, Any] = {}
         add_attrib(json_dict, self, 'action_type', 'actionType')
         add_json_attrib(json_dict, self, 'http_request', 'httpRequest')
         return json_dict

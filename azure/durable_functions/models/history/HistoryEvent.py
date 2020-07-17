@@ -12,7 +12,7 @@ class HistoryEvent:
         self._event_type: HistoryEventType = EventType
         self._event_id: int = EventId
         self._is_played: bool = IsPlayed
-        self._timestamp: datetime = dt_parse(Timestamp)
+        self._timestamp: datetime.datetime = dt_parse(Timestamp)
         self._is_processed: bool = False
         if kwargs is not None:
             for key, value in kwargs.items():
@@ -74,7 +74,7 @@ class HistoryEvent:
         self._is_processed = value
 
     @property
-    def timestamp(self) -> datetime:
+    def timestamp(self) -> datetime.datetime:
         """Get the timestamp property.
 
         Returns

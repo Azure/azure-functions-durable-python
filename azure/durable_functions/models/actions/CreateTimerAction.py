@@ -1,11 +1,12 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from .ActionType import ActionType
+from .Action import Action
 from ..utils.json_utils import add_attrib, add_datetime_attrib
 import datetime
 
 
-class CreateTimerAction:
+class CreateTimerAction(Action):
     """Defines the structure of the Create Timer object.
 
     Returns
@@ -18,9 +19,9 @@ class CreateTimerAction:
         if the event fired is not of valid datetime object
     """
 
-    def __init__(self, fire_at: datetime, is_cancelled: bool = False):
+    def __init__(self, fire_at: datetime.datetime, is_cancelled: bool = False):
         self.action_type: ActionType = ActionType.CREATE_TIMER
-        self.fire_at: datetime = fire_at
+        self.fire_at: datetime.datetime = fire_at
         self.is_cancelled: bool = is_cancelled
 
         if not isinstance(self.fire_at, datetime.date):
@@ -35,7 +36,7 @@ class CreateTimerAction:
         Dict[str, Any]
             The instance of the class converted into a json dictionary
         """
-        json_dict = {}
+        json_dict: Dict[str, Union[int, str]] = {}
         add_attrib(json_dict, self, 'action_type', 'actionType')
         add_datetime_attrib(json_dict, self, 'fire_at', 'fireAt')
         add_attrib(json_dict, self, 'is_cancelled', 'isCanceled')

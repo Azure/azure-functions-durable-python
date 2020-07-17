@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from .Action import Action
 from .ActionType import ActionType
@@ -20,7 +20,7 @@ class ContinueAsNewAction(Action):
         """Get the type of action this class represents."""
         return ActionType.CONTINUE_AS_NEW
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> Dict[str, Union[int, str]]:
         """Convert object into a json dictionary.
 
         Returns
@@ -28,7 +28,7 @@ class ContinueAsNewAction(Action):
         Dict[str, Any]
             The instance of the class converted into a json dictionary
         """
-        json_dict = {}
+        json_dict: Dict[str, Union[int, str]] = {}
         add_attrib(json_dict, self, 'action_type', 'actionType')
         add_attrib(json_dict, self, 'input_', 'input')
         return json_dict

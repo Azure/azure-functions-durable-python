@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from .utils.json_utils import add_attrib
 
@@ -46,7 +46,7 @@ class RetryOptions:
         """
         return self._max_number_of_attempts
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> Dict[str, Union[str, int]]:
         """Convert object into a json dictionary.
 
         Returns
@@ -54,7 +54,7 @@ class RetryOptions:
         Dict[str, Any]
             The instance of the class converted into a json dictionary
         """
-        json_dict = {}
+        json_dict: Dict[str, Union[str, int]] = {}
 
         add_attrib(
             json_dict,

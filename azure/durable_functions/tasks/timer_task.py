@@ -1,4 +1,5 @@
 from ..models.Task import Task
+from ..models.actions.CreateTimerAction import CreateTimerAction
 
 
 class TimerTask(Task):
@@ -14,8 +15,8 @@ class TimerTask(Task):
     ```
     """
 
-    def __init__(self, action, is_completed, timestamp, id_):
-        self._action = action
+    def __init__(self, action: CreateTimerAction, is_completed, timestamp, id_):
+        self._action: CreateTimerAction = action
         self._is_completed = is_completed
         self._timestamp = timestamp
         self._id = id_

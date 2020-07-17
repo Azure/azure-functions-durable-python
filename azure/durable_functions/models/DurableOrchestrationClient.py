@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import List, Any, Awaitable
+from typing import List, Any, Awaitable, Optional, Union, Dict
 from time import time
 from asyncio import sleep
 from urllib.parse import urlparse, quote
@@ -11,7 +11,7 @@ from .PurgeHistoryResult import PurgeHistoryResult
 from .DurableOrchestrationStatus import DurableOrchestrationStatus
 from .RpcManagementOptions import RpcManagementOptions
 from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
-from ..models import DurableOrchestrationBindings
+from ..models.DurableOrchestrationBindings import DurableOrchestrationBindings
 from .utils.http_utils import get_async_request, post_async_request, delete_async_request
 from azure.functions._durable_functions import _serialize_custom_object
 
@@ -44,8 +44,8 @@ class DurableOrchestrationClient:
 
     async def start_new(self,
                         orchestration_function_name: str,
-                        instance_id: str = None,
-                        client_input: object = None) -> Awaitable[str]:
+                        instance_id: Optional[str] = None,
+                        client_input: object = None) -> str:
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
@@ -69,20 +69,22 @@ class DurableOrchestrationClient:
         request_url = self._get_start_new_url(
             instance_id=instance_id, orchestration_function_name=orchestration_function_name)
 
-        response = await self._post_async_request(request_url, self._get_json_input(client_input))
+        response: List[Any] = await self._post_async_request(
+            request_url, self._get_json_input(client_input))
 
-        if response[0] <= 202 and response[1]:
+        status_code: int = response[0]
+        if status_code <= 202 and response[1]:
             return response[1]["id"]
-        elif response[0] == 400:
+        elif status_code == 400:
             # Orchestrator not found, report clean exception
-            exception_data = response[1]
+            exception_data: Dict[str, str] = response[1]
             exception_message = exception_data["ExceptionMessage"]
             raise Exception(exception_message)
         else:
             # Catch all: simply surfacing the durable-extension exception
             # we surface the stack trace too, since this may be a more involed exception
-            exception_message = response[1]
-            raise Exception(exception_message)
+            ex_message: Any = response[1]
+            raise Exception(ex_message)
 
     def create_check_status_response(self, request, instance_id):
         """Create a HttpResponse that contains useful information for \
@@ -250,7 +252,8 @@ class DurableOrchestrationClient:
         if error_message:
             raise Exception(error_message)
         else:
-            return [DurableOrchestrationStatus.from_json(o) for o in response[1]]
+            statuses: List[Any] = response[1]
+            return [DurableOrchestrationStatus.from_json(o) for o in statuses]
 
     async def get_status_by(self, created_time_from: datetime = None,
                             created_time_to: datetime = None,
@@ -441,7 +444,7 @@ class DurableOrchestrationClient:
         return func.HttpResponse(**response_args)
 
     @staticmethod
-    def _get_json_input(client_input: object) -> str:
+    def _get_json_input(client_input: object) -> Optional[str]:
         """Serialize the orchestrator input.
 
         Parameters
@@ -451,8 +454,10 @@ class DurableOrchestrationClient:
 
         Returns
         -------
-        str
-            A string representing the JSON-serialization of `client_input`
+        Optional[str]
+            If `client_input` is not None, return a string representing
+            the JSON-serialization of `client_input`. Otherwise, returns
+            None
 
         Exceptions
         ----------
@@ -473,7 +478,7 @@ class DurableOrchestrationClient:
         return value_url
 
     @staticmethod
-    def _parse_purge_instance_history_response(response: [int, Any]):
+    def _parse_purge_instance_history_response(response: List[Any]):
         switch_statement = {
             200: lambda: PurgeHistoryResult.from_json(response[1]),  # instance completed
             404: lambda: PurgeHistoryResult(instancesDeleted=0),  # instance not found

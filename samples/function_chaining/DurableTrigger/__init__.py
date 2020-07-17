@@ -27,4 +27,5 @@ async def main(req: func.HttpRequest, starter: str, message):
     client = DurableOrchestrationClient(starter)
     instance_id = await client.start_new(function_name)
     response = client.create_check_status_response(req, instance_id)
-    message.set(response)
+    var = client.create_http_management_payload(instance_id)
+    message.set(str(var))
