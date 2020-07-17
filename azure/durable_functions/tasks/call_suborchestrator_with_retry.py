@@ -50,7 +50,6 @@ def call_sub_orchestrator_with_retry_task(
         if not task_scheduled:
             break
 
-        # TODO: ensure what follows is still correct
         if task_completed is not None:
             return Task(
                 is_completed=True,
