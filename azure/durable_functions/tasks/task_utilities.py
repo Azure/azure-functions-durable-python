@@ -131,7 +131,8 @@ def find_task_timer_created(state, fire_at):
     if fire_at is None:
         return None
 
-    # We remove the timezone metadata, to enable comparisons with timezone-naive datetime objects. This may be dangerous
+    # We remove the timezone metadata,
+    # to enable comparisons with timezone-naive datetime objects. This may be dangerous
     fire_at = fire_at.replace(tzinfo=None)
     tasks = []
     for e in state:
