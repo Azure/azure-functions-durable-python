@@ -23,7 +23,7 @@ class CallSubOrchestratorAction(Action):
         """Get the type of action this class represents."""
         return ActionType.CALL_SUB_ORCHESTRATOR
 
-    def to_json(self) -> Dict[str, Union(str, int)]:
+    def to_json(self) -> Dict[str, Union[str, int]]:
         """Convert object into a json dictionary.
 
         Returns
@@ -31,7 +31,7 @@ class CallSubOrchestratorAction(Action):
         Dict[str, Union(str, int)]
             The instance of the class converted into a json dictionary
         """
-        json_dict = {}
+        json_dict: Dict[str, Union[str, int]] = {}
         add_attrib(json_dict, self, 'action_type', 'actionType')
         add_attrib(json_dict, self, 'function_name', 'functionName')
         add_attrib(json_dict, self, '_input', 'input')
