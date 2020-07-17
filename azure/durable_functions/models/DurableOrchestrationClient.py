@@ -87,7 +87,8 @@ class DurableOrchestrationClient:
             ex_message: SerializableToJSON = response[1]
             raise Exception(ex_message)
 
-    def create_check_status_response(self, request: func.HttpRequest, instance_id: str) -> func.HttpResponse:
+    def create_check_status_response(
+            self, request: func.HttpRequest, instance_id: str) -> func.HttpResponse:
         """Create a HttpResponse that contains useful information for \
         checking the status of the specified instance.
 
@@ -116,8 +117,8 @@ class DurableOrchestrationClient:
         }
         return func.HttpResponse(**response_args)
 
-    def get_client_response_links(self, 
-            request: func.HttpRequest, instance_id: str) -> Dict[str, str]:
+    def get_client_response_links(
+            self, request: func.HttpRequest, instance_id: str) -> Dict[str, str]:
         """Create a dictionary of orchestrator management urls.
 
         Parameters
@@ -142,8 +143,8 @@ class DurableOrchestrationClient:
 
         return payload
 
-    async def raise_event(self, instance_id: str, 
-            event_name: str, event_data: SerializableToJSON = None,
+    async def raise_event(
+            self, instance_id: str, event_name: str, event_data: SerializableToJSON = None,
             task_hub_name: str = None, connection_name: str = None) -> None:
         """Send an event notification message to a waiting orchestration instance.
 
@@ -354,7 +355,7 @@ class DurableOrchestrationClient:
             The ID of the orchestration instance to query.
         reason: str
             The reason for terminating the instance.
-        
+
         Raises
         ------
         Exception:
@@ -506,15 +507,15 @@ class DurableOrchestrationClient:
         else:
             raise Exception(result)
 
-    def _get_start_new_url(self, 
-            instance_id: Optional[str], orchestration_function_name: str) -> str:
+    def _get_start_new_url(
+            self, instance_id: Optional[str], orchestration_function_name: str) -> str:
         instance_path = f'/{instance_id}' if instance_id is not None else ''
         request_url = f'{self._orchestration_bindings.rpc_base_url}orchestrators/' \
                       f'{orchestration_function_name}{instance_path}'
         return request_url
 
-    def _get_raise_event_url(self, 
-            instance_id: str, event_name: str, 
+    def _get_raise_event_url(
+            self, instance_id: str, event_name: str,
             task_hub_name: Optional[str], connection_name: Optional[str]) -> str:
         request_url = f'{self._orchestration_bindings.rpc_base_url}' \
                       f'instances/{instance_id}/raiseEvent/{event_name}'
