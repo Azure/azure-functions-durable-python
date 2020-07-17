@@ -25,6 +25,7 @@ def add_hello_action(state: OrchestratorState, input_: str):
 def add_continue_as_new_action(state: OrchestratorState, input_: str):
     action = ContinueAsNewAction(input_=input_)
     state.actions.append([action])
+    state._is_done = True
 
 
 def add_hello_completed_events(
