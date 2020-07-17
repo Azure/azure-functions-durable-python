@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Dict, Any, Union
+from typing import Dict, Union
 
 from azure.durable_functions.models.utils.json_utils import add_attrib
 

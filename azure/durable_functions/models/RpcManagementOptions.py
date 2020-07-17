@@ -41,7 +41,7 @@ class RpcManagementOptions:
         ----------
         base_url: str
             The base url to prepend to the url path
-        
+
         Raises
         ------
         ValueError

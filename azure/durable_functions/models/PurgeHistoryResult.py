@@ -1,4 +1,4 @@
-from typing import Union, Dict, Any
+from typing import Dict, Any
 
 
 class PurgeHistoryResult:

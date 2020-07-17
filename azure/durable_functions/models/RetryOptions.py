@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Dict, Union
 
 from .utils.json_utils import add_attrib
 

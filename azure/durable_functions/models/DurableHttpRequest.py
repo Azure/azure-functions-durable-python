@@ -1,4 +1,4 @@
-from typing import Dict, Any, Union, Optional
+from typing import Dict, Union, Optional
 
 from azure.durable_functions.models.TokenSource import TokenSource
 from azure.durable_functions.models.utils.json_utils import add_attrib, add_json_attrib

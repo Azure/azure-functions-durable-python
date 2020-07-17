@@ -2,7 +2,6 @@ from datetime import datetime
 from dateutil.parser import parse as dt_parse
 from typing import Any, List, Dict, Optional, Union
 
-from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from .utils.json_utils import add_attrib, add_datetime_attrib
 
 
@@ -21,7 +20,8 @@ class DurableOrchestrationStatus:
                  **kwargs):
         self._name: Optional[str] = name
         self._instance_id: Optional[str] = instanceId
-        self._created_time: Optional[datetime] = dt_parse(createdTime) if createdTime is not None else None
+        self._created_time: Optional[datetime] = \
+            dt_parse(createdTime) if createdTime is not None else None
         self._last_updated_time: Optional[datetime] = dt_parse(lastUpdatedTime) \
             if lastUpdatedTime is not None else None
         self._input: Any = input

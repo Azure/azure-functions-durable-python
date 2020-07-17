@@ -111,14 +111,13 @@ class DurableOrchestrationContext:
             fails completely.
         """
         return call_activity_with_retry_task(
-                state=self.histories,
-                retry_options=retry_options,
-                name=name,
-                input_=input_)
-        raise NotImplementedError("This is a placeholder.")
+            state=self.histories,
+            retry_options=retry_options,
+            name=name,
+            input_=input_)
 
     def call_http(self, method: str, uri: str, content: Optional[str] = None,
-                  headers: Optional[Dict[str, str]] = None, 
+                  headers: Optional[Dict[str, str]] = None,
                   token_source: TokenSource = None) -> Task:
         """Schedule a durable HTTP call to the specified endpoint.
 
@@ -141,8 +140,8 @@ class DurableOrchestrationContext:
             The durable HTTP request to schedule.
         """
         return call_http(
-                state=self.histories, method=method, uri=uri, content=content, headers=headers,
-                token_source=token_source)
+            state=self.histories, method=method, uri=uri, content=content, headers=headers,
+            token_source=token_source)
 
     def call_sub_orchestrator(self,
                               name: str, input_: Optional[Any] = None,
