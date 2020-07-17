@@ -123,7 +123,7 @@ class DurableOrchestrationClient:
 
         Returns
         -------
-        dict
+        Dict[str, str]
             a dictionary object of orchestrator instance management urls
         """
         return self.get_client_response_links(None, instance_id)
