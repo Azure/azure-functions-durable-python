@@ -112,7 +112,7 @@ class DurableOrchestrationClient:
             },
         }
         return func.HttpResponse(**response_args)
-    
+
     def create_http_management_payload(self, instance_id: str) -> Dict[str, str]:
         """Create a dictionary of orchestrator management urls.
 
@@ -128,7 +128,8 @@ class DurableOrchestrationClient:
         """
         return self.get_client_response_links(None, instance_id)
 
-    def get_client_response_links(self, 
+    def get_client_response_links(
+            self,
             request: Optional[Any], instance_id: str) -> Dict[str, str]:
         """Create a dictionary of orchestrator management urls.
 
