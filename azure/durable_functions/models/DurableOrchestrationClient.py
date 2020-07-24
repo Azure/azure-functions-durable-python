@@ -130,7 +130,7 @@ class DurableOrchestrationClient:
 
     def get_client_response_links(
             self,
-            request: Optional[Any], instance_id: str) -> Dict[str, str]:
+            request: Optional[func.HttpRequest], instance_id: str) -> Dict[str, str]:
         """Create a dictionary of orchestrator management urls.
 
         Parameters
