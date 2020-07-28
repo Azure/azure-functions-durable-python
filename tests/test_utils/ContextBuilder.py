@@ -84,8 +84,10 @@ class ContextBuilder:
         event.TaskScheduledId = id_
         self.history_events.append(event)
 
-    def add_timer_created_event(self, id_: int):
+    def add_timer_created_event(self, id_: int, timestamp: str = None):
         fire_at = self.current_datetime.strftime(DATETIME_STRING_FORMAT)
+        if timestamp is not None:
+            fire_at = timestamp
         event = self.get_base_event(HistoryEventType.TIMER_CREATED, id_=id_)
         event.FireAt = fire_at
         self.history_events.append(event)
