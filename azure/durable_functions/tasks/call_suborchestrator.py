@@ -10,6 +10,7 @@ from .task_utilities import set_processed, parse_history_event, \
 
 
 def call_sub_orchestrator_task(
+        context,
         state: List[HistoryEvent],
         name: str,
         input_: Optional[Any] = None,
@@ -18,6 +19,8 @@ def call_sub_orchestrator_task(
 
     Parameters
     ----------
+    context: 'DurableOrchestrationContext':
+        A reference to the orchestration context.
     state: List[HistoryEvent]
         The list of history events to search to determine the current state of the activity.
     name: str
@@ -34,7 +37,8 @@ def call_sub_orchestrator_task(
     """
     new_action = CallSubOrchestratorAction(name, input_, instance_id)
 
-    task_scheduled = find_sub_orchestration_created(state, name, instance_id)
+    task_scheduled = find_sub_orchestration_created(
+        state, name, context=context, instance_id=instance_id)
     task_completed = find_sub_orchestration_completed(state, task_scheduled)
     task_failed = find_sub_orchestration_failed(state, task_scheduled)
     set_processed([task_scheduled, task_completed, task_failed])

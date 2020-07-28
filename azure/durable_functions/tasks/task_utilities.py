@@ -198,7 +198,7 @@ def find_sub_orchestration(
         state: List[HistoryEventType],
         event_type: HistoryEventType,
         name: Optional[str] = None,
-        counter: Optional[int] = None,
+        context=None,
         instance_id: Optional[str] = None,
         scheduled_task: Optional[HistoryEvent] = None) -> Optional[HistoryEvent]:
     """Look-up matching sub-orchestrator event in the state array.
@@ -211,9 +211,8 @@ def find_sub_orchestration(
         The type of Durable event to look for.
     name: str:
         Name of the sub-orchestrator.
-    counter: int
-        The number of sub-orchestrations created before this
-        sub-orchestration was created.
+    context: Optional['DurableOrchestrationContext']
+        A reference to the orchestration context
     instance_id: Optional[str], optional:
         Instance ID of the sub-orchestrator. Defaults to None.
     scheduled_task" Optional[HistoryEvent], optional:
@@ -224,7 +223,7 @@ def find_sub_orchestration(
     Returns
     -------
     Optional[HistoryEvent]:
-        The matching event from the state array, if it exists.]
+        The matching event from the state array, if it exists.
     """
 
     def gen_err_message(counter: int, mid_message: str, found: str, expected: str) -> str:
@@ -234,21 +233,22 @@ def find_sub_orchestration(
         err_message = beg + middle + end
         return err_message
 
-    event: Optional[HistoryEvent] = find_matching_event(state, None, event_type)
+    event: Optional[HistoryEvent] = find_matching_event(state, event_type, scheduled_task)
 
     # Test for name and instance_id mistaches and, if so, error out.
     # Also increase sub-orchestrator counter, for reporting.
-    if HistoryEventType.SUB_ORCHESTRATION_INSTANCE_CREATED:
+    if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_CREATED and (event is not None):
 
-        counter += 1
+        context._sub_orchestrator_counter += 1
+        counter: int = context._sub_orchestrator_counter
 
         # TODO: The HistoryEvent does not necessarily have an name or an instance_id
         #       We should create sub-classes of these types like JS does
-        if not(event.name == name):
+        if not(event.Name == name):
             mid_message = "a function name of {} instead of the provided function name of {}."
             err_message: str = gen_err_message(counter, mid_message, event.name, name)
             raise ValueError(err_message)
-        if instance_id and not(event.instance_id == instance_id):
+        if instance_id and not(event.InstanceId == instance_id):
             mid_message = "an instance id of {} instead of the provided instance id of {}."
             err_message: str = gen_err_message(counter, mid_message, event.name, name)
             raise ValueError(err_message)
@@ -259,7 +259,7 @@ def find_sub_orchestration(
 def find_sub_orchestration_created(
         state: List[HistoryEventType],
         name: str,
-        sub_orchestration_counter: int,
+        context=None,
         instance_id: Optional[str] = None) -> Optional[HistoryEventType]:
     """Look-up matching sub-orchestrator created event in the state array.
 
@@ -269,9 +269,8 @@ def find_sub_orchestration_created(
         The history of Durable events
     name: str:
         Name of the sub-orchestrator.
-    sub_orchestration_counter: int:
-        The number of sub-orchestrations created before this
-        sub-orchestration was created.
+    context: Optional['DurableOrchestrationContext']:
+        A reference to the orchestration context.
     instance_id: Optional[str], optional:
         Instance ID of the sub-orchestrator. Defaults to None.
 
@@ -291,7 +290,7 @@ def find_sub_orchestration_created(
         event_type=event_type,
         name=name,
         instance_id=instance_id,
-        counter=sub_orchestration_counter)
+        context=context)
 
 
 def find_sub_orchestration_completed(
@@ -379,11 +378,14 @@ def find_matching_event(
             True if `event` matches the task being search-for.
             False otherwise.
         """
+        should_preserve = False
         has_correct_type = event.event_type == event_type
-        is_not_processed = not event.is_processed
-        if not (scheduled_task is None):
-            extra_constraints = event.TaskScheduledId == scheduled_task.event_id
-        should_preserve = has_correct_type and is_not_processed and extra_constraints
+        if has_correct_type:
+            is_not_processed = not event.is_processed
+            extra_constraints = True
+            if not (scheduled_task is None):
+                extra_constraints = event.TaskScheduledId == scheduled_task.event_id
+            should_preserve = has_correct_type and is_not_processed and extra_constraints
         return should_preserve
 
     event: Optional[HistoryEvent] = None
@@ -392,8 +394,11 @@ def find_matching_event(
     matches = filter(should_preserve, state)
     matches = list(matches)
 
-    # if len(matches) > 1:
-    #     # TODO: throw exception
-    if len(matches) == 1:
+    if len(matches) >= 1:
+        # TODO: in many instances, `matches` will be greater than 1 in length. We take the
+        # first element because that corresponds to the first non-processed event, which
+        # we assume corresponds to the one we are looking for. This may be brittle but
+        # is true about other areas of the code as well such as with `call_activity`.
+        # We should try to refactor this logic at some point
         event: HistoryEventType = matches[0]
     return event
