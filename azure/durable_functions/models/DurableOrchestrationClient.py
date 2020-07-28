@@ -117,13 +117,29 @@ class DurableOrchestrationClient:
         }
         return func.HttpResponse(**response_args)
 
-    def get_client_response_links(
-            self, request: func.HttpRequest, instance_id: str) -> Dict[str, str]:
+    def create_http_management_payload(self, instance_id: str) -> Dict[str, str]:
         """Create a dictionary of orchestrator management urls.
 
         Parameters
         ----------
-        request : HttpRequest
+        instance_id : str
+            The ID of the orchestration instance to check.
+
+        Returns
+        -------
+        Dict[str, str]
+            a dictionary object of orchestrator instance management urls
+        """
+        return self.get_client_response_links(None, instance_id)
+
+    def get_client_response_links(
+            self,
+            request: Optional[func.HttpRequest], instance_id: str) -> Dict[str, str]:
+        """Create a dictionary of orchestrator management urls.
+
+        Parameters
+        ----------
+        request : Optional[HttpRequest]
             The HTTP request that triggered the current orchestration instance.
         instance_id : str
             The ID of the orchestration instance to check.
@@ -136,7 +152,8 @@ class DurableOrchestrationClient:
         payload = self._orchestration_bindings.management_urls.copy()
 
         for key, _ in payload.items():
-            if request.url:
+            request_is_not_none = not (request is None)
+            if request_is_not_none and request.url:
                 payload[key] = self._replace_url_origin(request.url, payload[key])
             payload[key] = payload[key].replace(
                 self._orchestration_bindings.management_urls["id"], instance_id)

@@ -77,7 +77,7 @@ class OrchestratorState:
         json_dict: Dict[str, Union[str, int]] = {}
         add_attrib(json_dict, self, '_is_done', 'isDone')
         self._add_actions(json_dict)
-        if self._output:
+        if not (self._output is None):
             json_dict['output'] = self._output
         if self._error:
             json_dict['error'] = self._error

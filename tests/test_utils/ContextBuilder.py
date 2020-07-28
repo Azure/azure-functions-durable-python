@@ -43,6 +43,26 @@ class ContextBuilder:
         event = self.get_base_event(HistoryEventType.ORCHESTRATOR_COMPLETED)
         self.history_events.append(event)
 
+    def add_sub_orchestrator_started_event(self, name: str, id_, input_=None):
+        event = self.get_base_event(HistoryEventType.SUB_ORCHESTRATION_INSTANCE_CREATED,
+            id_=id_)
+        event.Name = name
+        event.Input = input_
+        self.history_events.append(event)
+
+    def add_sub_orchestrator_completed_event(self, result, id_):
+        event = self.get_base_event(HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED)
+        event.Result = result
+        event.TaskScheduledId = id_
+        self.history_events.append(event)
+
+    def add_sub_orchestrator_failed_event(self, id_, reason, details):
+        event = self.get_base_event(HistoryEventType.SUB_ORCHESTRATION_INSTANCE_FAILED)
+        event.Reason = reason
+        event.Details = details
+        event.TaskScheduledId = id_
+        self.history_events.append(event)
+
     def add_task_scheduled_event(
             self, name: str, id_: int, version: str = '', input_=None):
         event = self.get_base_event(HistoryEventType.TASK_SCHEDULED, id_=id_)
@@ -64,8 +84,10 @@ class ContextBuilder:
         event.TaskScheduledId = id_
         self.history_events.append(event)
 
-    def add_timer_created_event(self, id_: int):
+    def add_timer_created_event(self, id_: int, timestamp: str = None):
         fire_at = self.current_datetime.strftime(DATETIME_STRING_FORMAT)
+        if timestamp is not None:
+            fire_at = timestamp
         event = self.get_base_event(HistoryEventType.TIMER_CREATED, id_=id_)
         event.FireAt = fire_at
         self.history_events.append(event)
