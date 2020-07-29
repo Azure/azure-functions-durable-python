@@ -48,6 +48,7 @@ def call_sub_orchestrator_task(
             is_completed=True,
             is_faulted=False,
             action=new_action,
+            is_played=task_completed._is_played,
             result=parse_history_event(task_completed),
             timestamp=task_completed.timestamp,
             id_=task_completed.TaskScheduledId)
@@ -57,6 +58,7 @@ def call_sub_orchestrator_task(
             is_completed=True,
             is_faulted=True,
             action=new_action,
+            is_played=task_failed._is_played,
             result=task_failed.Reason,
             timestamp=task_failed.timestamp,
             id_=task_failed.TaskScheduledId,

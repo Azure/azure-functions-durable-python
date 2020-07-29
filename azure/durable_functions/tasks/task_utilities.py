@@ -199,7 +199,7 @@ def set_processed(tasks):
 
 
 def find_sub_orchestration(
-        state: List[HistoryEventType],
+        state: List[HistoryEvent],
         event_type: HistoryEventType,
         name: Optional[str] = None,
         context=None,
@@ -209,7 +209,7 @@ def find_sub_orchestration(
 
     Parameters
     ----------
-    state: List[HistoryEventType]
+    state: List[HistoryEvent]
         The history of Durable events
     event_type: HistoryEventType
         The type of Durable event to look for.
@@ -261,15 +261,15 @@ def find_sub_orchestration(
 
 
 def find_sub_orchestration_created(
-        state: List[HistoryEventType],
+        state: List[HistoryEvent],
         name: str,
         context=None,
-        instance_id: Optional[str] = None) -> Optional[HistoryEventType]:
+        instance_id: Optional[str] = None) -> Optional[HistoryEvent]:
     """Look-up matching sub-orchestrator created event in the state array.
 
     Parameters
     ----------
-    state: List[HistoryEventType]:
+    state: List[HistoryEvent]:
         The history of Durable events
     name: str:
         Name of the sub-orchestrator.
@@ -285,7 +285,7 @@ def find_sub_orchestration_created(
 
     Returns
     -------
-    Optional[HistoryEventType]:
+    Optional[HistoryEvent]:
         The matching sub-orchestration creation event. Else, None.
     """
     event_type = HistoryEventType.SUB_ORCHESTRATION_INSTANCE_CREATED
@@ -298,20 +298,20 @@ def find_sub_orchestration_created(
 
 
 def find_sub_orchestration_completed(
-        state: List[HistoryEventType],
-        scheduled_task: Optional[HistoryEventType]) -> Optional[HistoryEventType]:
+        state: List[HistoryEvent],
+        scheduled_task: Optional[HistoryEvent]) -> Optional[HistoryEvent]:
     """Look-up the sub-orchestration completed event.
 
     Parameters
     ----------
     state: List[HistoryEventType]:
         The history of Durable events
-    scheduled_task: Optional[HistoryEventType]:
+    scheduled_task: Optional[HistoryEvent]:
         The sub-orchestration creation event, if found.
 
     Returns
     -------
-    Optional[HistoryEventType]:
+    Optional[HistoryEvent]:
         The matching sub-orchestration completed event, if found. Else, None.
     """
     event_type = HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED
