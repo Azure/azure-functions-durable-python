@@ -10,7 +10,7 @@ from azure.durable_functions.models.actions.ContinueAsNewAction \
 
 def generator_function(context):
     yield context.call_activity("Hello", "Tokyo")
-    yield context.continue_as_new("Cause I can")
+    context.continue_as_new("Cause I can")
 
 
 def base_expected_state(output=None) -> OrchestratorState:
