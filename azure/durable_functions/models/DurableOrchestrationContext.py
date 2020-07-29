@@ -347,8 +347,8 @@ class DurableOrchestrationContext:
         return self._function_context
 
     @property
-    def continue_as_new_task(self) -> Task:
-        """Get the continue_as_new task, if it has produced.
+    def continue_as_new_task(self) -> Optional[Task]:
+        """Get the continue_as_new task, if it was produced.
 
         Returns
         -------
