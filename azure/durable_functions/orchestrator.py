@@ -119,10 +119,10 @@ class Orchestrator:
     def _handle_continue_as_new(self, task: Any, add_to_actions=False) -> Task:
         """Handle the continue_as_new special case.
 
-        A continue_as_new_task may not be yielded. In this case,
+        A continue_as_new_task might not be yielded. In this case,
         we only return to `handle` at the next yield (bad usage),
-        or when the function returns. If the function yielded after
-        whe `continue_as_new`, we ignore the task generated there
+        or when the function returns. If the function yielded a task after
+        the `continue_as_new`, we ignore the task generated there
         because `continue_as_new` should technically restart
         the orchestrator immediately.
 
