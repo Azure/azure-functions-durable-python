@@ -1,6 +1,6 @@
 import json
 import datetime
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 
 from . import (RetryOptions, TaskSet)
 from .FunctionContext import FunctionContext
@@ -32,6 +32,7 @@ class DurableOrchestrationContext:
         self._custom_status: Any = None
         self._new_uuid_counter: int = 0
         self._sub_orchestrator_counter: int = 0
+        self._continue_as_new_task: Optional[Task] = None
         self.call_activity = lambda n, i=None: call_activity_task(
             state=self.histories,
             name=n,
@@ -65,7 +66,7 @@ class DurableOrchestrationContext:
             state=self.histories,
             name=n)
         self.new_uuid = lambda: new_uuid(context=self)
-        self.continue_as_new = lambda i: continue_as_new(input_=i)
+        self.continue_as_new = lambda i: continue_as_new(context=self, input_=i)
         self.task_any = lambda t: task_any(tasks=t)
         self.task_all = lambda t: task_all(tasks=t)
         self.create_timer = lambda d: create_timer_task(state=self.histories, fire_at=d)
@@ -344,3 +345,14 @@ class DurableOrchestrationContext:
             Object containing function level attributes not used by durable orchestrator.
         """
         return self._function_context
+
+    @property
+    def continue_as_new_task(self) -> Task:
+        """Get the continue_as_new task, if it has produced.
+
+        Returns
+        -------
+        Task:
+            The continue as new task
+        """
+        return self._continue_as_new_task

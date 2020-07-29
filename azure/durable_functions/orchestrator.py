@@ -49,6 +49,8 @@ class Orchestrator:
         suspended = False
 
         fn_output = self.fn(self.durable_context)
+        fn_output = self._handle_continue_as_new(fn_output, add_to_actions=True)
+
         # If `fn_output` is not an Iterator, then the orchestrator
         # function does not make use of its context parameter. If so,
         # `fn_output` is the return value instead of a generator
@@ -88,6 +90,7 @@ class Orchestrator:
                 generation_state = self._generate_next(generation_state)
 
         except StopIteration as sie:
+            sie.value = self._handle_continue_as_new(sie.value, add_to_actions=True)
             orchestration_state = OrchestratorState(
                 is_done=True,
                 output=sie.value,
@@ -108,7 +111,37 @@ class Orchestrator:
             gen_result = self.generator.send(partial_result.result)
         else:
             gen_result = self.generator.send(None)
+
+        gen_result = self._handle_continue_as_new(gen_result)
+
         return gen_result
+
+    def _handle_continue_as_new(self, task: Any, add_to_actions=False) -> Task:
+        """Handle the continue_as_new special case.
+
+        A continue_as_new_task may not be yielded. In this case,
+        we only return to `handle` at the next yield (bad usage),
+        or when the function returns. If the function yielded after
+        whe `continue_as_new`, we ignore the task generated there
+        because `continue_as_new` should technically restart
+        the orchestrator immediately.
+
+        Parameters
+        ----------
+        task: Task
+            The task returned by the orchestrator
+
+        Returns
+        -------
+        Task
+            A continue_as_new task, if its available. Else, the parameter `task`
+        """
+        if not (self.durable_context.continue_as_new_task is None):
+            task = self.durable_context.continue_as_new_task
+            if add_to_actions:
+                self._add_to_actions(task)
+                task = None
+        return task
 
     def _add_to_actions(self, generation_state):
         if (isinstance(generation_state, Task)
