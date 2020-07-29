@@ -33,26 +33,8 @@ class DurableOrchestrationContext:
         self._custom_status: Any = None
         self._new_uuid_counter: int = 0
         self._sub_orchestrator_counter: int = 0
-        self.call_sub_orchestrator = \
-            lambda n, i=None, _id=None: call_sub_orchestrator_task(
-                context=self,
-                state=self.histories,
-                name=n,
-                input_=i,
-                instance_id=_id)
-        self.call_sub_orchestrator_with_retry = \
-            lambda n, o, i=None, _id=None: call_sub_orchestrator_with_retry_task(
-                context=self,
-                state=self.histories,
-                retry_options=o,
-                name=n,
-                input_=i,
-                instance_id=_id)
-        self.wait_for_external_event = lambda n: wait_for_external_event_task(
-            state=self.histories,
-            name=n)
+        # TODO: waiting on the `continue_as_new` intellisense until that's implemented
         self.continue_as_new = lambda i: continue_as_new(input_=i)
-        self.create_timer = lambda d: create_timer_task(state=self.histories, fire_at=d)
         self.decision_started_event: HistoryEvent = \
             [e_ for e_ in self.histories
              if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]
@@ -163,7 +145,7 @@ class DurableOrchestrationContext:
     def call_sub_orchestrator(self,
                               name: str, input_: Optional[Any] = None,
                               instance_id: Optional[str] = None) -> Task:
-        """Schedule an orchestration function named `name` for execution.
+        """Schedule sub-orchestration function named `name` for execution.
 
         Parameters
         ----------
@@ -172,11 +154,49 @@ class DurableOrchestrationContext:
         input_: Optional[Any]
             The JSON-serializable input to pass to the orchestrator function.
         instance_id: Optional[str]
-            A unique ID to use for the sub-orchestration instance. If `instanceId` is not
-            specified, the extension will generate an id in the format `<calling orchestrator
-            instance ID>:<#>`
+            A unique ID to use for the sub-orchestration instance.
+
+        Returns
+        -------
+        Task
+            A Durable Task that completes when the called sub-orchestrator completes or fails.
         """
-        raise NotImplementedError("This is a placeholder.")
+        return call_sub_orchestrator_task(
+            context=self,
+            state=self.histories,
+            name=name,
+            input_=input_,
+            instance_id=instance_id)
+
+    def call_sub_orchestrator_with_retry(self,
+                                         name: str, retry_options: RetryOptions,
+                                         input_: Optional[Any] = None,
+                                         instance_id: Optional[str] = None) -> Task:
+        """Schedule sub-orchestration function named `name` for execution, with retry-options.
+
+        Parameters
+        ----------
+        name: str
+            The name of the activity function to schedule.
+        retry_options: RetryOptions
+            The settings for retrying this sub-orchestrator in case of a failure.
+        input_: Optional[Any]
+            The JSON-serializable input to pass to the activity function. Defaults to None.
+        instance_id: str
+            The instance ID of the sub-orchestrator to call.
+
+        Returns
+        -------
+        Task
+            A Durable Task that completes when the called sub-orchestrator completes or fails.
+        """
+        return call_sub_orchestrator_with_retry_task(
+            context=self,
+            state=self.histories,
+            retry_options=retry_options,
+            name=name,
+            input_=input_,
+            instance_id=instance_id)
 
     def get_input(self) -> Optional[Any]:
         """Get the orchestration input."""
@@ -338,3 +358,33 @@ class DurableOrchestrationContext:
             Object containing function level attributes not used by durable orchestrator.
         """
         return self._function_context
+
+    def create_timer(self, fire_at: datetime.datetime) -> Task:
+        """Create a Durable Timer Task to implement a deadline at which to wake-up the orchestrator.
+
+        Parameters
+        ----------
+        fire_at : datetime.datetime
+            The time for the timer to trigger
+
+        Returns
+        -------
+        TimerTask
+            A Durable Timer Task that schedules the timer to wake up the activity
+        """
+        return create_timer_task(state=self.histories, fire_at=fire_at)
+
+    def wait_for_external_event(self, name: str) -> Task:
+        """Wait asynchronously for an event to be raised with the name `name`.
+
+        Parameters
+        ----------
+        name : str
+            The event name of the event that the task is waiting for.
+
+        Returns
+        -------
+        Task
+            Task to wait for the event
+        """
+        return wait_for_external_event_task(state=self.histories, name=name)

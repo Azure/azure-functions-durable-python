@@ -16,7 +16,7 @@ def call_sub_orchestrator_with_retry_task(
         retry_options: RetryOptions,
         name: str,
         input_: Optional[Any] = None,
-        instance_id: str = "") -> Task:
+        instance_id: Optional[str] = None) -> Task:
     """Determine the state of Scheduling a sub-orchestrator for execution, with retry options.
 
     Parameters

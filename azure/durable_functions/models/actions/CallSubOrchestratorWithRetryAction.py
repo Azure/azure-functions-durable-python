@@ -13,11 +13,11 @@ class CallSubOrchestratorWithRetryAction(Action):
 
     def __init__(self, function_name: str, retry_options: RetryOptions,
                  _input: Optional[Any] = None,
-                 instance_id: str = ""):
+                 instance_id: Optional[str] = None):
         self.function_name: str = function_name
         self._input: str = dumps(_input, default=_serialize_custom_object)
         self.retry_options: RetryOptions = retry_options
-        self.instance_id: str = instance_id
+        self.instance_id: Optional[str] = instance_id
 
         if not self.function_name:
             raise ValueError("function_name cannot be empty")

@@ -20,7 +20,7 @@ class CreateTimerAction(Action):
     """
 
     def __init__(self, fire_at: datetime.datetime, is_cancelled: bool = False):
-        self.action_type: ActionType = ActionType.CREATE_TIMER
+        self._action_type: ActionType = ActionType.CREATE_TIMER
         self.fire_at: datetime.datetime = fire_at
         self.is_cancelled: bool = is_cancelled
 
@@ -41,3 +41,8 @@ class CreateTimerAction(Action):
         add_datetime_attrib(json_dict, self, 'fire_at', 'fireAt')
         add_attrib(json_dict, self, 'is_cancelled', 'isCanceled')
         return json_dict
+
+    @property
+    def action_type(self) -> int:
+        """Get the type of action this class represents."""
+        return ActionType.CREATE_TIMER
