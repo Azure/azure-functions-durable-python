@@ -1,6 +1,10 @@
 from uuid import uuid5, NAMESPACE_OID
 
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
+import typing
+
+if typing.TYPE_CHECKING:
+    from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
 
 URL_NAMESPACE: str = "9e952958-5e33-4daf-827f-2fa12937b875"
 
@@ -10,7 +14,7 @@ def _create_deterministic_uuid(namespace_value: str, name: str) -> str:
     return str(uuid5(namespace_uuid, name))
 
 
-def new_uuid(context) -> str:
+def new_uuid(context: 'DurableOrchestrationContext') -> str:
     """Create a new UUID that is safe for replay within an orchestration or operation.
 
     The default implementation of this method creates a name-based UUID

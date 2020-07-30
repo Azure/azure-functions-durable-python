@@ -188,7 +188,7 @@ class DurableOrchestrationClient:
             Raises an exception if the status code is 404 or 400 when raising the event.
         """
         if event_name == "":
-            raise ValueError("event_name must be a valid string.")
+            raise ValueError("event_name must be a non-empty string.")
 
         request_url = self._get_raise_event_url(
             instance_id, event_name, task_hub_name, connection_name)

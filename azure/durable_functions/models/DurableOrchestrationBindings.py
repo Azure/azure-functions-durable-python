@@ -17,6 +17,7 @@ class DurableOrchestrationBindings:
         self._task_hub_name: str = taskHubName
         self._creation_urls: Dict[str, str] = creationUrls
         self._management_urls: Dict[str, str] = managementUrls
+        # TODO: we can remove this once we drop support for 1.x, this is always provided in 2.x
         self._rpc_base_url: Optional[str] = rpcBaseUrl
         self._client_data = FunctionContext(**kwargs)
 
