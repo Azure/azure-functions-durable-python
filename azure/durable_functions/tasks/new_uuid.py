@@ -4,7 +4,8 @@ from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 import typing
 
 if typing.TYPE_CHECKING:
-    from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
+    from azure.durable_functions.models.DurableOrchestrationContext \
+        import DurableOrchestrationContext
 
 URL_NAMESPACE: str = "9e952958-5e33-4daf-827f-2fa12937b875"
 

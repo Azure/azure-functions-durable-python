@@ -53,7 +53,7 @@ class RpcManagementOptions:
             The Url used to get orchestration status information
         """
         if base_url is None:
-             raise ValueError("orchestration bindings has not RPC base url")
+            raise ValueError("orchestration bindings has not RPC base url")
 
         url = f"{base_url}instances/{self._instance_id if self._instance_id else ''}"
 
