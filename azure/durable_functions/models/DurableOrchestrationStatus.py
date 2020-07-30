@@ -26,7 +26,7 @@ class DurableOrchestrationStatus:
             if lastUpdatedTime is not None else None
         self._input: Any = input
         self._output: Any = output
-        self._runtime_status: Optional[str] = runtimeStatus
+        self._runtime_status: Optional[str] = runtimeStatus # TODO: GH issue 178
         self._custom_status: Any = customStatus
         self._history: Optional[List[Any]] = history
         if kwargs is not None:
