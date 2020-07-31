@@ -1,6 +1,6 @@
 import json
 import datetime
-from typing import List, Any, Dict, Optional
+from typing import List, Any, Dict
 
 from . import (RetryOptions, TaskSet)
 from .FunctionContext import FunctionContext
@@ -32,7 +32,7 @@ class DurableOrchestrationContext:
         self._custom_status: Any = None
         self._new_uuid_counter: int = 0
         self._sub_orchestrator_counter: int = 0
-        self._continue_as_new_task: Optional[Task] = None
+        self._continue_as_new_flag: bool = False
         self.call_activity = lambda n, i=None: call_activity_task(
             state=self.histories,
             name=n,
@@ -347,12 +347,6 @@ class DurableOrchestrationContext:
         return self._function_context
 
     @property
-    def continue_as_new_task(self) -> Optional[Task]:
-        """Get the continue_as_new task, if it was produced.
-
-        Returns
-        -------
-        Task:
-            The continue as new task
-        """
-        return self._continue_as_new_task
+    def will_continue_as_new(self) -> bool:
+        """Return true if continue_as_new was called."""
+        return self._continue_as_new_flag

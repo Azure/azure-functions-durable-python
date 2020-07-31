@@ -1,7 +1,5 @@
 from typing import Any
 
-from ..models.Task import (
-    Task)
 from ..models.actions.ContinueAsNewAction import ContinueAsNewAction
 
 
@@ -16,6 +14,6 @@ def continue_as_new(
         The JSON-serializable input to pass to the activity function.
     """
     new_action = ContinueAsNewAction(input_)
-    task = Task(is_completed=True, is_faulted=False, action=new_action)
 
-    context._continue_as_new_task = task
+    context.actions.append([new_action])
+    context._continue_as_new_flag = True

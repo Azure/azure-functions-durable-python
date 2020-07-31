@@ -49,60 +49,66 @@ class Orchestrator:
         suspended = False
 
         fn_output = self.fn(self.durable_context)
-        fn_output = self._handle_continue_as_new(fn_output, add_to_actions=True)
 
         # If `fn_output` is not an Iterator, then the orchestrator
         # function does not make use of its context parameter. If so,
         # `fn_output` is the return value instead of a generator
-        if isinstance(fn_output, Iterator):
-            self.generator = fn_output
-
-        else:
+        if not isinstance(fn_output, Iterator):
             orchestration_state = OrchestratorState(
                 is_done=True,
                 output=fn_output,
                 actions=self.durable_context.actions,
                 custom_status=self.durable_context.custom_status)
-            return orchestration_state.to_json_string()
-        try:
-            generation_state = self._generate_next(None)
 
-            while not suspended:
-                self._add_to_actions(generation_state)
+        else:
+            self.generator = fn_output
+            try:
+                generation_state = self._generate_next(None)
 
-                if should_suspend(generation_state):
-                    orchestration_state = OrchestratorState(
-                        is_done=False,
-                        output=None,
-                        actions=self.durable_context.actions,
-                        custom_status=self.durable_context.custom_status)
-                    suspended = True
-                    continue
+                while not suspended:
+                    self._add_to_actions(generation_state)
 
-                if (isinstance(generation_state, Task)
-                    or isinstance(generation_state, TaskSet)) and (
-                        generation_state.is_faulted):
-                    generation_state = self.generator.throw(
-                        generation_state.exception)
-                    continue
+                    if should_suspend(generation_state):
 
-                self._reset_timestamp()
-                generation_state = self._generate_next(generation_state)
+                        # The `is_done` field should be False here unless
+                        # `continue_as_new` was called. Therefore,
+                        # `will_continue_as_new` essentially "tracks"
+                        # whether or not the orchestration is done.
+                        orchestration_state = OrchestratorState(
+                            is_done=self.durable_context.will_continue_as_new,
+                            output=None,
+                            actions=self.durable_context.actions,
+                            custom_status=self.durable_context.custom_status)
+                        suspended = True
+                        continue
 
-        except StopIteration as sie:
-            sie.value = self._handle_continue_as_new(sie.value, add_to_actions=True)
-            orchestration_state = OrchestratorState(
-                is_done=True,
-                output=sie.value,
-                actions=self.durable_context.actions,
-                custom_status=self.durable_context.custom_status)
-        except Exception as e:
-            orchestration_state = OrchestratorState(
-                is_done=False,
-                output=None,  # Should have no output, after generation range
-                actions=self.durable_context.actions,
-                error=str(e),
-                custom_status=self.durable_context.custom_status)
+                    if (isinstance(generation_state, Task)
+                        or isinstance(generation_state, TaskSet)) and (
+                            generation_state.is_faulted):
+                        generation_state = self.generator.throw(
+                            generation_state.exception)
+                        continue
+
+                    self._reset_timestamp()
+                    generation_state = self._generate_next(generation_state)
+
+            except StopIteration as sie:
+                orchestration_state = OrchestratorState(
+                    is_done=True,
+                    output=sie.value,
+                    actions=self.durable_context.actions,
+                    custom_status=self.durable_context.custom_status)
+            except Exception as e:
+                orchestration_state = OrchestratorState(
+                    is_done=False,
+                    output=None,  # Should have no output, after generation range
+                    actions=self.durable_context.actions,
+                    error=str(e),
+                    custom_status=self.durable_context.custom_status)
+
+        # No output if continue_as_new was called
+        if self.durable_context.will_continue_as_new:
+            orchestration_state._output = None
 
         return orchestration_state.to_json_string()
 
@@ -112,38 +118,12 @@ class Orchestrator:
         else:
             gen_result = self.generator.send(None)
 
-        gen_result = self._handle_continue_as_new(gen_result)
-
         return gen_result
 
-    def _handle_continue_as_new(self, task: Any, add_to_actions=False) -> Task:
-        """Handle the continue_as_new special case.
-
-        A continue_as_new task might not be yielded. In this case,
-        we only return to `handle` at the next yield (bad usage),
-        or when the function returns. If the function yielded a task after
-        the `continue_as_new`, we ignore the task generated there
-        because `continue_as_new` should technically restart
-        the orchestrator immediately.
-
-        Parameters
-        ----------
-        task: Task
-            The task returned by the orchestrator
-
-        Returns
-        -------
-        Task
-            A continue_as_new task, if its available. Else, the parameter `task`
-        """
-        if not (self.durable_context.continue_as_new_task is None):
-            task = self.durable_context.continue_as_new_task
-            if add_to_actions:
-                self._add_to_actions(task)
-                task = None
-        return task
-
     def _add_to_actions(self, generation_state):
+        # Do not add new tasks to action if continue_as_new was called
+        if self.durable_context.will_continue_as_new:
+            return
         if (isinstance(generation_state, Task)
                 and hasattr(generation_state, "action")):
             self.durable_context.actions.append([generation_state.action])
