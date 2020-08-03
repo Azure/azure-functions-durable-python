@@ -13,7 +13,6 @@ from .RpcManagementOptions import RpcManagementOptions
 from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from ..models.DurableOrchestrationBindings import DurableOrchestrationBindings
 from .utils.http_utils import get_async_request, post_async_request, delete_async_request
-from .utils.type_aliases import SerializableToJSON
 from azure.functions._durable_functions import _serialize_custom_object
 
 
@@ -46,7 +45,7 @@ class DurableOrchestrationClient:
     async def start_new(self,
                         orchestration_function_name: str,
                         instance_id: Optional[str] = None,
-                        client_input: Optional[SerializableToJSON] = None) -> str:
+                        client_input: Optional[Any] = None) -> str:
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
@@ -70,7 +69,7 @@ class DurableOrchestrationClient:
         request_url = self._get_start_new_url(
             instance_id=instance_id, orchestration_function_name=orchestration_function_name)
 
-        response: List[SerializableToJSON] = await self._post_async_request(
+        response: List[Any] = await self._post_async_request(
             request_url, self._get_json_input(client_input))
 
         status_code: int = response[0]
@@ -84,7 +83,7 @@ class DurableOrchestrationClient:
         else:
             # Catch all: simply surfacing the durable-extension exception
             # we surface the stack trace too, since this may be a more involed exception
-            ex_message: SerializableToJSON = response[1]
+            ex_message: Any = response[1]
             raise Exception(ex_message)
 
     def create_check_status_response(
@@ -160,7 +159,7 @@ class DurableOrchestrationClient:
         return payload
 
     async def raise_event(
-            self, instance_id: str, event_name: str, event_data: SerializableToJSON = None,
+            self, instance_id: str, event_name: str, event_data: Any = None,
             task_hub_name: str = None, connection_name: str = None) -> None:
         """Send an event notification message to a waiting orchestration instance.
 
@@ -272,7 +271,7 @@ class DurableOrchestrationClient:
         if error_message:
             raise Exception(error_message)
         else:
-            statuses: List[SerializableToJSON] = response[1]
+            statuses: List[Any] = response[1]
             return [DurableOrchestrationStatus.from_json(o) for o in statuses]
 
     async def get_status_by(self, created_time_from: datetime = None,
@@ -460,7 +459,7 @@ class DurableOrchestrationClient:
 
     @staticmethod
     def _create_http_response(
-            status_code: int, body: Union[str, SerializableToJSON]) -> func.HttpResponse:
+            status_code: int, body: Union[str, Any]) -> func.HttpResponse:
         body_as_json = body if isinstance(body, str) else json.dumps(body)
         response_args = {
             "status_code": status_code,
