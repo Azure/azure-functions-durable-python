@@ -3,7 +3,7 @@
 Responsible for orchestrating the execution of the user defined generator
 function.
 """
-from typing import Callable, Iterator, Any
+from typing import Callable, Iterator, Any, Generator
 
 from .models import (
     DurableOrchestrationContext,
@@ -24,14 +24,14 @@ class Orchestrator:
     """
 
     def __init__(self,
-                 activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]]):
+                 activity_func: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]]):
         """Create a new orchestrator for the user defined generator.
 
         Responsible for orchestrating the execution of the user defined
         generator function.
         :param activity_func: Generator function to orchestrate.
         """
-        self.fn: Callable[[DurableOrchestrationContext], Iterator[Any]] = activity_func
+        self.fn: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]] = activity_func
 
     def handle(self, context: DurableOrchestrationContext):
         """Handle the orchestration of the user defined generator function.
@@ -145,7 +145,7 @@ class Orchestrator:
                 self.durable_context.decision_started_event.timestamp
 
     @classmethod
-    def create(cls, fn: Callable[[DurableOrchestrationContext], Iterator[Any]]) \
+    def create(cls, fn: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]]) \
             -> Callable[[Any], str]:
         """Create an instance of the orchestration class.
 

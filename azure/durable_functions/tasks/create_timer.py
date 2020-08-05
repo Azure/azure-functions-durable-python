@@ -7,7 +7,7 @@ from .timer_task import TimerTask
 
 
 def create_timer_task(state: List[HistoryEvent],
-                      fire_at: datetime) -> TimerTask:
+                      fire_at: datetime.datetime) -> TimerTask:
     """Durable Timers are used in orchestrator function to implement delays.
 
     Parameters

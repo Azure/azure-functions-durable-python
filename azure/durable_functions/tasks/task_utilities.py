@@ -199,7 +199,7 @@ def set_processed(tasks):
 
 
 def find_sub_orchestration(
-        state: List[HistoryEventType],
+        state: List[HistoryEvent],
         event_type: HistoryEventType,
         name: Optional[str] = None,
         context=None,
@@ -209,11 +209,11 @@ def find_sub_orchestration(
 
     Parameters
     ----------
-    state: List[HistoryEventType]
+    state: List[HistoryEvent]
         The history of Durable events
     event_type: HistoryEventType
         The type of Durable event to look for.
-    name: str:
+    name: Optional[str]:
         Name of the sub-orchestrator.
     context: Optional['DurableOrchestrationContext']
         A reference to the orchestration context
@@ -246,30 +246,35 @@ def find_sub_orchestration(
         context._sub_orchestrator_counter += 1
         counter: int = context._sub_orchestrator_counter
 
+        if name is None:
+            err = "Tried to lookup suborchestration in history but had not name to reference it."
+            raise ValueError(err)
+
         # TODO: The HistoryEvent does not necessarily have an name or an instance_id
         #       We should create sub-classes of these types like JS does
+        err_message: str = ""
         if not(event.Name == name):
             mid_message = "a function name of {} instead of the provided function name of {}."
-            err_message: str = gen_err_message(counter, mid_message, event.name, name)
+            err_message = gen_err_message(counter, mid_message, event.Name, name)
             raise ValueError(err_message)
         if instance_id and not(event.InstanceId == instance_id):
             mid_message = "an instance id of {} instead of the provided instance id of {}."
-            err_message: str = gen_err_message(counter, mid_message, event.name, name)
+            err_message = gen_err_message(counter, mid_message, event.Name, name)
             raise ValueError(err_message)
 
     return event
 
 
 def find_sub_orchestration_created(
-        state: List[HistoryEventType],
+        state: List[HistoryEvent],
         name: str,
         context=None,
-        instance_id: Optional[str] = None) -> Optional[HistoryEventType]:
+        instance_id: Optional[str] = None) -> Optional[HistoryEvent]:
     """Look-up matching sub-orchestrator created event in the state array.
 
     Parameters
     ----------
-    state: List[HistoryEventType]:
+    state: List[HistoryEvent]:
         The history of Durable events
     name: str:
         Name of the sub-orchestrator.
@@ -285,7 +290,7 @@ def find_sub_orchestration_created(
 
     Returns
     -------
-    Optional[HistoryEventType]:
+    Optional[HistoryEvent]:
         The matching sub-orchestration creation event. Else, None.
     """
     event_type = HistoryEventType.SUB_ORCHESTRATION_INSTANCE_CREATED
@@ -298,20 +303,20 @@ def find_sub_orchestration_created(
 
 
 def find_sub_orchestration_completed(
-        state: List[HistoryEventType],
-        scheduled_task: Optional[HistoryEventType]) -> Optional[HistoryEventType]:
+        state: List[HistoryEvent],
+        scheduled_task: Optional[HistoryEvent]) -> Optional[HistoryEvent]:
     """Look-up the sub-orchestration completed event.
 
     Parameters
     ----------
-    state: List[HistoryEventType]:
+    state: List[HistoryEvent]:
         The history of Durable events
-    scheduled_task: Optional[HistoryEventType]:
+    scheduled_task: Optional[HistoryEvent]:
         The sub-orchestration creation event, if found.
 
     Returns
     -------
-    Optional[HistoryEventType]:
+    Optional[HistoryEvent]:
         The matching sub-orchestration completed event, if found. Else, None.
     """
     event_type = HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED
@@ -395,8 +400,7 @@ def find_matching_event(
     event: Optional[HistoryEvent] = None
 
     # Preverse only the elements of the state array that correspond with the looked-up event
-    matches = filter(should_preserve, state)
-    matches = list(matches)
+    matches = list(filter(should_preserve, state))
 
     if len(matches) >= 1:
         # TODO: in many instances, `matches` will be greater than 1 in length. We take the
@@ -404,5 +408,5 @@ def find_matching_event(
         # we assume corresponds to the one we are looking for. This may be brittle but
         # is true about other areas of the code as well such as with `call_activity`.
         # We should try to refactor this logic at some point
-        event: HistoryEventType = matches[0]
+        event = matches[0]
     return event
