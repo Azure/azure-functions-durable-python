@@ -10,7 +10,7 @@ from azure.durable_functions.models.actions.ContinueAsNewAction \
 
 def generator_function(context):
     yield context.call_activity("Hello", "Tokyo")
-    yield context.continue_as_new("Cause I can")
+    context.continue_as_new("Cause I can")
 
 
 def base_expected_state(output=None) -> OrchestratorState:
@@ -25,6 +25,7 @@ def add_hello_action(state: OrchestratorState, input_: str):
 def add_continue_as_new_action(state: OrchestratorState, input_: str):
     action = ContinueAsNewAction(input_=input_)
     state.actions.append([action])
+    state._is_done = True
 
 
 def add_hello_completed_events(
