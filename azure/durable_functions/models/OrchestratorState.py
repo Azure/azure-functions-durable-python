@@ -1,5 +1,5 @@
 import json
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional, Union
 
 from .utils.json_utils import add_attrib
 from azure.durable_functions.models.actions.Action import Action
@@ -21,7 +21,7 @@ class OrchestratorState:
         self._is_done: bool = is_done
         self._actions: List[List[Action]] = actions
         self._output: Any = output
-        self._error: str = error
+        self._error: Optional[str] = error
         self._custom_status: Any = custom_status
 
     @property
@@ -54,7 +54,7 @@ class OrchestratorState:
         return self._output
 
     @property
-    def error(self) -> str:
+    def error(self) -> Optional[str]:
         """Get the error received when running the orchestration.
 
         Optional.
@@ -66,7 +66,7 @@ class OrchestratorState:
         """Get the JSON-serializable value used by DurableOrchestrationContext.SetCustomStatus."""
         return self._custom_status
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> Dict[str, Union[str, int]]:
         """Convert object into a json dictionary.
 
         Returns
@@ -74,10 +74,10 @@ class OrchestratorState:
         Dict[str, Any]
             The instance of the class converted into a json dictionary
         """
-        json_dict = {}
+        json_dict: Dict[str, Union[str, int]] = {}
         add_attrib(json_dict, self, '_is_done', 'isDone')
         self._add_actions(json_dict)
-        if self._output:
+        if not (self._output is None):
             json_dict['output'] = self._output
         if self._error:
             json_dict['error'] = self._error

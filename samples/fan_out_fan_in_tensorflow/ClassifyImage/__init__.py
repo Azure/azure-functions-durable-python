@@ -1,22 +1,22 @@
 from datetime import datetime, timedelta
+from typing import List, Dict
 import json
 from .predict import predict_image_from_url
 
 
-def main(value: str) -> str:
+def main(images: List[str]) -> List[Dict[str, str]]:
     """Classify the list of images based on whether they are a dog or cat
     
     Parameters
     ----------
-    value: str
+    images: List[str]
         List of image URLs to predict
     
     Returns
     -------
-    str
+    List[Dict[str]]
         JSON-formatted string of the prediction results
     """
-    images = json.loads(value)
 
     prediction_results = []
     for image_url in images:
@@ -32,4 +32,4 @@ def main(value: str) -> str:
                 'url': image_url
             })
 
-    return json.dumps(prediction_results)
+    return prediction_results

@@ -1,6 +1,8 @@
 """Contains the definitions for the functions that enable scheduling of activities."""
 from .call_activity import call_activity_task
 from .call_activity_with_retry import call_activity_with_retry_task
+from .call_suborchestrator import call_sub_orchestrator_task
+from .call_suborchestrator_with_retry import call_sub_orchestrator_with_retry_task
 from .task_all import task_all
 from .task_any import task_any
 from .task_utilities import should_suspend
@@ -13,6 +15,8 @@ from .create_timer import create_timer_task
 __all__ = [
     'call_activity_task',
     'call_activity_with_retry_task',
+    'call_sub_orchestrator_task',
+    'call_sub_orchestrator_with_retry_task',
     'call_http',
     'continue_as_new',
     'new_uuid',

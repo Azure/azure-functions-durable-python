@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from .actions import Action
+from .actions.Action import Action
 
 
 class Task:

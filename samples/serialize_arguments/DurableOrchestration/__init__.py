@@ -16,14 +16,13 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     Returns
     -------
     int
-        The number contained in the input
+        The number contained in the SerializableClass input object
     """
     input_: SerializableClass = context.get_input()
-    number: int = input_.show_number()
+    num1: int = input_.show_number()
 
-    
-    # throwaway, seems necessary for the orchestration not to fail
-    value = yield context.call_activity("DurableActivity", SerializableClass(24))
-    return 11
+    # The custom class is also correctly serialized when calling an activity
+    num2 = yield context.call_activity("DurableActivity", SerializableClass(5))
+    return num1
 
 main = df.Orchestrator.create(orchestrator_function)

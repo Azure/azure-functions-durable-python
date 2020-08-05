@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .task_utilities import find_task_scheduled, find_task_completed, find_task_failed, \
     set_processed, parse_history_event
@@ -12,8 +12,8 @@ from ..models.Task import (
     Task)
 
 
-def call_http(state: List[HistoryEvent], method: str, uri: str, content: str = None,
-              headers: Dict[str, str] = None, token_source: TokenSource = None) -> Task:
+def call_http(state: List[HistoryEvent], method: str, uri: str, content: Optional[str] = None,
+              headers: Dict[str, str] = None, token_source: Optional[TokenSource] = None) -> Task:
     """Get task used to schedule a durable HTTP call to the specified endpoint.
 
     Parameters
@@ -37,6 +37,7 @@ def call_http(state: List[HistoryEvent], method: str, uri: str, content: str = N
     Task
         The durable HTTP request to schedule.
     """
+    json_content: Optional[str] = None
     if content and content is not isinstance(content, str):
         json_content = json.dumps(content)
     else:

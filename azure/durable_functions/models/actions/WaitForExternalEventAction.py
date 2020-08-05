@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from .Action import Action
 from .ActionType import ActionType
@@ -36,10 +36,10 @@ class WaitForExternalEventAction(Action):
 
         Returns
         -------
-        Dict[str, Any]
+        Dict[str, Union[str, int]]
             The instance of the class converted into a json dictionary
         """
-        json_dict = {}
+        json_dict: Dict[str, Union[str, int]] = {}
 
         add_attrib(json_dict, self, 'action_type', 'actionType')
         add_attrib(json_dict, self, 'external_event_name', 'externalEventName')

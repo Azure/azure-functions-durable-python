@@ -11,8 +11,7 @@ def main(value: str) -> str:
     value: str
         The input value, assuming it was lesser than 6
     """
-    int_value = int(value)
-    if int_value >= 6:
+    if value >= 6:
       raise Exception('Bad Request')
 
     return value

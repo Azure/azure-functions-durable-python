@@ -19,6 +19,13 @@ MESSAGE_404 = 'instance not found or pending'
 MESSAGE_500 = 'instance failed with unhandled exception'
 MESSAGE_501 = "well we didn't expect that"
 
+TEST_ORCHESTRATOR = "MyDurableOrchestrator"
+EXCEPTION_ORCHESTRATOR_NOT_FOUND_EXMESSAGE = "The function <orchestrator> doesn't exist,"\
+    " is disabled, or is not an orchestrator function. Additional info: "\
+    "the following are the known orchestrator functions: <list>"
+EXCEPTION_ORCHESTRATOR_NOT_FOUND_MESSAGE = "One or more of the arguments submitted is incorrect"
+EXCEPTION_TYPE_ORCHESTRATOR_NOT_FOUND = "System.ArgumentException"
+STACK_TRACE = "'   at Microsoft.Azure.WebJobs.Extensions.DurableTask..."
 
 class MockRequest:
     def __init__(self, expected_url: str, response: [int, any]):
@@ -497,3 +504,39 @@ async def test_wait_or_response_check_status_response(binding_string):
     with pytest.raises(Exception):
         await client.wait_for_completion_or_create_check_status_response(
             None, TEST_INSTANCE_ID, timeout_in_milliseconds=500)
+
+@pytest.mark.asyncio
+async def test_start_new_orchestrator_not_found(binding_string):
+    """Test that we throw the right exception when the orchestrator is not found.
+    """
+    status = dict(ExceptionMessage=EXCEPTION_ORCHESTRATOR_NOT_FOUND_EXMESSAGE,
+                  StackTrace=STACK_TRACE,
+                  Message=EXCEPTION_ORCHESTRATOR_NOT_FOUND_MESSAGE,
+                  ExceptionType=EXCEPTION_TYPE_ORCHESTRATOR_NOT_FOUND)
+    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}orchestrators/{TEST_ORCHESTRATOR}",
+                               response=[400, status])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    with pytest.raises(Exception) as ex:
+        await client.start_new(TEST_ORCHESTRATOR)
+    ex.match(EXCEPTION_ORCHESTRATOR_NOT_FOUND_EXMESSAGE)
+
+
+@pytest.mark.asyncio
+async def test_start_new_orchestrator_internal_exception(binding_string):
+    """Test that we throw the right exception when the extension fails internally.
+    """
+    status = dict(ExceptionMessage=EXCEPTION_ORCHESTRATOR_NOT_FOUND_EXMESSAGE,
+                  StackTrace=STACK_TRACE,
+                  Message=EXCEPTION_ORCHESTRATOR_NOT_FOUND_MESSAGE,
+                  ExceptionType=EXCEPTION_TYPE_ORCHESTRATOR_NOT_FOUND)
+    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}orchestrators/{TEST_ORCHESTRATOR}",
+                               response=[500, status])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    status_str = str(status)
+    with pytest.raises(Exception) as ex:
+        await client.start_new(TEST_ORCHESTRATOR)
+    ex.match(status_str)

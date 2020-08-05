@@ -1,9 +1,9 @@
-from typing import Any
+from typing import Any, List, Union
 
 import aiohttp
 
 
-async def post_async_request(url: str, data: Any = None) -> [int, Any]:
+async def post_async_request(url: str, data: Any = None) -> List[Union[int, Any]]:
     """Post request with the data provided to the url provided.
 
     Parameters
@@ -29,7 +29,7 @@ async def post_async_request(url: str, data: Any = None) -> [int, Any]:
             return [response.status, data]
 
 
-async def get_async_request(url: str) -> [int, Any]:
+async def get_async_request(url: str) -> List[Any]:
     """Get the data from the url provided.
 
     Parameters
@@ -44,11 +44,13 @@ async def get_async_request(url: str) -> [int, Any]:
     """
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
-            data = await response.json()
+            data = await response.json(content_type=None)
+            if data is None:
+                data = ""
             return [response.status, data]
 
 
-async def delete_async_request(url: str) -> [int, Any]:
+async def delete_async_request(url: str) -> List[Union[int, Any]]:
     """Delete the data from the url provided.
 
     Parameters
