@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, Optional
 
 from azure.durable_functions.models.FunctionContext import FunctionContext
 
@@ -13,11 +13,12 @@ class DurableOrchestrationBindings:
 
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     def __init__(self, taskHubName: str, creationUrls: Dict[str, str],
-                 managementUrls: Dict[str, str], rpcBaseUrl: str = None, **kwargs):
+                 managementUrls: Dict[str, str], rpcBaseUrl: Optional[str] = None, **kwargs):
         self._task_hub_name: str = taskHubName
         self._creation_urls: Dict[str, str] = creationUrls
         self._management_urls: Dict[str, str] = managementUrls
-        self._rpc_base_url: str = rpcBaseUrl
+        # TODO: we can remove the Optional once we drop support for 1.x, this is always provided in 2.x
+        self._rpc_base_url: Optional[str] = rpcBaseUrl
         self._client_data = FunctionContext(**kwargs)
 
     @property
@@ -36,7 +37,7 @@ class DurableOrchestrationBindings:
         return self._management_urls
 
     @property
-    def rpc_base_url(self) -> str:
+    def rpc_base_url(self) -> Optional[str]:
         """Get the base url communication between out of proc workers and the function host."""
         return self._rpc_base_url
 

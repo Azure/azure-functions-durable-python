@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, List
+from typing import Any, List, Optional
 
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 from azure.durable_functions.models.OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
@@ -29,12 +29,12 @@ class RpcManagementOptions:
             query.append(f'{name}={value}')
 
     @staticmethod
-    def _add_date_arg(query: List[str], name: str, value: datetime):
+    def _add_date_arg(query: List[str], name: str, value: Optional[datetime]):
         if value:
             date_as_string = value.strftime(DATETIME_STRING_FORMAT)
             RpcManagementOptions._add_arg(query, name, date_as_string)
 
-    def to_url(self, base_url: str) -> str:
+    def to_url(self, base_url: Optional[str]) -> str:
         """Get the url based on the options selected.
 
         Parameters
@@ -42,14 +42,22 @@ class RpcManagementOptions:
         base_url: str
             The base url to prepend to the url path
 
+        Raises
+        ------
+        ValueError
+            When the `base_url` argument is None
+
         Returns
         -------
         str
             The Url used to get orchestration status information
         """
+        if base_url is None:
+            raise ValueError("orchestration bindings has not RPC base url")
+
         url = f"{base_url}instances/{self._instance_id if self._instance_id else ''}"
 
-        query = []
+        query: List[str] = []
 
         self._add_arg(query, 'taskHub', self._task_hub_name)
         self._add_arg(query, 'connectionName', self._connection_name)

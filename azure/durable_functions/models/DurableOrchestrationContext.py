@@ -1,8 +1,9 @@
 import json
 import datetime
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 
-from . import (RetryOptions, TaskSet)
+from .RetryOptions import RetryOptions
+from .TaskSet import TaskSet
 from .FunctionContext import FunctionContext
 from .history import HistoryEvent, HistoryEventType
 from .actions import Action
@@ -33,43 +34,7 @@ class DurableOrchestrationContext:
         self._new_uuid_counter: int = 0
         self._sub_orchestrator_counter: int = 0
         self._continue_as_new_flag: bool = False
-        self.call_activity = lambda n, i=None: call_activity_task(
-            state=self.histories,
-            name=n,
-            input_=i)
-        self.call_activity_with_retry = \
-            lambda n, o, i=None: call_activity_with_retry_task(
-                state=self.histories,
-                retry_options=o,
-                name=n,
-                input_=i)
-        self.call_sub_orchestrator = \
-            lambda n, i=None, _id=None: call_sub_orchestrator_task(
-                context=self,
-                state=self.histories,
-                name=n,
-                input_=i,
-                instance_id=_id)
-        self.call_sub_orchestrator_with_retry = \
-            lambda n, o, i=None, _id=None: call_sub_orchestrator_with_retry_task(
-                context=self,
-                state=self.histories,
-                retry_options=o,
-                name=n,
-                input_=i,
-                instance_id=_id)
-        self.call_http = lambda method, uri, content=None, headers=None, token_source=None: \
-            call_http(
-                state=self.histories, method=method, uri=uri, content=content, headers=headers,
-                token_source=token_source)
-        self.wait_for_external_event = lambda n: wait_for_external_event_task(
-            state=self.histories,
-            name=n)
-        self.new_uuid = lambda: new_uuid(context=self)
-        self.continue_as_new = lambda i: continue_as_new(context=self, input_=i)
-        self.task_any = lambda t: task_any(tasks=t)
-        self.task_all = lambda t: task_all(tasks=t)
-        self.create_timer = lambda d: create_timer_task(state=self.histories, fire_at=d)
+        # TODO: waiting on the `continue_as_new` intellisense until that's implemented
         self.decision_started_event: HistoryEvent = \
             [e_ for e_ in self.histories
              if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]
@@ -83,7 +48,7 @@ class DurableOrchestrationContext:
         # (consistent with Python Functions generic trigger/input bindings)
         if (isinstance(input, Dict)):
             input = json.dumps(input)
-        self._input: str = input
+        self._input: Any = input
 
     @classmethod
     def from_json(cls, json_string: str):
@@ -104,14 +69,14 @@ class DurableOrchestrationContext:
         json_dict = json.loads(json_string)
         return cls(**json_dict)
 
-    def call_activity(self, name: str, input_=None) -> Task:
+    def call_activity(self, name: str, input_: Optional[Any] = None) -> Task:
         """Schedule an activity for execution.
 
         Parameters
         ----------
         name: str
             The name of the activity function to call.
-        input_:
+        input_: Optional[Any]
             The JSON-serializable input to pass to the activity function.
 
         Returns
@@ -119,11 +84,14 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called activity function completes or fails.
         """
-        raise NotImplementedError("This is a placeholder.")
+        return call_activity_task(
+            state=self.histories,
+            name=name,
+            input_=input_)
 
     def call_activity_with_retry(self,
                                  name: str, retry_options: RetryOptions,
-                                 input_=None) -> Task:
+                                 input_: Optional[Any] = None) -> Task:
         """Schedule an activity for execution with retry options.
 
         Parameters
@@ -132,7 +100,7 @@ class DurableOrchestrationContext:
             The name of the activity function to call.
         retry_options: RetryOptions
             The retry options for the activity function.
-        input_:
+        input_: Optional[Any]
             The JSON-serializable input to pass to the activity function.
 
         Returns
@@ -141,10 +109,15 @@ class DurableOrchestrationContext:
             A Durable Task that completes when the called activity function completes or
             fails completely.
         """
-        raise NotImplementedError("This is a placeholder.")
+        return call_activity_with_retry_task(
+            state=self.histories,
+            retry_options=retry_options,
+            name=name,
+            input_=input_)
 
-    def call_http(self, method: str, uri: str, content: str = None,
-                  headers: Dict[str, str] = None, token_source: TokenSource = None) -> Task:
+    def call_http(self, method: str, uri: str, content: Optional[str] = None,
+                  headers: Optional[Dict[str, str]] = None,
+                  token_source: TokenSource = None) -> Task:
         """Schedule a durable HTTP call to the specified endpoint.
 
         Parameters
@@ -153,9 +126,9 @@ class DurableOrchestrationContext:
             The HTTP request method.
         uri: str
             The HTTP request uri.
-        content: str
+        content: Optional[str]
             The HTTP request content.
-        headers: Dict[str, str]
+        headers: Optional[Dict[str, str]]
             The HTTP request headers.
         token_source: TokenSource
             The source of OAuth token to add to the request.
@@ -165,27 +138,67 @@ class DurableOrchestrationContext:
         Task
             The durable HTTP request to schedule.
         """
-        raise NotImplementedError("This is a placeholder.")
+        return call_http(
+            state=self.histories, method=method, uri=uri, content=content, headers=headers,
+            token_source=token_source)
 
     def call_sub_orchestrator(self,
-                              name: str, input_=None,
-                              instance_id: str = None) -> Task:
-        """Schedule an orchestration function named `name` for execution.
+                              name: str, input_: Optional[Any] = None,
+                              instance_id: Optional[str] = None) -> Task:
+        """Schedule sub-orchestration function named `name` for execution.
 
         Parameters
         ----------
         name: str
             The name of the orchestrator function to call.
-        input_:
+        input_: Optional[Any]
             The JSON-serializable input to pass to the orchestrator function.
-        instance_id: str
-            A unique ID to use for the sub-orchestration instance. If `instanceId` is not
-            specified, the extension will generate an id in the format `<calling orchestrator
-            instance ID>:<#>`
-        """
-        raise NotImplementedError("This is a placeholder.")
+        instance_id: Optional[str]
+            A unique ID to use for the sub-orchestration instance.
 
-    def get_input(self) -> str:
+        Returns
+        -------
+        Task
+            A Durable Task that completes when the called sub-orchestrator completes or fails.
+        """
+        return call_sub_orchestrator_task(
+            context=self,
+            state=self.histories,
+            name=name,
+            input_=input_,
+            instance_id=instance_id)
+
+    def call_sub_orchestrator_with_retry(self,
+                                         name: str, retry_options: RetryOptions,
+                                         input_: Optional[Any] = None,
+                                         instance_id: Optional[str] = None) -> Task:
+        """Schedule sub-orchestration function named `name` for execution, with retry-options.
+
+        Parameters
+        ----------
+        name: str
+            The name of the activity function to schedule.
+        retry_options: RetryOptions
+            The settings for retrying this sub-orchestrator in case of a failure.
+        input_: Optional[Any]
+            The JSON-serializable input to pass to the activity function. Defaults to None.
+        instance_id: str
+            The instance ID of the sub-orchestrator to call.
+
+        Returns
+        -------
+        Task
+            A Durable Task that completes when the called sub-orchestrator completes or fails.
+        """
+        return call_sub_orchestrator_with_retry_task(
+            context=self,
+            state=self.histories,
+            retry_options=retry_options,
+            name=name,
+            input_=input_,
+            instance_id=instance_id)
+
+    def get_input(self) -> Optional[Any]:
         """Get the orchestration input."""
         return None if self._input is None else json.loads(self._input,
                                                            object_hook=_deserialize_custom_object)
@@ -203,7 +216,7 @@ class DurableOrchestrationContext:
         str
             New UUID that is safe for replay within an orchestration or operation.
         """
-        raise NotImplementedError("This is a placeholder.")
+        return new_uuid(context=self)
 
     def task_all(self, activities: List[Task]) -> TaskSet:
         """Schedule the execution of all activities.
@@ -223,7 +236,7 @@ class DurableOrchestrationContext:
         TaskSet
             The results of all activities.
         """
-        raise NotImplementedError("This is a placeholder.")
+        return task_all(tasks=activities)
 
     def task_any(self, activities: List[Task]) -> TaskSet:
         """Schedule the execution of all activities.
@@ -243,7 +256,7 @@ class DurableOrchestrationContext:
         TaskSet
             The first [[Task]] instance to complete.
         """
-        raise NotImplementedError("This is a placeholder.")
+        return task_any(tasks=activities)
 
     def set_custom_status(self, status: Any):
         """Set the customized orchestration status for your orchestrator function.
@@ -317,7 +330,7 @@ class DurableOrchestrationContext:
         return self._parent_instance_id
 
     @property
-    def current_utc_datetime(self) -> datetime:
+    def current_utc_datetime(self) -> datetime.datetime:
         """Get the current date/time.
 
         This date/time value is derived from the orchestration history. It
@@ -332,7 +345,7 @@ class DurableOrchestrationContext:
         return self._current_utc_datetime
 
     @current_utc_datetime.setter
-    def current_utc_datetime(self, value: datetime):
+    def current_utc_datetime(self, value: datetime.datetime):
         self._current_utc_datetime = value
 
     @property
@@ -350,3 +363,43 @@ class DurableOrchestrationContext:
     def will_continue_as_new(self) -> bool:
         """Return true if continue_as_new was called."""
         return self._continue_as_new_flag
+
+    def create_timer(self, fire_at: datetime.datetime) -> Task:
+        """Create a Durable Timer Task to implement a deadline at which to wake-up the orchestrator.
+
+        Parameters
+        ----------
+        fire_at : datetime.datetime
+            The time for the timer to trigger
+
+        Returns
+        -------
+        TimerTask
+            A Durable Timer Task that schedules the timer to wake up the activity
+        """
+        return create_timer_task(state=self.histories, fire_at=fire_at)
+
+    def wait_for_external_event(self, name: str) -> Task:
+        """Wait asynchronously for an event to be raised with the name `name`.
+
+        Parameters
+        ----------
+        name : str
+            The event name of the event that the task is waiting for.
+
+        Returns
+        -------
+        Task
+            Task to wait for the event
+        """
+        return wait_for_external_event_task(state=self.histories, name=name)
+
+    def continue_as_new(self, input_: Any):
+        """Schedule the orchestrator to continue as new.
+
+        Parameters
+        ----------
+        input_ : Any
+            The new starting input to the orchestrator.
+        """
+        return continue_as_new(context=self, input_=input_)
