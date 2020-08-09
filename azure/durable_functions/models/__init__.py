@@ -15,8 +15,8 @@ from .DurableEntityContext import DurableEntityContext
 __all__ = [
     'DurableOrchestrationBindings',
     'DurableOrchestrationClient',
-    'DurableOrchestrationContext',
     'DurableEntityContext',
+    'DurableOrchestrationContext',
     'DurableHttpRequest',
     'ManagedIdentityTokenSource',
     'OrchestratorState',

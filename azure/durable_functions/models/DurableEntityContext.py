@@ -1,6 +1,6 @@
 from typing import Optional, Any
-from .models.utils.entity_utils import EntityId
-from .models.entities import EntityState, OperationResult
+from .utils.entity_utils import EntityId
+from .entities import EntityState, OperationResult
 from azure.functions._durable_functions import _deserialize_custom_object
 from datetime import datetime
 import json
