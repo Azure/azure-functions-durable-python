@@ -10,7 +10,7 @@ from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
     wait_for_external_event_task, continue_as_new, new_uuid, call_http, create_timer_task, \
-    call_sub_orchestrator_task, call_sub_orchestrator_with_retry_task
+    call_sub_orchestrator_task, call_sub_orchestrator_with_retry_task, call_entity_task
 from azure.functions._durable_functions import _deserialize_custom_object
 
 
@@ -344,3 +344,7 @@ class DurableOrchestrationContext:
             Object containing function level attributes not used by durable orchestrator.
         """
         return self._function_context
+
+    def call_entity(self, entityId: str, operationName: str, operationInput: Any):
+        return call_entity_task(entityId, operationName, operationInput)
+

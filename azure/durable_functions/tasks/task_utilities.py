@@ -21,14 +21,34 @@ def parse_history_event(directive_result):
 
     # We provide the ability to deserialize custom objects, because the output of this
     # will be passed directly to the orchestrator as the output of some activity
+    # TODO: why do we have this chain of equivalent if-statements?
     if event_type == HistoryEventType.EVENT_RAISED:
         return json.loads(directive_result.Input, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED:
         return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.TASK_COMPLETED:
         return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
+    if event_type == HistoryEventType.EVENT_RAISED:
+        return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     return None
 
+def find_event(state, event_type: HistoryEventType, extra_constraints: Dict[str, Any]):
+    def satisfies_contraints(e: HistoryEvent) -> bool:
+        for attr, val in extra_constraints:
+            if hasattr(e, attr) and getattr(e, attr) == val:
+                continue
+            else:
+                return False 
+        return True
+
+    tasks = [e for e in state
+             if e.event_type == event_type
+             and satisfies_contraints(e) and not e.is_processed]
+
+    if len(tasks) == 0:
+        return None
+
+    return tasks[0]
 
 def find_event_raised(state, name):
     """Find if the event with the given event name is raised.
