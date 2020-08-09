@@ -10,10 +10,11 @@ from azure.functions._durable_functions import _serialize_custom_object
 class CallSubOrchestratorAction(Action):
     """Defines the structure of the Call SubOrchestrator object."""
 
-    def __init__(self, function_name: str, _input: Optional[Any] = None, instance_id: str = ""):
+    def __init__(self, function_name: str, _input: Optional[Any] = None,
+                 instance_id: Optional[str] = None):
         self.function_name: str = function_name
         self._input: str = dumps(_input, default=_serialize_custom_object)
-        self.instance_id: str = instance_id
+        self.instance_id: Optional[str] = instance_id
 
         if not self.function_name:
             raise ValueError("function_name cannot be empty")

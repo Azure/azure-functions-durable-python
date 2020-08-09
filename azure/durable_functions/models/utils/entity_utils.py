@@ -1,10 +1,10 @@
 class EntityId:
     @staticmethod
-    def get_scheduler_id(entity_id: EntityId) -> str:
+    def get_scheduler_id(entity_id: 'EntityId') -> str:
         return f"@{entity_id.name.lower()}@{entity_id.key}"
 
     @staticmethod
-    def get_entity_id(scheduler_id: str) -> EntityId:
+    def get_entity_id(scheduler_id: str) -> 'EntityId':
         sched_id_truncated = scheduler_id[1:] # we drop the starting `@`
         components = sched_id_truncated.split("@")
         if len(components) > 2:

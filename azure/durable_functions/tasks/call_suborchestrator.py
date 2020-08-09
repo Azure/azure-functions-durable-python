@@ -14,7 +14,7 @@ def call_sub_orchestrator_task(
         state: List[HistoryEvent],
         name: str,
         input_: Optional[Any] = None,
-        instance_id: str = "") -> Task:
+        instance_id: Optional[str] = None) -> Task:
     """Determine the state of Scheduling a sub-orchestrator for execution.
 
     Parameters

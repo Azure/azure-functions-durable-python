@@ -1,5 +1,6 @@
 from typing import List, Optional
-from . import OperationResult, Signal
+from .Signal import Signal
+from .OperationResult import OperationResult
 
 class EntityState:
     def __init__(self,

@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Dict, Any
+from typing import Dict, Union
 
 from azure.durable_functions.models.utils.json_utils import add_attrib
 
@@ -41,7 +41,7 @@ class ManagedIdentityTokenSource(TokenSource):
         """
         return self._resource
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> Dict[str, Union[str, int]]:
         """Convert object into a json dictionary.
 
         Returns
@@ -49,6 +49,6 @@ class ManagedIdentityTokenSource(TokenSource):
         Dict[str, Any]
             The instance of the class converted into a json dictionary
         """
-        json_dict = {}
+        json_dict: Dict[str, Union[str, int]] = {}
         add_attrib(json_dict, self, 'resource')
         return json_dict

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Dict, Any
 
 
 class PurgeHistoryResult:
@@ -12,12 +12,12 @@ class PurgeHistoryResult:
                 self.__setattr__(key, value)
 
     @classmethod
-    def from_json(cls, json_obj: Any):
+    def from_json(cls, json_obj: Dict[Any, Any]):
         """Convert the value passed into a new instance of the class.
 
         Parameters
         ----------
-        json_obj: any
+        json_obj: Dict[Any, Any]
             JSON object to be converted into an instance of the class
 
         Returns
@@ -25,10 +25,7 @@ class PurgeHistoryResult:
         PurgeHistoryResult
             New instance of the durable orchestration status class
         """
-        if isinstance(json_obj, str):
-            return cls(message=json_obj)
-        else:
-            return cls(**json_obj)
+        return cls(**json_obj)
 
     @property
     def instances_deleted(self):

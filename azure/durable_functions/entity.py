@@ -47,4 +47,4 @@ class Entity:
             if context_body is None:
                 context_body = context
             return Entity(fn).handle(DurableEntityContext.from_json(context_body))
-    return handle_
+        return handle_
