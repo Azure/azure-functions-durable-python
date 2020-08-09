@@ -1,4 +1,4 @@
-from models.entities import DurableEntityContext
+from .models import DurableEntityContext
 
 class Entity:
     def __init__(self, entity_func):
