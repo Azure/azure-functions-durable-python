@@ -32,8 +32,6 @@ def add_call_entity_completed_events(
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
     context_builder.add_event_raised_event(name="0000", id_=0, input_=input_, is_entity=True)
-    print(dir(context_builder.history_events[2]))
-
 
 def test_call_entity_sent():
     context_builder = ContextBuilder('test_simple_function')
@@ -54,7 +52,6 @@ def test_call_entity_raised():
     context_builder = ContextBuilder('test_simple_function')
     add_call_entity_completed_events(context_builder, "add", df.EntityId.get_scheduler_id(entityId),3)
 
-    print(dir(context_builder.history_events[2]), "LL")
     result = get_orchestration_state_result(
         context_builder, generator_function)
 
