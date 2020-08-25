@@ -22,23 +22,53 @@ def parse_history_event(directive_result):
     # We provide the ability to deserialize custom objects, because the output of this
     # will be passed directly to the orchestrator as the output of some activity
     # TODO: why do we have this chain of equivalent if-statements?
-    if event_type == HistoryEventType.EVENT_RAISED:
-        return json.loads(directive_result.Input, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED:
         return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.TASK_COMPLETED:
         return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.EVENT_RAISED:
-        return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
+        # TODO: why is the result here on input?
+        return json.loads(directive_result.Input, object_hook=_deserialize_custom_object)
     return None
 
-def find_event(state, event_type: HistoryEventType, extra_constraints: Dict[str, Any]):
+
+def find_event(state: List[HistoryEvent], event_type: HistoryEventType,
+               extra_constraints: Dict[str, Any]) -> Optional[HistoryEvent]:
+    """Find event in the histories array as per some constraints.
+
+    Parameters
+    ----------
+    state: List[HistoryEvent]
+        The list of events so far in the orchestaration
+    event_type: HistoryEventType
+        The type of the event we're looking for
+    extra_constraints: Dict[str, Any]
+        A dictionary of key-value pairs where the key is a property of the
+        sought-after event, and value are its expected contents.
+
+    Returns
+    -------
+    Optional[HistoryEvent]
+        The event being searched-for, if found. Else, None.
+    """
     def satisfies_contraints(e: HistoryEvent) -> bool:
-        for attr, val in extra_constraints:
+        """Determine if an event matches our search criteria.
+
+        Parameters
+        ----------
+        e: HistoryEvent
+            An event from the state array
+
+        Returns
+        -------
+        bool
+            True if the event matches our constraints. Else, False.
+        """
+        for attr, val in extra_constraints.items():
             if hasattr(e, attr) and getattr(e, attr) == val:
                 continue
             else:
-                return False 
+                return False
         return True
 
     tasks = [e for e in state
@@ -49,6 +79,7 @@ def find_event(state, event_type: HistoryEventType, extra_constraints: Dict[str,
         return None
 
     return tasks[0]
+
 
 def find_event_raised(state, name):
     """Find if the event with the given event name is raised.

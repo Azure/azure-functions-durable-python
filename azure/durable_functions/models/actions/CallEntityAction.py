@@ -5,6 +5,7 @@ from .ActionType import ActionType
 from ..utils.json_utils import add_attrib
 from json import dumps
 from azure.functions._durable_functions import _serialize_custom_object
+from ..utils.entity_utils import EntityId
 
 
 class CallEntityAction(Action):
@@ -13,11 +14,11 @@ class CallEntityAction(Action):
     Provides the information needed by the durable extension to be able to call an activity
     """
 
-    def __init__(self, entity_id: str, operation: str, input_=None):
-        self.entity_id: str = entity_id #TODO: type?
+    def __init__(self, entity_id: EntityId, operation: str, input_=None):
+        self.entity_id: EntityId = entity_id
+        self.instance_id: str = EntityId.get_scheduler_id(entity_id)
         self.operation: str = operation
-        # It appears that `.input_` needs to be JSON-serializable at this point
-        self.input_ = dumps(input_, default=_serialize_custom_object)
+        self.input_: str = dumps(input_, default=_serialize_custom_object)
 
         if not self.entity_id:
             raise ValueError("entity_id cannot be empty")
@@ -35,8 +36,9 @@ class CallEntityAction(Action):
         Dict[str, Any]
             The instance of the class converted into a json dictionary
         """
-        json_dict = {}
-        add_attrib(json_dict, self, 'entity_id', 'entityId')
+        json_dict: Dict[str, Any] = {}
+        add_attrib(json_dict, self, "action_type", "actionType")
+        add_attrib(json_dict, self, 'instance_id', 'instanceId')
         add_attrib(json_dict, self, 'operation', 'operation')
         add_attrib(json_dict, self, 'input_', 'input')
         return json_dict

@@ -7,6 +7,7 @@ from ..models.history import HistoryEvent, HistoryEventType
 from .task_utilities import set_processed, parse_history_event, find_event
 from ..models.utils.entity_utils import EntityId
 from ..models.entities.RequestMessage import RequestMessage
+from ..models.entities.ResponseMessage import ResponseMessage
 
 
 def call_entity_task(
@@ -14,6 +15,28 @@ def call_entity_task(
         entity_id: EntityId,
         operation_name: str = "",
         input_: Optional[Any] = None):
+    """Determine the status of a call-entity task.
+
+    It the task hasn't been scheduled, it returns a Task to schedule. If the task completed,
+    we return a completed Task, to process its result.
+
+    Parameters
+    ----------
+    state: List[HistoryEvent]
+        The list of history events to search over to determine the
+        current state of the callEntity Task.
+    entity_id: EntityId
+        An identifier for the entity to call.
+    operation_name: str
+        The name of the operation the entity needs to execute.
+    input_: Any
+        The JSON-serializable input to pass to the activity function.
+
+    Returns
+    -------
+    Task
+        A Durable Task that completes when the called entity completes or fails.
+    """
     new_action = CallEntityAction(entity_id, operation_name, input_)
     scheduler_id = EntityId.get_scheduler_id(entity_id=entity_id)
 
@@ -27,9 +50,8 @@ def call_entity_task(
     event_raised = None
     if event_sent:
         event_input = None
-        if hasattr(event_input, "Input"):
-            # TODO: we may need to create a superclass specialization constructor
-            event_input = RequestMessage(event_sent.Input)
+        if hasattr(event_sent, "Input"):
+            event_input = RequestMessage.from_json(event_sent.Input)
             hist_type = HistoryEventType.EVENT_RAISED
             extra_constraints = {
                 "Name": event_input.id
@@ -40,13 +62,16 @@ def call_entity_task(
 
     set_processed([event_sent, event_raised])
     if event_raised is not None:
+        response = parse_history_event(event_raised)
+        response = ResponseMessage.from_dict(response)
+        result = response.result
         return Task(
             is_completed=True,
             is_faulted=False,
             action=new_action,
-            result=parse_history_event(event_raised),
+            result=result,
             timestamp=event_raised.timestamp,
-            id_=event_raised.TaskScheduledId)
+            id_=event_raised.Name)  # event_raised.TaskScheduledId
 
     # TODO: this may be missing exception handling, as is JS
     return Task(is_completed=False, is_faulted=False, action=new_action)
