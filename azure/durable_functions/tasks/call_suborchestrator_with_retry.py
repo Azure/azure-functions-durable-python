@@ -54,7 +54,7 @@ def call_sub_orchestrator_with_retry_task(
 
         if task_completed is not None:
             set_processed([task_scheduled, task_completed,
-                       task_failed, task_retry_timer, task_retry_timer_fired])
+                           task_failed, task_retry_timer, task_retry_timer_fired])
             return Task(
                 is_completed=True,
                 is_faulted=False,
@@ -66,7 +66,7 @@ def call_sub_orchestrator_with_retry_task(
         if task_failed and task_retry_timer and attempt + 1 >= \
                 retry_options.max_number_of_attempts:
             set_processed([task_scheduled, task_completed,
-                       task_failed, task_retry_timer, task_retry_timer_fired])
+                           task_failed, task_retry_timer, task_retry_timer_fired])
             return Task(
                 is_completed=True,
                 is_faulted=True,
