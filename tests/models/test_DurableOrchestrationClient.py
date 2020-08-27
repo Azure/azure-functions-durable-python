@@ -465,10 +465,8 @@ async def test_wait_or_response_200_failed(binding_string):
     client = DurableOrchestrationClient(binding_string)
     client._get_async_request = mock_request.get
 
-    print("!!!")
     result = await client.wait_for_completion_or_create_check_status_response(
         None, TEST_INSTANCE_ID)
-    print("-----------------")
     assert result is not None
     assert result.status_code == 500
     assert result.mimetype == 'application/json'
