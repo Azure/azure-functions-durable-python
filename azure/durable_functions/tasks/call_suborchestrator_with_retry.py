@@ -63,19 +63,20 @@ def call_sub_orchestrator_with_retry_task(
                 timestamp=task_completed.timestamp,
                 id_=task_completed.TaskScheduledId)
 
-        if task_failed and task_retry_timer and attempt + 1 >= \
-                retry_options.max_number_of_attempts:
+        if task_failed:
             set_processed([task_scheduled, task_completed,
                            task_failed, task_retry_timer, task_retry_timer_fired])
-            return Task(
-                is_completed=True,
-                is_faulted=True,
-                action=new_action,
-                result=task_failed.Reason,
-                timestamp=task_failed.timestamp,
-                id_=task_failed.TaskScheduledId,
-                exc=Exception(
-                    f"{task_failed.Reason} \n {task_failed.Details}")
-            )
+            if task_retry_timer and attempt + 1 >= \
+                    retry_options.max_number_of_attempts:
+                return Task(
+                    is_completed=True,
+                    is_faulted=True,
+                    action=new_action,
+                    result=task_failed.Reason,
+                    timestamp=task_failed.timestamp,
+                    id_=task_failed.TaskScheduledId,
+                    exc=Exception(
+                        f"{task_failed.Reason} \n {task_failed.Details}")
+                )
 
     return Task(is_completed=False, is_faulted=False, action=new_action)

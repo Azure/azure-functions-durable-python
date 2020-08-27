@@ -11,6 +11,7 @@ RETRY_OPTIONS = RetryOptions(5000, 3)
 def generator_function(context):
     outputs = []
     retry_options = RETRY_OPTIONS
+
     task1 = yield context.call_sub_orchestrator_with_retry("HelloSubOrchestrator", retry_options, "Tokyo")
     task2 = yield context.call_sub_orchestrator_with_retry("HelloSubOrchestrator", retry_options, "Seattle")
     task3 = yield context.call_sub_orchestrator_with_retry("HelloSubOrchestrator", retry_options, "London")
