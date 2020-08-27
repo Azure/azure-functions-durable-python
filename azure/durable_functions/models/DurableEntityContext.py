@@ -103,12 +103,15 @@ class DurableEntityContext:
         DurableEntityContext
             The DurableEntityContext originated from the input string
         """
-        # TODO: fix type
         json_dict = json.loads(json_str)
         json_dict["name"] = json_dict["self"]["name"]
         json_dict["key"] = json_dict["self"]["key"]
         json_dict.pop("self")
-        json_dict["state"] = json.loads(json_dict["state"], object_hook=_deserialize_custom_object)
+
+        serialized_state = json_dict["state"]
+        if serialized_state is not None:
+            json_dict["state"] = json.loads(serialized_state,
+                                            object_hook=_deserialize_custom_object)
         batch = json_dict.pop("batch")
         return cls(**json_dict), batch
 

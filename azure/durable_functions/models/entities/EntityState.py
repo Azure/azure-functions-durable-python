@@ -11,8 +11,8 @@ class EntityState:
     """
 
     def __init__(self,
-                 results: List[OperationResult] = [],
-                 signals: List[Signal] = [],
+                 results: List[OperationResult],
+                 signals: List[Signal],
                  entity_exists: bool = False,
                  state: Optional[str] = None):
         self.entity_exists = entity_exists

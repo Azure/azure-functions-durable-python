@@ -39,7 +39,7 @@ class Entity:
             A JSON-formatted string representing the output state, results, and exceptions for the
             entity execution.
         """
-        response = EntityState()
+        response = EntityState(results=[], signals=[])
         for packet in batch:
             result: Any = None
             is_error: bool = False
