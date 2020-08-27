@@ -45,7 +45,6 @@ def call_activity_with_retry_task(
         task_retry_timer_fired = find_task_retry_timer_fired(
             state, task_retry_timer)
 
-
         if not task_scheduled:
             break
 
