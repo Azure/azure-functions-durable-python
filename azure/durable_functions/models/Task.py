@@ -17,7 +17,7 @@ class Task:
     """
 
     def __init__(self, is_completed, is_faulted, action,
-                 result=None, timestamp=None, id_=None, exc=None):
+                 result=None, timestamp=None, id_=None, exc=None, is_played=False):
         self._is_completed: bool = is_completed
         self._is_faulted: bool = is_faulted
         self._action: Action = action
@@ -25,6 +25,7 @@ class Task:
         self._timestamp: datetime = timestamp
         self._id = id_
         self._exception = exc
+        self._is_played = is_played
 
     @property
     def is_completed(self) -> bool:

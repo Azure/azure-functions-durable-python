@@ -21,6 +21,7 @@ def task_all(tasks: List[Task]):
     is_completed = True
     complete_time = None
     faulted = []
+    is_played = False
     for task in tasks:
         if isinstance(task, TaskSet):
             for action in task.actions:
@@ -37,10 +38,14 @@ def task_all(tasks: List[Task]):
         else:
             complete_time = task.timestamp if complete_time is None \
                 else max([task.timestamp, complete_time])
+        if task._is_played:
+            is_played = True
 
     if len(faulted) > 0:
-        return TaskSet(is_completed, all_actions, results, is_faulted=True, exception=faulted[0])
+        return TaskSet(is_completed, all_actions, results, is_faulted=True, is_played=is_played,
+                       exception=faulted[0])
     if is_completed:
-        return TaskSet(is_completed, all_actions, results, False, complete_time)
+        return TaskSet(is_completed, all_actions, results, False, complete_time,
+                       is_played=is_played)
     else:
         return TaskSet(is_completed, all_actions, None)
