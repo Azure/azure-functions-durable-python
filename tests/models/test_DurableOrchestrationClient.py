@@ -147,7 +147,7 @@ async def test_get_202_get_status_success(binding_string):
 
     result = await client.get_status(TEST_INSTANCE_ID)
     assert result is not None
-    assert result.runtime_status == "Running"
+    assert result.runtime_status.name == "Running"
 
 
 @pytest.mark.asyncio
@@ -161,7 +161,7 @@ async def test_get_200_get_status_success(binding_string):
 
     result = await client.get_status(TEST_INSTANCE_ID)
     assert result is not None
-    assert result.runtime_status == "Completed"
+    assert result.runtime_status.name == "Completed"
 
 
 @pytest.mark.asyncio
@@ -465,8 +465,10 @@ async def test_wait_or_response_200_failed(binding_string):
     client = DurableOrchestrationClient(binding_string)
     client._get_async_request = mock_request.get
 
+    print("!!!")
     result = await client.wait_for_completion_or_create_check_status_response(
         None, TEST_INSTANCE_ID)
+    print("-----------------")
     assert result is not None
     assert result.status_code == 500
     assert result.mimetype == 'application/json'
