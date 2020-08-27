@@ -25,7 +25,6 @@ class TimerTask(Task):
                          self._action, None, self._timestamp, self._id, None)
         self._is_played = is_played
 
-
     def is_cancelled(self) -> bool:
         """Check of a timer is cancelled.
 

@@ -90,7 +90,7 @@ class Orchestrator:
                         continue
 
                     self._reset_timestamp()
-                    self.durable_context._is_replaying = generation_state._is_played 
+                    self.durable_context._is_replaying = generation_state._is_played
                     generation_state = self._generate_next(generation_state)
 
             except StopIteration as sie:
