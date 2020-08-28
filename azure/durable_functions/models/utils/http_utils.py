@@ -65,5 +65,5 @@ async def delete_async_request(url: str) -> List[Union[int, Any]]:
     """
     async with aiohttp.ClientSession() as session:
         async with session.delete(url) as response:
-            data = await response.json()
+            data = await response.json(content_type=None)
             return [response.status, data]
