@@ -15,7 +15,7 @@ class TimerTask(Task):
     ```
     """
 
-    def __init__(self, action: CreateTimerAction, is_completed, timestamp, id_):
+    def __init__(self, action: CreateTimerAction, is_completed, timestamp, id_, is_played=False):
         self._action: CreateTimerAction = action
         self._is_completed = is_completed
         self._timestamp = timestamp
@@ -23,6 +23,7 @@ class TimerTask(Task):
 
         super().__init__(self._is_completed, False,
                          self._action, None, self._timestamp, self._id, None)
+        self._is_played = is_played
 
     def is_cancelled(self) -> bool:
         """Check of a timer is cancelled.
