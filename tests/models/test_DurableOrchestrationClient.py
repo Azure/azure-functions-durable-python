@@ -576,3 +576,18 @@ async def test_rewind_throws_exception_during_404_410_and_500_errors(binding_str
             await client.rewind(INSTANCE_ID, REASON)
         ex_message = str(ex.value)
         assert ex_message == expected_exception_str
+
+@pytest.mark.asyncio
+async def test_rewind_with_no_rpc_endpoint(binding_string):
+    """Tests the behaviour of rewind without an RPC endpoint / under the legacy HTTP enepoin5."""
+    client = DurableOrchestrationClient(binding_string)
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{INSTANCE_ID}/rewind?reason={REASON}",
+        response=[-1, ""])
+    client._post_async_request = mock_request.post  
+    client._orchestration_bindings._rpc_base_url = None
+    expected_exception_str = "The Python SDK only supports RPC endpoints."
+    with pytest.raises(Exception) as ex:
+        await client.rewind(INSTANCE_ID, REASON)
+    ex_message = str(ex.value)
+    assert ex_message == expected_exception_str
