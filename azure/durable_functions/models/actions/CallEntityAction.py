@@ -17,6 +17,7 @@ class CallEntityAction(Action):
     def __init__(self, entity_id: EntityId, operation: str, input_=None):
         self.entity_id: EntityId = entity_id
 
+        # Validating that EntityId exists before trying to parse its instanceId
         if not self.entity_id:
             raise ValueError("entity_id cannot be empty")
 
