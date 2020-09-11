@@ -150,7 +150,7 @@ async def test_get_202_get_status_success(binding_string):
 
     result = await client.get_status(TEST_INSTANCE_ID)
     assert result is not None
-    assert result.runtime_status == "Running"
+    assert result.runtime_status.name == "Running"
 
 
 @pytest.mark.asyncio
@@ -164,7 +164,7 @@ async def test_get_200_get_status_success(binding_string):
 
     result = await client.get_status(TEST_INSTANCE_ID)
     assert result is not None
-    assert result.runtime_status == "Completed"
+    assert result.runtime_status.name == "Completed"
 
 
 @pytest.mark.asyncio
