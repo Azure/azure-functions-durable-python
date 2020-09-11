@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import List, Any, Optional, Dict, Union, Awaitable
+from typing import List, Any, Optional, Dict, Union
 from time import time
 from asyncio import sleep
 from urllib.parse import urlparse, quote
@@ -546,15 +546,34 @@ class DurableOrchestrationClient:
             request_url += "?" + "&".join(query)
 
         return request_url
-    
-    async def rewind(self, 
-            instance_id: str, 
-            reason: str,
-            task_hub_name: Optional[str] = None,
-            connection_name: Optional[str] = None):
+
+    async def rewind(self,
+                     instance_id: str,
+                     reason: str,
+                     task_hub_name: Optional[str] = None,
+                     connection_name: Optional[str] = None):
+        """Return / "rewind" a failed orchestration instance to a prior "healthy" state.
+
+        Parameters
+        ----------
+        instance_id: str
+            The ID of the orchestration instance to rewind.
+        reason: str
+            The reason for rewinding the orchestration instance.
+        task_hub_name: Optional[str]
+            The TaskHub of the orchestration to rewind
+        connection_name: Optional[str]
+            Name of the application setting containing the storage
+            connection string to use.
+
+        Raises
+        ------
+        Exception:
+            In case of a failure, it reports the reason for the exception
+        """
         id_placeholder = self._orchestration_bindings.management_urls.copy()["id"]
         request_url: str = ""
-        if self._orchestration_bindings.rpc_base_url: ## RPCMANAGEMENT OPS??
+        if self._orchestration_bindings.rpc_base_url:
             path = f"instances/{instance_id}/rewind?reason={reason}"
             query: List[str] = []
             if not (task_hub_name is None):
@@ -563,14 +582,13 @@ class DurableOrchestrationClient:
                 query.append(f"connection={connection_name}")
             if len(query) > 0:
                 path += "&" + "&".join(query)
-            
+
             request_url = f"{self._orchestration_bindings.rpc_base_url}" + path
         else:
-            # TODO: double check this path is safe
             request_url = self._orchestration_bindings.management_urls.\
                 replace(id_placeholder, instance_id).\
                 replace(self._reason_placeholder, reason)
-        
+
         response = await self._post_async_request(request_url, None)
         status: int = response[0]
         if status == 200 or status == 202:
