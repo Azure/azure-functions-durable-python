@@ -1,6 +1,5 @@
 from typing import Optional, Any, Dict, Tuple, List, Callable
 from azure.functions._durable_functions import _deserialize_custom_object
-from datetime import datetime
 import json
 
 

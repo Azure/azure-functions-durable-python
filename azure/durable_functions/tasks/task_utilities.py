@@ -8,7 +8,6 @@ from ..models.actions.Action import Action
 from ..models.Task import Task
 
 
-
 def should_suspend(partial_result) -> bool:
     """Check the state of the result to determine if the orchestration should suspend."""
     return bool(partial_result is not None
