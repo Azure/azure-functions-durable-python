@@ -1,7 +1,7 @@
 from datetime import datetime
 from dateutil.parser import parse as dt_parse
 from typing import Any, List, Dict, Optional, Union
-
+from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from .utils.json_utils import add_attrib, add_datetime_attrib
 
 
@@ -15,7 +15,8 @@ class DurableOrchestrationStatus:
     def __init__(self, name: Optional[str] = None, instanceId: Optional[str] = None,
                  createdTime: Optional[str] = None, lastUpdatedTime: Optional[str] = None,
                  input: Optional[Any] = None, output: Optional[Any] = None,
-                 runtimeStatus: Optional[str] = None, customStatus: Optional[Any] = None,
+                 runtimeStatus: Optional[OrchestrationRuntimeStatus] = None,
+                 customStatus: Optional[Any] = None,
                  history: Optional[List[Any]] = None,
                  **kwargs):
         self._name: Optional[str] = name
@@ -26,7 +27,9 @@ class DurableOrchestrationStatus:
             if lastUpdatedTime is not None else None
         self._input: Any = input
         self._output: Any = output
-        self._runtime_status: Optional[str] = runtimeStatus  # TODO: GH issue 178
+        self._runtime_status: Optional[OrchestrationRuntimeStatus] = runtimeStatus
+        if runtimeStatus is not None:
+            self._runtime_status = OrchestrationRuntimeStatus(runtimeStatus)
         self._custom_status: Any = customStatus
         self._history: Optional[List[Any]] = history
         if kwargs is not None:
@@ -82,7 +85,8 @@ class DurableOrchestrationStatus:
         add_datetime_attrib(json, self, 'last_updated_time', 'lastUpdatedTime')
         add_attrib(json, self, 'output')
         add_attrib(json, self, 'input_', 'input')
-        add_attrib(json, self, 'runtime_status', 'runtimeStatus')
+        if self.runtime_status is not None:
+            json["runtimeStatus"] = self.runtime_status.name
         add_attrib(json, self, 'custom_status', 'customStatus')
         add_attrib(json, self, 'history')
         return json
@@ -129,7 +133,7 @@ class DurableOrchestrationStatus:
         return self._output
 
     @property
-    def runtime_status(self) -> Optional[str]:
+    def runtime_status(self) -> Optional[OrchestrationRuntimeStatus]:
         """Get the runtime status of the orchestration instance."""
         return self._runtime_status
 
