@@ -56,7 +56,7 @@ class Entity:
                 is_error = True
                 result = str(e)
 
-            duration: int = context._elapsed_milliseconds_since(start_time)
+            duration: int = self._elapsed_milliseconds_since(start_time)
             operation_result = OperationResult(
                 is_error=is_error,
                 duration=duration,
@@ -90,3 +90,21 @@ class Entity:
             ctx, batch = DurableEntityContext.from_json(context_body)
             return Entity(fn).handle(ctx, batch)
         return handle
+
+    def _elapsed_milliseconds_since(self, start_time: datetime) -> int:
+        """Calculate the elapsed time, in milliseconds, from the start_time to the present.
+
+        Parameters
+        ----------
+        start_time: datetime
+            The timestamp of when the entity began processing a batched request.
+
+        Returns
+        -------
+        int
+            The time, in millseconds, from start_time to now
+        """
+        end_time = datetime.now()
+        time_diff = end_time - start_time
+        elapsed_time = int(time_diff.total_seconds() * 1000)
+        return elapsed_time

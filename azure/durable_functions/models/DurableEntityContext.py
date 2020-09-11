@@ -179,24 +179,6 @@ class DurableEntityContext:
         self._exists = False
         self._state = None
 
-    def _elapsed_milliseconds_since(self, start_time: datetime) -> int:
-        """Calculate the elapsed time, in milliseconds, from the start_time to the present.
-
-        Parameters
-        ----------
-        start_time: datetime
-            The timestamp of when the entity began processing a batched request.
-
-        Returns
-        -------
-        int
-            The time, in millseconds, from start_time to now
-        """
-        end_time = datetime.now()
-        time_diff = end_time - start_time
-        elapsed_time = int(time_diff.total_seconds() * 1000)
-        return elapsed_time
-
     def from_json_util(self, json_str: str) -> Any:
         """Load an arbitrary datatype from its JSON representation.
 

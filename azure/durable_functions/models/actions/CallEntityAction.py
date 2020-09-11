@@ -16,12 +16,13 @@ class CallEntityAction(Action):
 
     def __init__(self, entity_id: EntityId, operation: str, input_=None):
         self.entity_id: EntityId = entity_id
-        self.instance_id: str = EntityId.get_scheduler_id(entity_id)
-        self.operation: str = operation
-        self.input_: str = dumps(input_, default=_serialize_custom_object)
 
         if not self.entity_id:
             raise ValueError("entity_id cannot be empty")
+
+        self.instance_id: str = EntityId.get_scheduler_id(entity_id)
+        self.operation: str = operation
+        self.input_: str = dumps(input_, default=_serialize_custom_object)
 
     @property
     def action_type(self) -> int:
