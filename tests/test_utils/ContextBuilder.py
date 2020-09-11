@@ -13,7 +13,7 @@ from azure.durable_functions.models.history.HistoryEventType \
 
 
 class ContextBuilder:
-    def __init__(self, name: str):
+    def __init__(self, name: str=""):
         self.instance_id = uuid.uuid4()
         self.is_replaying: bool = False
         self.input_ = None
