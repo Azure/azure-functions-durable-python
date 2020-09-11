@@ -413,6 +413,7 @@ def find_matching_event(
         event = matches[0]
     return event
 
+
 def get_retried_task(
         state: List[HistoryEvent], max_number_of_attempts: int, scheduled_type: HistoryEventType,
         completed_type: HistoryEventType, failed_type: HistoryEventType, action: Action) -> Task:
@@ -421,7 +422,7 @@ def get_retried_task(
     Parameters
     ----------
     state: List[HistoryEvent]
-        The list of history events 
+        The list of history events
     max_number_of_ints: int
         The maximum number of retrying attempts
     scheduled_type: HistoryEventType
@@ -431,7 +432,7 @@ def get_retried_task(
     failed_type: HistoryEventType
         The event type coresponding to the failure of the searched-for task
     action: Action
-        The action corresponding to the searched-for task 
+        The action corresponding to the searched-for task
 
     Returns
     -------
@@ -439,7 +440,6 @@ def get_retried_task(
         A Task encompassing the state of the scheduled work item, that is,
         either completed, failed, or incomplete.
     """
-
     # tasks to look for in the state array
     scheduled_task, completed_task = None, None
     failed_task, scheduled_timer_task = None, None

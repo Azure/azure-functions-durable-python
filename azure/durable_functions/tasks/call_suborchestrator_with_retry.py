@@ -5,10 +5,7 @@ from ..models.Task import (
 from ..models.actions.CallSubOrchestratorWithRetryAction import CallSubOrchestratorWithRetryAction
 from ..models.RetryOptions import RetryOptions
 from ..models.history import HistoryEvent, HistoryEventType
-from .task_utilities import set_processed, parse_history_event, \
-    find_sub_orchestration_created, find_sub_orchestration_completed, \
-    find_sub_orchestration_failed, find_task_retry_timer_fired, find_task_retry_timer_created, \
-    get_retried_task
+from .task_utilities import get_retried_task
 
 
 def call_sub_orchestrator_with_retry_task(
@@ -40,7 +37,6 @@ def call_sub_orchestrator_with_retry_task(
     Task
         A Durable Task that completes when the called sub-orchestrator completes or fails.
     """
-
     new_action = CallSubOrchestratorWithRetryAction(name, retry_options, input_, instance_id)
     return get_retried_task(
         state=state,

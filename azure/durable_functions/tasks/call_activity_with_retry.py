@@ -1,9 +1,6 @@
 from typing import List, Any
 
-from .task_utilities import find_task_scheduled, \
-    find_task_retry_timer_created, set_processed, parse_history_event, \
-    find_task_completed, find_task_failed, find_task_retry_timer_fired, \
-    get_retried_task
+from .task_utilities import get_retried_task
 from ..models.RetryOptions import RetryOptions
 from ..models.Task import (
     Task)
