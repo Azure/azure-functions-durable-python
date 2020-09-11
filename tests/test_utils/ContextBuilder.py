@@ -13,7 +13,7 @@ from azure.durable_functions.models.history.HistoryEventType \
 
 
 class ContextBuilder:
-    def __init__(self, name: str):
+    def __init__(self, name: str=""):
         self.instance_id = uuid.uuid4()
         self.is_replaying: bool = False
         self.input_ = None
@@ -100,8 +100,8 @@ class ContextBuilder:
         self.history_events.append(event)
         return fire_at
 
-    def add_timer_fired_event(self, id_: int, fire_at: str):
-        event = self.get_base_event(HistoryEventType.TIMER_FIRED, is_played=True)
+    def add_timer_fired_event(self, id_: int, fire_at: str, is_played: bool = True):
+        event = self.get_base_event(HistoryEventType.TIMER_FIRED, is_played=is_played)
         event.TimerId = id_
         event.FireAt = fire_at
         self.history_events.append(event)

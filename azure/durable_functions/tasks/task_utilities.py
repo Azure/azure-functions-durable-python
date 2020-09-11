@@ -4,6 +4,9 @@ from ..constants import DATETIME_STRING_FORMAT
 from azure.functions._durable_functions import _deserialize_custom_object
 from datetime import datetime
 from typing import List, Optional, Dict, Any
+from ..models.actions.Action import Action
+from ..models.Task import Task
+
 
 
 def should_suspend(partial_result) -> bool:
@@ -461,3 +464,95 @@ def find_matching_event(
         # We should try to refactor this logic at some point
         event = matches[0]
     return event
+
+
+def get_retried_task(
+        state: List[HistoryEvent], max_number_of_attempts: int, scheduled_type: HistoryEventType,
+        completed_type: HistoryEventType, failed_type: HistoryEventType, action: Action) -> Task:
+    """Determine the state of scheduling some task for execution with retry options.
+
+    Parameters
+    ----------
+    state: List[HistoryEvent]
+        The list of history events
+    max_number_of_ints: int
+        The maximum number of retrying attempts
+    scheduled_type: HistoryEventType
+        The event type corresponding to scheduling the searched-for task
+    completed_type: HistoryEventType
+        The event type corresponding to a completion of the searched-for task
+    failed_type: HistoryEventType
+        The event type coresponding to the failure of the searched-for task
+    action: Action
+        The action corresponding to the searched-for task
+
+    Returns
+    -------
+    Task
+        A Task encompassing the state of the scheduled work item, that is,
+        either completed, failed, or incomplete.
+    """
+    # tasks to look for in the state array
+    scheduled_task, completed_task = None, None
+    failed_task, scheduled_timer_task = None, None
+    attempt = 1
+
+    # Note each case below is exclusive, and the order matters
+    for event in state:
+        event_type = HistoryEventType(event.event_type)
+
+        # Skip processed events
+        if event.is_processed:
+            continue
+
+        # first we find the scheduled_task
+        elif scheduled_task is None:
+            if event_type is scheduled_type:
+                scheduled_task = event
+
+        # if the task has a correponding completion, we process the events
+        # and return a completed task
+        elif event_type == completed_type and \
+                event.TaskScheduledId == scheduled_task.event_id:
+            completed_task = event
+            set_processed([scheduled_task, completed_task])
+            return Task(
+                is_completed=True,
+                is_faulted=False,
+                action=action,
+                result=parse_history_event(completed_task),
+                timestamp=completed_task.timestamp,
+                id_=completed_task.TaskScheduledId
+            )
+
+        # if its failed, we'll have to wait for an upcoming timer scheduled
+        elif failed_task is None:
+            if event_type is failed_type:
+                if event.TaskScheduledId == scheduled_task.event_id:
+                    failed_task = event
+
+        # if we have a timer scheduled, we'll have to find a timer fired
+        elif scheduled_timer_task is None:
+            if event_type is HistoryEventType.TIMER_CREATED:
+                scheduled_timer_task = event
+
+        # if we have a timer fired, we check if we still have more attempts for retries.
+        # If so, we retry again and clear our found events so far.
+        # If not, we process the events and return a completed task
+        elif event_type is HistoryEventType.TIMER_FIRED:
+            if event.TimerId == scheduled_timer_task.event_id:
+                set_processed([scheduled_task, completed_task, failed_task, scheduled_timer_task])
+                if attempt >= max_number_of_attempts:
+                    return Task(
+                        is_completed=True,
+                        is_faulted=True,
+                        action=action,
+                        timestamp=failed_task.timestamp,
+                        id_=failed_task.TaskScheduledId,
+                        exc=Exception(
+                            f"{failed_task.Reason} \n {failed_task.Details}")
+                    )
+                else:
+                    scheduled_task, failed_task, scheduled_timer_task = None, None, None
+                    attempt += 1
+    return Task(is_completed=False, is_faulted=False, action=action)

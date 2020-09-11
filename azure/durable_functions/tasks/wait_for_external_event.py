@@ -34,6 +34,7 @@ def wait_for_external_event_task(
             is_completed=True,
             is_faulted=False,
             action=new_action,
+            is_played=event_raised._is_played,
             result=parse_history_event(event_raised),
             timestamp=event_raised.timestamp,
             id_=event_raised.event_id)
