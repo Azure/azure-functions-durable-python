@@ -555,7 +555,7 @@ class DurableOrchestrationClient:
         id_placeholder = self._orchestration_bindings.management_urls.copy()["id"]
         request_url: str = ""
         if self._orchestration_bindings.rpc_base_url: ## RPCMANAGEMENT OPS??
-            path = "instances/{instance_id}/rewind?reason={reason}"
+            path = f"instances/{instance_id}/rewind?reason={reason}"
             query: List[str] = []
             if not (task_hub_name is None):
                 query.append(f"taskHub={task_hub_name}")
@@ -564,16 +564,16 @@ class DurableOrchestrationClient:
             if len(query) > 0:
                 path += "&" + "&".join(query)
             
-            request_url = f"{self._orchestration_bindings.rpc_base_url}/" + path
+            request_url = f"{self._orchestration_bindings.rpc_base_url}" + path
         else:
             # TODO: double check this path is safe
             request_url = self._orchestration_bindings.management_urls.\
                 replace(id_placeholder, instance_id).\
                 replace(self._reason_placeholder, reason)
         
-        response = self._post_async_request(request_url, None)
+        response = await self._post_async_request(request_url, None)
         status: int = response[0]
-        if status == 200:
+        if status == 200 or status == 202:
             return
         elif status == 404:
             ex_msg = f"No instance with ID {instance_id} found."
