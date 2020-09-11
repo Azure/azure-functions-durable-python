@@ -38,7 +38,7 @@ def call_activity_with_retry_task(
     """
     new_action = CallActivityWithRetryAction(
         function_name=name, retry_options=retry_options, input_=input_)
-    
+
     return get_retried_task(
         state=state,
         max_number_of_attempts=retry_options.max_number_of_attempts,

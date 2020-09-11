@@ -28,8 +28,8 @@ def generator_function(context):
     return "Done!"
 
 def add_timer_action(state: OrchestratorState, fire_at: datetime):
-    action = CreateTimerAction(fire_at= fire_at)
-    state._actions.append([action]) # Todo: brackets?
+    action = CreateTimerAction(fire_at=fire_at)
+    state._actions.append([action])
 
 def test_timers_comparison_with_relaxed_precision():
     """Test if that two `datetime` different but equivalent

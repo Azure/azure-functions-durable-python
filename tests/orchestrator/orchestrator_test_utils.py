@@ -50,6 +50,17 @@ def get_orchestration_state_result(
     result = json.loads(result_of_handle)
     return result
 
+def get_orchestration_property(
+        context_builder,
+        activity_func: Callable[[DurableOrchestrationContext], Iterator[Any]],
+        prop: str):
+    context_as_string = context_builder.to_json_string()
+    orchestrator = Orchestrator(activity_func)
+    result_of_handle = orchestrator.handle(
+        DurableOrchestrationContext.from_json(context_as_string))
+    result = getattr(orchestrator, prop)
+    return result
+
 
 def assert_valid_schema(orchestration_state):
     validation_results = validate(instance=orchestration_state, schema=schema)
