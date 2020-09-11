@@ -571,7 +571,6 @@ class DurableOrchestrationClient:
         Exception:
             In case of a failure, it reports the reason for the exception
         """
-        id_placeholder = self._orchestration_bindings.management_urls.copy()["id"]
         request_url: str = ""
         if self._orchestration_bindings.rpc_base_url:
             path = f"instances/{instance_id}/rewind?reason={reason}"
@@ -585,9 +584,7 @@ class DurableOrchestrationClient:
 
             request_url = f"{self._orchestration_bindings.rpc_base_url}" + path
         else:
-            request_url = self._orchestration_bindings.management_urls.\
-                replace(id_placeholder, instance_id).\
-                replace(self._reason_placeholder, reason)
+            raise Exception("The Python SDK only supports RPC endpoints.")
 
         response = await self._post_async_request(request_url, None)
         status: int = response[0]
