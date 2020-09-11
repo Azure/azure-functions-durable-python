@@ -17,13 +17,14 @@ class TaskSet:
     """
 
     def __init__(self, is_completed, actions, result, is_faulted=False,
-                 timestamp=None, exception=None):
+                 timestamp=None, exception=None, is_played=False):
         self._is_completed: bool = is_completed
         self._actions: List[Action] = actions
         self._result = result
         self._is_faulted: bool = is_faulted
         self._timestamp: datetime = timestamp
         self._exception = exception
+        self._is_played = is_played
 
     @property
     def is_completed(self) -> bool:

@@ -1,8 +1,7 @@
 from datetime import datetime
 from dateutil.parser import parse as dt_parse
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional, Union
 
-from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from .utils.json_utils import add_attrib, add_datetime_attrib
 
 
@@ -13,20 +12,23 @@ class DurableOrchestrationStatus:
     """
 
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
-    def __init__(self, name: str = None, instanceId: str = None, createdTime: str = None,
-                 lastUpdatedTime: str = None, input: Any = None, output: Any = None,
-                 runtimeStatus: str = None, customStatus: Any = None, history: List[Any] = None,
+    def __init__(self, name: Optional[str] = None, instanceId: Optional[str] = None,
+                 createdTime: Optional[str] = None, lastUpdatedTime: Optional[str] = None,
+                 input: Optional[Any] = None, output: Optional[Any] = None,
+                 runtimeStatus: Optional[str] = None, customStatus: Optional[Any] = None,
+                 history: Optional[List[Any]] = None,
                  **kwargs):
-        self._name: str = name
-        self._instance_id: str = instanceId
-        self._created_time: datetime = dt_parse(createdTime) if createdTime is not None else None
-        self._last_updated_time: datetime = dt_parse(lastUpdatedTime) \
+        self._name: Optional[str] = name
+        self._instance_id: Optional[str] = instanceId
+        self._created_time: Optional[datetime] = \
+            dt_parse(createdTime) if createdTime is not None else None
+        self._last_updated_time: Optional[datetime] = dt_parse(lastUpdatedTime) \
             if lastUpdatedTime is not None else None
         self._input: Any = input
         self._output: Any = output
-        self._runtime_status: OrchestrationRuntimeStatus = runtimeStatus
+        self._runtime_status: Optional[str] = runtimeStatus  # TODO: GH issue 178
         self._custom_status: Any = customStatus
-        self._history: List[Any] = history
+        self._history: Optional[List[Any]] = history
         if kwargs is not None:
             for key, value in kwargs.items():
                 self.__setattr__(key, value)
@@ -65,15 +67,15 @@ class DurableOrchestrationStatus:
         else:
             return cls(**json_obj)
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> Dict[str, Union[int, str]]:
         """Convert object into a json dictionary.
 
         Returns
         -------
-        Dict[str, Any]
+        Dict[str, Union[int, str]]
             The instance of the class converted into a json dictionary
         """
-        json = {}
+        json: Dict[str, Union[int, str]] = {}
         add_attrib(json, self, 'name')
         add_attrib(json, self, 'instance_id', 'instanceId')
         add_datetime_attrib(json, self, 'created_time', 'createdTime')
@@ -86,12 +88,12 @@ class DurableOrchestrationStatus:
         return json
 
     @property
-    def name(self) -> str:
+    def name(self) -> Optional[str]:
         """Get the orchestrator function name."""
         return self._name
 
     @property
-    def instance_id(self) -> str:
+    def instance_id(self) -> Optional[str]:
         """Get the unique ID of the instance.
 
         The instance ID is generated and fixed when the orchestrator
@@ -102,7 +104,7 @@ class DurableOrchestrationStatus:
         return self._instance_id
 
     @property
-    def created_time(self) -> datetime:
+    def created_time(self) -> Optional[datetime]:
         """Get the time at which the orchestration instance was created.
 
         If the orchestration instance is in the [[Pending]] status, this
@@ -112,7 +114,7 @@ class DurableOrchestrationStatus:
         return self._created_time
 
     @property
-    def last_updated_time(self) -> datetime:
+    def last_updated_time(self) -> Optional[datetime]:
         """Get the time at which the orchestration instance last updated its execution history."""
         return self._last_updated_time
 
@@ -127,7 +129,7 @@ class DurableOrchestrationStatus:
         return self._output
 
     @property
-    def runtime_status(self) -> OrchestrationRuntimeStatus:
+    def runtime_status(self) -> Optional[str]:
         """Get the runtime status of the orchestration instance."""
         return self._runtime_status
 
@@ -140,7 +142,7 @@ class DurableOrchestrationStatus:
         return self._custom_status
 
     @property
-    def history(self) -> List[Any]:
+    def history(self) -> Optional[List[Any]]:
         """Get the execution history of the orchestration instance.
 
         The history log can be large and is therefore `undefined` by
