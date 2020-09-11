@@ -5,6 +5,7 @@ from dateutil.parser import parse as dt_parse
 
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 from azure.durable_functions.models.DurableOrchestrationStatus import DurableOrchestrationStatus
+from azure.durable_functions.models.OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from azure.durable_functions.models.history import HistoryEventType
 
 TEST_NAME = 'what ever I want it to be'
@@ -38,7 +39,7 @@ def test_all_the_args():
 
     result = DurableOrchestrationStatus.from_json(response)
 
-    assert result.runtime_status == TEST_RUNTIME_STATUS
+    assert result.runtime_status.name == TEST_RUNTIME_STATUS
     assert result.custom_status == TEST_CUSTOM_STATUS
     assert result.instance_id == TEST_INSTANCE_ID
     assert result.output == TEST_OUTPUT
