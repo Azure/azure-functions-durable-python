@@ -19,6 +19,9 @@ MESSAGE_404 = 'instance not found or pending'
 MESSAGE_500 = 'instance failed with unhandled exception'
 MESSAGE_501 = "well we didn't expect that"
 
+INSTANCE_ID = "2e2568e7-a906-43bd-8364-c81733c5891e"
+REASON = "Stuff"
+
 TEST_ORCHESTRATOR = "MyDurableOrchestrator"
 EXCEPTION_ORCHESTRATOR_NOT_FOUND_EXMESSAGE = "The function <orchestrator> doesn't exist,"\
     " is disabled, or is not an orchestrator function. Additional info: "\
@@ -540,3 +543,52 @@ async def test_start_new_orchestrator_internal_exception(binding_string):
     with pytest.raises(Exception) as ex:
         await client.start_new(TEST_ORCHESTRATOR)
     ex.match(status_str)
+
+@pytest.mark.asyncio
+async def test_rewind_works_under_200_and_200_http_codes(binding_string):
+    """Tests that the rewind API works as expected under 'successful' http codes: 200, 202"""
+    client = DurableOrchestrationClient(binding_string)
+    for code in [200, 202]:
+        mock_request = MockRequest(
+            expected_url=f"{RPC_BASE_URL}instances/{INSTANCE_ID}/rewind?reason={REASON}",
+            response=[code, ""])
+        client._post_async_request = mock_request.post
+        result = await client.rewind(INSTANCE_ID, REASON)
+        assert result is None
+
+@pytest.mark.asyncio
+async def test_rewind_throws_exception_during_404_410_and_500_errors(binding_string):
+    """Tests the behaviour of rewind under 'exception' http codes: 404, 410, 500"""
+    client = DurableOrchestrationClient(binding_string)
+    codes = [404, 410, 500]
+    exception_strs = [
+        f"No instance with ID {INSTANCE_ID} found.",
+        "The rewind operation is only supported on failed orchestration instances.",
+        "Something went wrong"
+    ]
+    for http_code, expected_exception_str in zip(codes, exception_strs):
+        mock_request = MockRequest(
+            expected_url=f"{RPC_BASE_URL}instances/{INSTANCE_ID}/rewind?reason={REASON}",
+            response=[http_code, "Something went wrong"])
+        client._post_async_request = mock_request.post
+
+        with pytest.raises(Exception) as ex:
+            await client.rewind(INSTANCE_ID, REASON)
+        ex_message = str(ex.value)
+        assert ex_message == expected_exception_str
+
+@pytest.mark.asyncio
+async def test_rewind_with_no_rpc_endpoint(binding_string):
+    """Tests the behaviour of rewind without an RPC endpoint / under the legacy HTTP endpoint."""
+    client = DurableOrchestrationClient(binding_string)
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{INSTANCE_ID}/rewind?reason={REASON}",
+        response=[-1, ""])
+    client._post_async_request = mock_request.post  
+    client._orchestration_bindings._rpc_base_url = None
+    expected_exception_str = "The Python SDK only supports RPC endpoints."\
+        + "Please remove the `localRpcEnabled` setting from host.json"
+    with pytest.raises(Exception) as ex:
+        await client.rewind(INSTANCE_ID, REASON)
+    ex_message = str(ex.value)
+    assert ex_message == expected_exception_str
