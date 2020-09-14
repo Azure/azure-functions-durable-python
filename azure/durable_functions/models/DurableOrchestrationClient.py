@@ -584,8 +584,8 @@ class DurableOrchestrationClient:
 
             request_url = f"{self._orchestration_bindings.rpc_base_url}" + path
         else:
-            raise Exception("The Python SDK only supports RPC endpoints." \
-                + "Please remove the `localRpcEnabled` setting from host.json")
+            raise Exception("The Python SDK only supports RPC endpoints."
+                            + "Please remove the `localRpcEnabled` setting from host.json")
 
         response = await self._post_async_request(request_url, None)
         status: int = response[0]
