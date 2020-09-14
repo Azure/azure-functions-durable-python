@@ -442,7 +442,7 @@ class DurableOrchestrationClient:
                         lambda: self._create_http_response(500, status.to_json()),
                 }
 
-                result = switch_statement.get(OrchestrationRuntimeStatus(status.runtime_status))
+                result = switch_statement.get(status.runtime_status)
                 if result:
                     return result()
 
@@ -546,3 +546,57 @@ class DurableOrchestrationClient:
             request_url += "?" + "&".join(query)
 
         return request_url
+
+    async def rewind(self,
+                     instance_id: str,
+                     reason: str,
+                     task_hub_name: Optional[str] = None,
+                     connection_name: Optional[str] = None):
+        """Return / "rewind" a failed orchestration instance to a prior "healthy" state.
+
+        Parameters
+        ----------
+        instance_id: str
+            The ID of the orchestration instance to rewind.
+        reason: str
+            The reason for rewinding the orchestration instance.
+        task_hub_name: Optional[str]
+            The TaskHub of the orchestration to rewind
+        connection_name: Optional[str]
+            Name of the application setting containing the storage
+            connection string to use.
+
+        Raises
+        ------
+        Exception:
+            In case of a failure, it reports the reason for the exception
+        """
+        request_url: str = ""
+        if self._orchestration_bindings.rpc_base_url:
+            path = f"instances/{instance_id}/rewind?reason={reason}"
+            query: List[str] = []
+            if not (task_hub_name is None):
+                query.append(f"taskHub={task_hub_name}")
+            if not (connection_name is None):
+                query.append(f"connection={connection_name}")
+            if len(query) > 0:
+                path += "&" + "&".join(query)
+
+            request_url = f"{self._orchestration_bindings.rpc_base_url}" + path
+        else:
+            raise Exception("The Python SDK only supports RPC endpoints."
+                            + "Please remove the `localRpcEnabled` setting from host.json")
+
+        response = await self._post_async_request(request_url, None)
+        status: int = response[0]
+        if status == 200 or status == 202:
+            return
+        elif status == 404:
+            ex_msg = f"No instance with ID {instance_id} found."
+            raise Exception(ex_msg)
+        elif status == 410:
+            ex_msg = "The rewind operation is only supported on failed orchestration instances."
+            raise Exception(ex_msg)
+        else:
+            ex_msg = response[1]
+            raise Exception(ex_msg)

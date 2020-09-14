@@ -1,6 +1,9 @@
-from typing import List
+from datetime import datetime
+from typing import List, Optional, Any
+
 from ..models.Task import Task
 from ..models.TaskSet import TaskSet
+from ..models.actions import Action
 
 
 def task_all(tasks: List[Task]):
@@ -16,31 +19,57 @@ def task_all(tasks: List[Task]):
     TaskSet
         A Durable Task Set that reports the state of running all of the tasks within it.
     """
-    all_actions = []
-    results = []
+    # Args for constructing the output TaskSet
+    is_played = True
+    is_faulted = False
     is_completed = True
-    complete_time = None
-    faulted = []
+
+    actions: List[Action] = []
+    results: List[Any] = []
+
+    exception: Optional[str] = None
+    end_time: Optional[datetime] = None
+
     for task in tasks:
+        # Add actions and results
         if isinstance(task, TaskSet):
-            for action in task.actions:
-                all_actions.append(action)
+            actions.extend(task.actions)
         else:
-            all_actions.append(task.action)
+            # We know it's an atomic Task
+            actions.append(task.action)
         results.append(task.result)
 
-        if task.is_faulted:
-            faulted.append(task.exception)
+        # Record first exception, if it exists
+        if task.is_faulted and not is_faulted:
+            is_faulted = True
+            exception = task.exception
 
+        # If any task is not played, TaskSet is not played
+        if not task._is_played:
+            is_played = False
+
+        # If any task is incomplete, TaskSet is incomplete
+        # If the task is complete, we can update the end_time
         if not task.is_completed:
             is_completed = False
+        elif end_time is None:
+            end_time = task.timestamp
         else:
-            complete_time = task.timestamp if complete_time is None \
-                else max([task.timestamp, complete_time])
+            end_time = max([task.timestamp, end_time])
 
-    if len(faulted) > 0:
-        return TaskSet(is_completed, all_actions, results, is_faulted=True, exception=faulted[0])
-    if is_completed:
-        return TaskSet(is_completed, all_actions, results, False, complete_time)
-    else:
-        return TaskSet(is_completed, all_actions, None)
+    # Incomplete TaskSets do not have results or end-time
+    if not is_completed:
+        results = None
+        end_time = None
+
+    # Construct TaskSet
+    taskset = TaskSet(
+        is_completed=is_completed,
+        actions=actions,
+        result=results,
+        is_faulted=is_faulted,
+        timestamp=end_time,
+        exception=exception,
+        is_played=is_played
+    )
+    return taskset
