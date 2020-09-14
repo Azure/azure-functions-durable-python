@@ -586,7 +586,8 @@ async def test_rewind_with_no_rpc_endpoint(binding_string):
         response=[-1, ""])
     client._post_async_request = mock_request.post  
     client._orchestration_bindings._rpc_base_url = None
-    expected_exception_str = "The Python SDK only supports RPC endpoints."
+    expected_exception_str = "The Python SDK only supports RPC endpoints."\
+        + "Please remove the `localRpcEnabled` setting from host.json"
     with pytest.raises(Exception) as ex:
         await client.rewind(INSTANCE_ID, REASON)
     ex_message = str(ex.value)
