@@ -442,7 +442,7 @@ class DurableOrchestrationClient:
                         lambda: self._create_http_response(500, status.to_json()),
                 }
 
-                result = switch_statement.get(OrchestrationRuntimeStatus(status.runtime_status))
+                result = switch_statement.get(status.runtime_status)
                 if result:
                     return result()
 
