@@ -551,7 +551,7 @@ async def test_rewind_works_under_200_and_200_http_codes(binding_string):
     for code in [200, 202]:
         mock_request = MockRequest(
             expected_url=f"{RPC_BASE_URL}instances/{INSTANCE_ID}/rewind?reason={REASON}",
-            response=[202, ""])
+            response=[code, ""])
         client._post_async_request = mock_request.post
         result = await client.rewind(INSTANCE_ID, REASON)
         assert result is None
@@ -579,7 +579,7 @@ async def test_rewind_throws_exception_during_404_410_and_500_errors(binding_str
 
 @pytest.mark.asyncio
 async def test_rewind_with_no_rpc_endpoint(binding_string):
-    """Tests the behaviour of rewind without an RPC endpoint / under the legacy HTTP enepoin5."""
+    """Tests the behaviour of rewind without an RPC endpoint / under the legacy HTTP endpoint."""
     client = DurableOrchestrationClient(binding_string)
     mock_request = MockRequest(
         expected_url=f"{RPC_BASE_URL}instances/{INSTANCE_ID}/rewind?reason={REASON}",
