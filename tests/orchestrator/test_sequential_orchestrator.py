@@ -20,6 +20,18 @@ def generator_function(context):
 
     return outputs
 
+def generator_function_rasing_ex(context):
+    outputs = []
+
+    task1 = yield context.call_activity("Hello", "Tokyo")
+    task2 = yield context.call_activity("Hello", "Seattle")
+    task3 = yield context.call_activity("Hello", "London")
+
+    outputs.append(task1)
+    outputs.append(task2)
+    outputs.append(task3)
+
+    raise ValueError("Oops!")
 
 def generator_function_with_serialization(context):
     """Ochestrator to test sequential activity calls with a serializable input arguments."""
@@ -117,6 +129,32 @@ def test_failed_tokyo_state():
         expected_error_str = f"{error_msg}{error_label}{state_str}"
         assert expected_error_str == error_str
 
+
+def test_user_code_raises_exception():
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
+    add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
+
+    try:
+        result = get_orchestration_state_result(
+            context_builder, generator_function_rasing_ex)
+        # expected an exception
+        assert False
+    except Exception as e:
+        error_label = "\n\n$OutOfProcData$:"
+        error_str = str(e)
+
+        expected_state = base_expected_state()
+        add_hello_action(expected_state, 'Tokyo')
+        add_hello_action(expected_state, 'Seattle')
+        add_hello_action(expected_state, 'London')
+        error_msg = 'Oops!'
+        expected_state._error = error_msg
+        state_str = expected_state.to_json_string()
+        
+        expected_error_str = f"{error_msg}{error_label}{state_str}"
+        assert expected_error_str == error_str
 
 def test_tokyo_and_seattle_state():
     context_builder = ContextBuilder('test_simple_function')
