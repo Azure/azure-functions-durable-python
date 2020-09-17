@@ -153,13 +153,22 @@ def test_failed_parrot_value():
     add_completed_task_set_events(context_builder, 1, 'ParrotValue', activity_count,
                                   2, failed_reason, failed_details)
 
-    result = get_orchestration_state_result(
-        context_builder, generator_function)
+    try:
+        result = get_orchestration_state_result(
+            context_builder, generator_function)
+        # we expected an exception
+        assert False
+    except Exception as e:
+        error_label = "\n\n$OutOfProcData$:"
+        error_str = str(e)
 
-    expected_state = base_expected_state(error=f'{failed_reason} \n {failed_details}')
-    add_single_action(expected_state, function_name='GetActivityCount', input_=None)
-    add_multi_actions(expected_state, function_name='ParrotValue', volume=activity_count)
-    expected = expected_state.to_json()
+        expected_state = base_expected_state(error=f'{failed_reason} \n {failed_details}')
+        add_single_action(expected_state, function_name='GetActivityCount', input_=None)
+        add_multi_actions(expected_state, function_name='ParrotValue', volume=activity_count)
 
-    assert_valid_schema(result)
-    assert_orchestration_state_equals(expected, result)
+        error_msg = f'{failed_reason} \n {failed_details}'
+        expected_state._error = error_msg
+        state_str = expected_state.to_json_string()
+        
+        expected_error_str = f"{error_msg}{error_label}{state_str}"
+        assert expected_error_str == error_str

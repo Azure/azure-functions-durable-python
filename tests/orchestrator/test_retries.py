@@ -255,9 +255,16 @@ def test_retries_can_fail():
     """Tests the code path where a retry'ed Task fails"""
     context = get_context_with_retries(will_fail=True)
 
-    result = get_orchestration_state_result(
-        context, generator_function)
+    try:
+        result = get_orchestration_state_result(
+            context, generator_function)
+        # We expected an exception
+        assert False
+    except Exception as e:
+        error_label = "\n\n$OutOfProcData$:"
+        error_str = str(e)
 
-    expected_error = f"{REASONS} \n {DETAILS}"
-    assert "error" in result
-    assert result["error"] == expected_error
+        error_msg = f"{REASONS} \n {DETAILS}"
+        
+        expected_error_str = f"{error_msg}{error_label}"
+        assert str.startswith(error_str, expected_error_str)
