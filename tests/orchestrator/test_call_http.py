@@ -104,17 +104,25 @@ def test_failed_state():
     add_failed_http_events(
         context_builder, 0, failed_reason, failed_details)
 
-    result = get_orchestration_state_result(
-        context_builder, simple_get_generator_function)
+    try:
+        result = get_orchestration_state_result(
+            context_builder, simple_get_generator_function)
+        # We expected an exception
+        assert False
+    except Exception as e:
+        error_label = "\n\n$OutOfProcData$:"
+        error_str = str(e)
 
-    expected_state = base_expected_state()
-    request = get_request()
-    add_http_action(expected_state, request)
-    expected_state._error = f'{failed_reason} \n {failed_details}'
-    expected = expected_state.to_json()
+        expected_state = base_expected_state()
+        request = get_request()
+        add_http_action(expected_state, request)
 
-    assert_valid_schema(result)
-    assert_orchestration_state_equals(expected, result)
+        error_msg = f'{failed_reason} \n {failed_details}'
+        expected_state._error = error_msg
+        state_str = expected_state.to_json_string()
+        
+        expected_error_str = f"{error_msg}{error_label}{state_str}"
+        assert expected_error_str == error_str
 
 
 def test_initial_post_state():
