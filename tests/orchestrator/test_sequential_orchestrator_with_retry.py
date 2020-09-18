@@ -198,13 +198,21 @@ def test_failed_tokyo_hit_max_attempts():
     add_hello_failed_events(context_builder, 4, failed_reason, failed_details)
     add_retry_timer_events(context_builder, 5)
 
-    result = get_orchestration_state_result(
-        context_builder, generator_function)
+    try:
+        result = get_orchestration_state_result(
+            context_builder, generator_function)
+        # expected an exception
+        assert False
+    except Exception as e:
+        error_label = "\n\n$OutOfProcData$:"
+        error_str = str(e)
 
-    expected_state = base_expected_state()
-    add_hello_action(expected_state, 'Tokyo')
-    expected_state._error = f'{failed_reason} \n {failed_details}'
-    expected = expected_state.to_json()
+        expected_state = base_expected_state()
+        add_hello_action(expected_state, 'Tokyo')
 
-    assert_valid_schema(result)
-    assert_orchestration_state_equals(expected, result)
+        error_msg = f'{failed_reason} \n {failed_details}'
+        expected_state._error = error_msg
+        state_str = expected_state.to_json_string()
+        
+        expected_error_str = f"{error_msg}{error_label}{state_str}"
+        assert expected_error_str == error_str
