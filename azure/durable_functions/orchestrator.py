@@ -100,21 +100,12 @@ class Orchestrator:
                     actions=self.durable_context.actions,
                     custom_status=self.durable_context.custom_status)
             except Exception as e:
-                exception_str = str(e)
                 orchestration_state = OrchestratorState(
                     is_done=False,
                     output=None,  # Should have no output, after generation range
                     actions=self.durable_context.actions,
-                    error=exception_str,
+                    error=str(e),
                     custom_status=self.durable_context.custom_status)
-
-                # Create formatted error, using out-of-proc error schema
-                error_label = "\n\n$OutOfProcData$:"
-                state_str = orchestration_state.to_json_string()
-                formatted_error = f"{exception_str}{error_label}{state_str}"
-
-                # Raise exception, re-set stack to original location
-                raise Exception(formatted_error) from e
 
         # No output if continue_as_new was called
         if self.durable_context.will_continue_as_new:
