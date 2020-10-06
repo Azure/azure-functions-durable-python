@@ -124,7 +124,9 @@ class DurableEntityContext:
         """
         # TODO: enable serialization of custom types
         self._exists = True
-        self._state = json.dumps(state)
+
+        # should only serialize the state at the end of a batch
+        self._state = state
 
     def get_state(self, initializer: Optional[Callable[[], Any]] = None) -> Any:
         """Get the current state of this entity.

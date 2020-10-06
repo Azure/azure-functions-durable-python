@@ -12,6 +12,7 @@ from .new_uuid import new_uuid
 from .call_http import call_http
 from .create_timer import create_timer_task
 from .call_entity import call_entity_task
+from .signal_entity import signal_entity_task
 
 __all__ = [
     'call_activity_task',
@@ -19,6 +20,7 @@ __all__ = [
     'call_sub_orchestrator_task',
     'call_sub_orchestrator_with_retry_task',
     'call_entity_task',
+    'signal_entity_task',       
     'call_http',
     'continue_as_new',
     'new_uuid',
