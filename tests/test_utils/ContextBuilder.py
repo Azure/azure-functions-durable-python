@@ -120,7 +120,7 @@ class ContextBuilder:
         event = self.get_base_event(HistoryEventType.EVENT_RAISED, id_=id_, timestamp=timestamp)
         event.Name = name
         if is_entity:
-            event.Input = json.dumps({ "result": input_ })
+            event.Input = json.dumps({ "result": json.dumps(input_) })
         else:
             event.Input = input_
         # event.timestamp = timestamp

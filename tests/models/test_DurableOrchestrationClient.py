@@ -492,7 +492,7 @@ async def test_wait_or_response_check_status_response(binding_string):
 
 
 @pytest.mark.asyncio
-async def test_wait_or_response_check_status_response(binding_string):
+async def test_wait_or_response_null_request(binding_string):
     status = dict(createdTime=TEST_CREATED_TIME,
                   lastUpdatedTime=TEST_LAST_UPDATED_TIME,
                   runtimeStatus="Running")
