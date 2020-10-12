@@ -1,14 +1,8 @@
 from typing import List, Any, Optional
-
-from ..models.Task import (
-    Task)
 from ..models.actions.SignalEntityAction import SignalEntityAction
 from ..models.history import HistoryEvent, HistoryEventType
-from .task_utilities import set_processed, parse_history_event, find_event
+from .task_utilities import set_processed, find_event
 from ..models.utils.entity_utils import EntityId
-from ..models.entities.RequestMessage import RequestMessage
-from ..models.entities.ResponseMessage import ResponseMessage
-import logging
 
 
 def signal_entity_task(
@@ -17,9 +11,10 @@ def signal_entity_task(
         entity_id: EntityId,
         operation_name: str = "",
         input_: Optional[Any] = None):
-    """ Signal a entity operation.
+    """Signal a entity operation.
 
-    It the action hasn't been scheduled, it appends the action. If the action has been scheduled, no ops.
+    It the action hasn't been scheduled, it appends the action.
+    If the action has been scheduled, no ops.
 
     Parameters
     ----------
@@ -32,7 +27,6 @@ def signal_entity_task(
         The name of the operation the entity needs to execute.
     input_: Any
         The JSON-serializable input to pass to the activity function.
-
     """
     new_action = SignalEntityAction(entity_id, operation_name, input_)
     scheduler_id = EntityId.get_scheduler_id(entity_id=entity_id)

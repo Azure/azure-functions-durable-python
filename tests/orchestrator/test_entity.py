@@ -81,7 +81,7 @@ def test_call_entity_raised():
     add_call_entity_completed_events(context_builder, "add", df.EntityId.get_scheduler_id(entityId), 3)
 
     result = get_orchestration_state_result(
-        context_builder, generator_function)
+        context_builder, generator_function_call_entity)
 
     expected_state = base_expected_state(
         [3]
