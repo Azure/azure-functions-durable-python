@@ -10,6 +10,7 @@ from ..models.entities.RequestMessage import RequestMessage
 from ..models.entities.ResponseMessage import ResponseMessage
 import json
 
+
 def call_entity_task(
         state: List[HistoryEvent],
         entity_id: EntityId,
@@ -66,10 +67,10 @@ def call_entity_task(
         response = ResponseMessage.from_dict(response)
 
         # TODO: json.loads inside parse_history_event is not recursvie
-        #       investigate if response.result is used elsewhere, 
+        #       investigate if response.result is used elsewhere,
         #       which probably requires another deserialization
         result = json.loads(response.result)
-        
+
         return Task(
             is_completed=True,
             is_faulted=False,

@@ -20,7 +20,7 @@ __all__ = [
     'call_sub_orchestrator_task',
     'call_sub_orchestrator_with_retry_task',
     'call_entity_task',
-    'signal_entity_task',       
+    'signal_entity_task',
     'call_http',
     'continue_as_new',
     'new_uuid',

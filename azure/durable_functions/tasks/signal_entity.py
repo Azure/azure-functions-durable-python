@@ -47,6 +47,6 @@ def signal_entity_task(
     set_processed([event_sent])
 
     if event_sent:
-        return 
+        return
 
     context.actions.append([new_action])

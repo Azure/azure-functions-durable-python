@@ -43,5 +43,5 @@ class SignalEntityAction(Action):
         add_attrib(json_dict, self, 'instance_id', 'instanceId')
         add_attrib(json_dict, self, 'operation', 'operation')
         add_attrib(json_dict, self, 'input_', 'input')
-        
+
         return json_dict

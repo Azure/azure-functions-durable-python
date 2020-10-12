@@ -382,7 +382,7 @@ class DurableOrchestrationContext:
         return call_entity_task(self.histories, entityId, operationName, operationInput)
 
     def signal_entity(self, entityId: EntityId,
-                    operationName: str, operationInput: Optional[Any] = None):
+                      operationName: str, operationInput: Optional[Any] = None):
         """Send a signal operation to Durable Entity given some input.
 
         Parameters
