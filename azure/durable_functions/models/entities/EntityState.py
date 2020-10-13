@@ -55,7 +55,7 @@ class EntityState:
         serialized_results = list(map(lambda x: x.to_json(), self.results))
 
         json_dict["entityExists"] = self.entity_exists
-        json_dict["entityState"] = self.state
+        json_dict["entityState"] = json.dumps(self.state)
         json_dict["results"] = serialized_results
         json_dict["signals"] = self.signals
         return json_dict

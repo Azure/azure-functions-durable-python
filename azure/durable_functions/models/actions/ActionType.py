@@ -13,3 +13,4 @@ class ActionType(IntEnum):
     WAIT_FOR_EXTERNAL_EVENT: int = 6
     CALL_ENTITY = 7
     CALL_HTTP: int = 8
+    SIGNAL_ENTITY: int = 9
