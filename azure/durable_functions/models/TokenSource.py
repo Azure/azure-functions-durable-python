@@ -32,6 +32,7 @@ class ManagedIdentityTokenSource(TokenSource):
     def __init__(self, resource: str):
         super().__init__()
         self._resource: str = resource
+        self._kind: str = "AzureManagedIdentity"
 
     @property
     def resource(self) -> str:
@@ -51,4 +52,5 @@ class ManagedIdentityTokenSource(TokenSource):
         """
         json_dict: Dict[str, Union[str, int]] = {}
         add_attrib(json_dict, self, 'resource')
+        json_dict["kind"] = self._kind
         return json_dict
