@@ -5,7 +5,7 @@ def test_serialization_fields():
     token_source = ManagedIdentityTokenSource(resource="TOKEN_SOURCE")
     token_source_json = token_source.to_json()
 
-    # JSON should contain a resource field and a kind field set to `AzureManagedIdentity`
+    # Output JSON should contain a resource field and a kind field set to `AzureManagedIdentity`
     assert "resource" in token_source_json.keys()
     assert "kind" in token_source_json.keys()
     assert token_source_json["kind"] == "AzureManagedIdentity"
