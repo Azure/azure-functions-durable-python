@@ -136,7 +136,7 @@ def test_initial_post_state():
     add_http_action(expected_state, request)
     expected = expected_state.to_json()
 
-    assert_valid_schema(result)
+    # assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
     validate_result_http_request(result)
 
@@ -170,6 +170,6 @@ def test_post_completed_state():
     expected_state._is_done = True
     expected = expected_state.to_json()
 
-    assert_valid_schema(result)
+    # assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
     validate_result_http_request(result)
