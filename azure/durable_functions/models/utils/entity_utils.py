@@ -69,6 +69,19 @@ class EntityId:
         [name, key] = components
         return EntityId(name, key)
 
+    @staticmethod
+    def get_entity_id_url_path(entity_id: 'EntityId') -> str:
+
+        """Print the the entity url path.
+
+        Returns
+        -------
+        str:
+            A url path of the EntityId
+        """
+
+        return f'entities/{entity_id.name}/{entity_id.key}'
+
     def __str__(self) -> str:
         """Print the string representation of this EntityId.
 

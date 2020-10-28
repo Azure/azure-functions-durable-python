@@ -13,6 +13,7 @@ from .RpcManagementOptions import RpcManagementOptions
 from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from ..models.DurableOrchestrationBindings import DurableOrchestrationBindings
 from .utils.http_utils import get_async_request, post_async_request, delete_async_request
+from .utils.entity_utils import EntityId
 from azure.functions._durable_functions import _serialize_custom_object
 
 
@@ -456,6 +457,55 @@ class DurableOrchestrationClient:
                 await sleep(sleep_time)
             else:
                 return self.create_check_status_response(request, instance_id)
+
+    async def signal_entity(self, entityId: EntityId, operation_name: str,
+                         operation_input: Optional[Any] = None,
+                         task_hub_name: Optional[str] = None,
+                         connection_name: Optional[str] = None) -> None:
+        """Signals an entity to perform an operation
+
+        Parameters
+        ----------
+        entityId : EntityId
+            The EntityId of the targeted entity to perform operation.
+        operation_name: str
+            The name of the operation.
+        operation_input: Optional[Any]
+            The content for the operation.
+        task_hub_name: Optional[str]
+            The task hub name of the target entity.
+        connection_name: Optional[str]
+            The name of the connection string associated with [task_hub_name].
+
+        Raises
+        ------
+        Exception:
+            When the signal entity call failed with an unexpected status code
+
+        Returns
+        -------
+        None
+        """
+        options = RpcManagementOptions(operation_name=operation_name,
+                                        connection_name=connection_name,
+                                        task_hub_name=task_hub_name,
+                                        entity_Id=entityId)
+
+        request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
+        response = await self._post_async_request(request_url, json.dumps(operation_input) if operation_input else None)
+
+        switch_statement = {
+            202: lambda: None  # signal accepted
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        
+        error_message = has_error_message()
+
+        if error_message:
+            raise Exception(error_message)
 
     @staticmethod
     def _create_http_response(
