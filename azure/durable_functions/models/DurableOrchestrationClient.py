@@ -459,10 +459,10 @@ class DurableOrchestrationClient:
                 return self.create_check_status_response(request, instance_id)
 
     async def signal_entity(self, entityId: EntityId, operation_name: str,
-                         operation_input: Optional[Any] = None,
-                         task_hub_name: Optional[str] = None,
-                         connection_name: Optional[str] = None) -> None:
-        """Signals an entity to perform an operation
+                            operation_input: Optional[Any] = None,
+                            task_hub_name: Optional[str] = None,
+                            connection_name: Optional[str] = None) -> None:
+        """Signals an entity to perform an operation.
 
         Parameters
         ----------
@@ -487,12 +487,14 @@ class DurableOrchestrationClient:
         None
         """
         options = RpcManagementOptions(operation_name=operation_name,
-                                        connection_name=connection_name,
-                                        task_hub_name=task_hub_name,
-                                        entity_Id=entityId)
+                                       connection_name=connection_name,
+                                       task_hub_name=task_hub_name,
+                                       entity_Id=entityId)
 
         request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
-        response = await self._post_async_request(request_url, json.dumps(operation_input) if operation_input else None)
+        response = await self._post_async_request(
+            request_url,
+            json.dumps(operation_input) if operation_input else None)
 
         switch_statement = {
             202: lambda: None  # signal accepted
@@ -501,7 +503,7 @@ class DurableOrchestrationClient:
         has_error_message = switch_statement.get(
             response[0],
             lambda: f"The operation failed with an unexpected status code {response[0]}")
-        
+
         error_message = has_error_message()
 
         if error_message:

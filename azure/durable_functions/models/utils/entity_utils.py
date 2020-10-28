@@ -71,7 +71,6 @@ class EntityId:
 
     @staticmethod
     def get_entity_id_url_path(entity_id: 'EntityId') -> str:
-
         """Print the the entity url path.
 
         Returns
@@ -79,7 +78,6 @@ class EntityId:
         str:
             A url path of the EntityId
         """
-
         return f'entities/{entity_id.name}/{entity_id.key}'
 
     def __str__(self) -> str:

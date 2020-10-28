@@ -6,6 +6,7 @@ from azure.durable_functions.models.OrchestrationRuntimeStatus import Orchestrat
 
 from .utils.entity_utils import EntityId
 
+
 class RpcManagementOptions:
     """Class used to collect the options for getting orchestration status."""
 
@@ -14,7 +15,7 @@ class RpcManagementOptions:
                  show_history_output: bool = None, created_time_from: datetime = None,
                  created_time_to: datetime = None,
                  runtime_status: List[OrchestrationRuntimeStatus] = None, show_input: bool = None,
-                 operation_name : str = None,
+                 operation_name: str = None,
                  entity_Id: EntityId = None):
         self._instance_id = instance_id
         self._task_hub_name = task_hub_name
@@ -38,7 +39,7 @@ class RpcManagementOptions:
         if value:
             date_as_string = value.strftime(DATETIME_STRING_FORMAT)
             RpcManagementOptions._add_arg(query, name, date_as_string)
-           
+
     def to_url(self, base_url: Optional[str]) -> str:
         """Get the url based on the options selected.
 
