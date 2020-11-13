@@ -5,11 +5,20 @@
 
 # Durable Functions for Python
 
-The `azure-functions-durable` [pip](https://pypi.org/project/azure-functions-durable/) package allows you to write [Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview) for [Python](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-python). Durable Functions is an extension of [Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview) that lets you write stateful functions and workflows in a serverless environment. The extension manages state, checkpoints, and restarts for you. Durable Functions' advantages include:
+ [Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview) is a programming model for describing _stateful_ workflows in a serverless enviroment. Durable Functions empowers programmers to specify their
+ workflows _as code_, meaning that developers can make good use of Python's idioms,
+ tools, libraries, and its overall programming ecosystem to implement complex systems with ease.
 
-* Define workflows in code. No JSON schemas or designers are needed.
-* Call other functions synchronously and asynchronously. Output from called functions can be saved to local variables.
-* Automatically checkpoint progress whenever the function schedules async work. Local state is never lost if the process recycles or the VM reboots.
+ 🐍  Find us on PyPi [here](https://pypi.org/project/azure-functions-durable/) 🐍   
+
+
+## More than just stateful Azure Functions
+Durable Functions is offered as an extension of [Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview). The extension manages state, checkpoints, and restarts for you. Python Durable Functions' advantages include:
+
+* Defining workflows as code. No JSON schemas or designers are needed.
+* Managing return values, exceptions, and control-flow using familiar Python constructs.
+* Scheduling serverless functions synchronously and asynchronously.
+* Automatically checkpointing progress whenever the function schedules async work. Local state is never lost if the process recycles or the VM reboots.
 
 You can find more information at the following links:
 
@@ -17,26 +26,18 @@ You can find more information at the following links:
 * [Azure Functions Python developers guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-python)
 * [Durable Functions overview](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=python)
 
-A durable function, or _orchestration_, is a solution made up of different types of Azure Functions:
+## Core Concepts
 
-* **Activity:** the functions and tasks being orchestrated by your workflow.
-* **Orchestrator:** a function that describes the way and order actions are executed in code.
-* **Client:** the entry point for creating an instance of a durable orchestration.
+A Durable Functions application is a solution made up of Azure Functions serving one of four distinct roles. These roles are outline below: 
 
-Durable Functions' function types and features are documented in-depth [here.](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-types-features-overview)
+* **Activity:** they are the basic unit of work, a task to be scheduled.
+* **Orchestrator:** they describe which actions to execute, in what order to schedule them, deal with exceptions, etc. As their name implies, they organize and manage a workflow to completion.
+* **Entity:**  They allow you to read and update small pieces of state. Unlike orchestrators, entities manage state explicitely instead of implicitely managing it via control flow.
+* **Client:** They serve as the entry point for creating an instance of a durable application, often times serving to deliver the initiating message that a workflow will use to begin its execution.
 
-## Current limitations
+Durable Functions' function types and features are documented in-depth [here.](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-types-features-overview).
 
-Python support for Durable Functions is currently in public preview. The following are the current known limitations.
-
-### Functionality
-
-* Sub-orchestrations are not yet supported (planned [#62](https://github.com/Azure/azure-functions-durable-python/issues/62))
-* Durable Entities are not yet supported (not yet planned [#96](https://github.com/Azure/azure-functions-durable-python/issues/96))
-
-### Tooling
-
-* Python Durable Functions requires [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local) version 3.0.2630 or higher.
+> Some of the function roles outline above expect specific programming constraints to be followed, such as idempotency and replayability. Please read the documentation linked above for more information.
 
 ## Getting Started
 
@@ -53,20 +54,6 @@ Take a look at this project's [samples directory](./samples/):
 * [Fan-out/Fan-in - TensorFlow](./samples/fan_out_fan_in_tensorflow)
 * [External Events - Human Interaction & Timeouts](./samples/external_events)
 
-### Orchestrator example
+## Tooling
 
-```python
-import azure.durable_functions as df
-
-
-def orchestrator_function(context: df.DurableOrchestrationContext):
-    task1 = yield context.call_activity("DurableActivity", "One")
-    task2 = yield context.call_activity("DurableActivity", "Two")
-    task3 = yield context.call_activity("DurableActivity", "Three")
-
-    outputs = [task1, task2, task3]
-    return outputs
-
-
-main = df.Orchestrator.create(orchestrator_function)
-```
+* Python Durable Functions requires [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local) version 3.0.2630 or higher.
