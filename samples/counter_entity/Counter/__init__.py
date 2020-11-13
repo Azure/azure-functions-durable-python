@@ -18,7 +18,7 @@ def entity_function(context: df.DurableEntityContext):
         for implementing durable entities.
     """
 
-    current_value = context.get_state(lambda: "0")
+    current_value = context.get_state(lambda: 0)
     operation = context.operation_name
     if operation == "add":
         amount = context.get_input()
