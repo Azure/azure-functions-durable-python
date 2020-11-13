@@ -15,7 +15,7 @@ import azure.durable_functions as df
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
     """This function provides the a simple implementation of an orchestrator
-    that calls a counter Durable Entity.
+    that signals and then calls a counter Durable Entity.
 
     Parameters
     ----------
@@ -26,17 +26,10 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     -------
     state
         The state after applying the operation on the Durable Entity
-
-    Yields
-    -------
-    call_entity: Any
-        Yields to wait on the Durable Entity to process its operation,
-        with the provided input, to then receive its counter state value.
     """
-
-    # TODO: make the operation and the input into URL params
     entityId = df.EntityId("Counter", "myCounter")
-    state = yield context.call_entity(entityId, "add", 3)
+    context.signal_entity(entityId, "add", 3)
+    state = yield context.call_entity(entityId, "get")
     return state
 
 main = df.Orchestrator.create(orchestrator_function)

@@ -39,8 +39,7 @@ def signal_entity_task(
 
     event_sent = find_event(state, hist_type, extra_constraints)
     set_processed([event_sent])
+    context.actions.append([new_action])
 
     if event_sent:
         return
-
-    context.actions.append([new_action])
