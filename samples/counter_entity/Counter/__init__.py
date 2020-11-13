@@ -28,7 +28,6 @@ def entity_function(context: df.DurableEntityContext):
     elif operation == "get":
         pass
     
-    #TODO: we need to handle an invalid op, throw exception?
     context.set_state(current_value)
     context.set_result(current_value)
 

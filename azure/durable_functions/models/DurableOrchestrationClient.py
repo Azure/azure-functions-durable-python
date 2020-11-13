@@ -354,7 +354,6 @@ class DurableOrchestrationClient:
         PurgeHistoryResult
             The results of the request to purge history
         """
-        # TODO: do we really want folks to us this without specifying all the args?
         options = RpcManagementOptions(created_time_from=created_time_from,
                                        created_time_to=created_time_to,
                                        runtime_status=runtime_status)

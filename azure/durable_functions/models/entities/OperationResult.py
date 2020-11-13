@@ -1,4 +1,6 @@
 from typing import Optional, Dict, Any
+from azure.functions._durable_functions import _serialize_custom_object
+import json
 
 
 class OperationResult:
@@ -22,7 +24,6 @@ class OperationResult:
         result: Optional[str]
             The operation result. Defaults to None.
         """
-        # TODO: perhaps this should inherit from orchestrator state
         self._is_error: bool = is_error
         self._duration: int = duration
         self._result: Optional[str] = result
@@ -50,15 +51,14 @@ class OperationResult:
         return self._duration
 
     @property
-    def result(self) -> Optional[str]:
+    def result(self) -> Any:
         """Get the operation's result.
 
         Returns
         -------
-        Optional[str]
+        Any
             The operation's result
         """
-        # TODO: is this necessary str or None?
         return self._result
 
     def to_json(self) -> Dict[str, Any]:
@@ -72,5 +72,5 @@ class OperationResult:
         to_json: Dict[str, Any] = {}
         to_json["isError"] = self.is_error
         to_json["duration"] = self.duration
-        to_json["result"] = self.result
+        to_json["result"] = json.dumps(self.result, default=_serialize_custom_object)
         return to_json

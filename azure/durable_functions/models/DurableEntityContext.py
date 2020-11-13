@@ -71,8 +71,8 @@ class DurableEntityContext:
         Optional[str]
             The current operation name
         """
-        # TODO: Maybe we should raise an
-        # exception if _operation is None
+        if self._operation is None:
+            raise Exception("Entity operation is unassigned")
         return self._operation
 
     @property
@@ -84,7 +84,7 @@ class DurableEntityContext:
         bool
             True if the Entity was newly constructed. False otherwise.
         """
-        # TODO: not updating this atm
+        # This is not updated at the moment, as its semantics are unclear
         return self._is_newly_constructed
 
     @classmethod
@@ -122,10 +122,9 @@ class DurableEntityContext:
         state: Any
             The new state of the entity
         """
-        # TODO: enable serialization of custom types
         self._exists = True
 
-        # should only serialize the state at the end of a batch
+        # should only serialize the state at the end of the batch
         self._state = state
 
     def get_state(self, initializer: Optional[Callable[[], Any]] = None) -> Any:
@@ -142,11 +141,11 @@ class DurableEntityContext:
             The current state of the entity
         """
         state = self._state
-        # TODO: some weird errs here with None states
         if state is not None:
             return state
         elif initializer:
-            # TODO: ensure this is a fucntion
+            if not callable(initializer):
+                raise Exception("initializer argument needs to be a callable function")
             state = initializer()
         return state
 
@@ -198,5 +197,4 @@ class DurableEntityContext:
         Any:
             The original datatype that was serialized
         """
-        # TODO: this should be a util elsewhere, since we use it alot
         return json.loads(json_str, object_hook=_deserialize_custom_object)

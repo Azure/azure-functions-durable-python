@@ -47,7 +47,10 @@ class Entity:
 
             try:
                 # populate context
-                context._operation = packet["name"]
+                operation = packet["name"]
+                if operation is None:
+                    raise Exception("Entity operation is unassigned.")
+                context._operation = operation
                 context._input = packet["input"]
                 self.fn(context)
                 result = context._result
@@ -81,9 +84,10 @@ class Entity:
         Callable[[Any], str]
             Handle function of the newly created entity client
         """
-        # TODO: review types here!
         def handle(context) -> str:
-            # TODO: this requires some commenting, where do we need to get this from the body
+            # It is not clear when the context JSON would be found
+            # inside a "body"-key, but this pattern matches the
+            # orchestrator implementation, so we keep it for safety.
             context_body = getattr(context, "body", None)
             if context_body is None:
                 context_body = context

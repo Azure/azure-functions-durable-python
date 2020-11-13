@@ -1,5 +1,6 @@
 from typing import List, Optional, Dict, Any
 from .Signal import Signal
+from azure.functions._durable_functions import _serialize_custom_object
 from .OperationResult import OperationResult
 import json
 
@@ -55,7 +56,7 @@ class EntityState:
         serialized_results = list(map(lambda x: x.to_json(), self.results))
 
         json_dict["entityExists"] = self.entity_exists
-        json_dict["entityState"] = json.dumps(self.state)
+        json_dict["entityState"] = json.dumps(self.state, default=_serialize_custom_object)
         json_dict["results"] = serialized_results
         json_dict["signals"] = self.signals
         return json_dict

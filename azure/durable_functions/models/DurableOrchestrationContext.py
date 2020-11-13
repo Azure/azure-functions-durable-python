@@ -36,7 +36,6 @@ class DurableOrchestrationContext:
         self._new_uuid_counter: int = 0
         self._sub_orchestrator_counter: int = 0
         self._continue_as_new_flag: bool = False
-        # TODO: waiting on the `continue_as_new` intellisense until that's implemented
         self.decision_started_event: HistoryEvent = \
             [e_ for e_ in self.histories
              if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]

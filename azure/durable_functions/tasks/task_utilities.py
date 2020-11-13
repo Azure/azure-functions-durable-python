@@ -23,13 +23,12 @@ def parse_history_event(directive_result):
 
     # We provide the ability to deserialize custom objects, because the output of this
     # will be passed directly to the orchestrator as the output of some activity
-    # TODO: why do we have this chain of equivalent if-statements?
     if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED:
         return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.TASK_COMPLETED:
         return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.EVENT_RAISED:
-        # TODO: why is the result here on input?
+        # TODO: Investigate why the payload is in "Input" instead of "Result"
         return json.loads(directive_result.Input, object_hook=_deserialize_custom_object)
     return None
 
@@ -303,8 +302,9 @@ def find_sub_orchestration(
             err = "Tried to lookup suborchestration in history but had not name to reference it."
             raise ValueError(err)
 
-        # TODO: The HistoryEvent does not necessarily have an name or an instance_id
-        #       We should create sub-classes of these types like JS does
+        # TODO: The HistoryEvent does not necessarily have a name or an instance_id
+        #       We should create sub-classes of these types like JS does, to ensure their
+        #       precense.
         err_message: str = ""
         if not(event.Name == name):
             mid_message = "a function name of {} instead of the provided function name of {}."

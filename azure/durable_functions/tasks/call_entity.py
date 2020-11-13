@@ -58,7 +58,7 @@ def call_entity_task(
                 "Name": event_input.id
             }
             event_raised = find_event(state, hist_type, extra_constraints)
-        # TODO: does it make sense to have an event_sent but no `Input` attribute ??
+        # TODO: does it make sense to have an event_sent but no `Input` attribute ?
         # If not, we should raise an exception here
 
     set_processed([event_sent, event_raised])
@@ -66,7 +66,7 @@ def call_entity_task(
         response = parse_history_event(event_raised)
         response = ResponseMessage.from_dict(response)
 
-        # TODO: json.loads inside parse_history_event is not recursvie
+        # TODO: json.loads inside parse_history_event is not recursive
         #       investigate if response.result is used elsewhere,
         #       which probably requires another deserialization
         result = json.loads(response.result)
