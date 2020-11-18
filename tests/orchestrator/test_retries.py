@@ -1,4 +1,5 @@
 from tests.test_utils.ContextBuilder import ContextBuilder
+from tests.test_utils.testClasses import SerializableClass
 from azure.durable_functions.models.RetryOptions import RetryOptions
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
@@ -41,6 +42,38 @@ def generator_function(context: DurableOrchestrationContext):
     outputs.append(task3)
 
     return outputs
+
+
+def generator_function_with_serialization(context: DurableOrchestrationContext):
+    """Orchestrator function for testing retry'ing with serializable input arguments.
+
+    Parameters
+    ----------
+    context: DurableOrchestrationContext
+        Durable orchestration context, exposes the Durable API
+
+    Returns
+    -------
+    List[str]:
+        Output of activities, a list of hello'd cities
+    """
+
+    outputs = []
+
+    retry_options = RETRY_OPTIONS
+    task1 = yield context.call_activity_with_retry(
+        "Hello", retry_options, SerializableClass("Tokyo"))
+    task2 = yield context.call_activity_with_retry(
+        "Hello",  retry_options, SerializableClass("Seatlle"))
+    task3 = yield context.call_activity_with_retry(
+        "Hello",  retry_options, SerializableClass("London"))
+
+    outputs.append(task1)
+    outputs.append(task2)
+    outputs.append(task3)
+
+    return outputs
+
 
 def get_context_with_retries_and_corrupted_completion() -> ContextBuilder:
     """Get a ContextBuilder whose history contains a late completion event
@@ -268,3 +301,17 @@ def test_retries_can_fail():
         
         expected_error_str = f"{error_msg}{error_label}"
         assert str.startswith(error_str, expected_error_str)
+
+def test_retries_with_serializable_input():
+    """Tests that retried tasks work with serialized input classes."""
+    context = get_context_with_retries()
+
+    result_1 = get_orchestration_state_result(
+        context, generator_function)
+
+    result_2 = get_orchestration_state_result(
+        context, generator_function_with_serialization)
+
+    assert "output" in result_1
+    assert "output" in result_2
+    assert result_1["output"] == result_2["output"]
