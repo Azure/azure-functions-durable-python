@@ -1,6 +1,5 @@
 import json
 from ..models.history import HistoryEventType, HistoryEvent
-from ..constants import DATETIME_STRING_FORMAT
 from azure.functions._durable_functions import _deserialize_custom_object
 from dateutil import parser
 from typing import List, Optional
