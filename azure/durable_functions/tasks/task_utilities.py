@@ -2,7 +2,7 @@ import json
 from ..models.history import HistoryEventType, HistoryEvent
 from ..constants import DATETIME_STRING_FORMAT
 from azure.functions._durable_functions import _deserialize_custom_object
-from datetime import datetime
+from dateutil import parser
 from typing import List, Optional
 from ..models.actions.Action import Action
 from ..models.Task import Task
@@ -140,7 +140,7 @@ def find_task_timer_created(state, fire_at):
     tasks = []
     for e in state:
         if e.event_type == HistoryEventType.TIMER_CREATED and hasattr(e, "FireAt"):
-            if datetime.strptime(e.FireAt, DATETIME_STRING_FORMAT) == fire_at:
+            if parser.parse(e.FireAt).replace(tzinfo=None) == fire_at: 
                 tasks.append(e)
 
     if len(tasks) == 0:
