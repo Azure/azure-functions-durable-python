@@ -139,7 +139,7 @@ def find_task_timer_created(state, fire_at):
     tasks = []
     for e in state:
         if e.event_type == HistoryEventType.TIMER_CREATED and hasattr(e, "FireAt"):
-            if parser.parse(e.FireAt).replace(tzinfo=None) == fire_at: 
+            if parser.parse(e.FireAt).replace(tzinfo=None) == fire_at:
                 tasks.append(e)
 
     if len(tasks) == 0:
