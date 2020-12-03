@@ -1,0 +1,17 @@
+{
+  "bindings": [
+    {
+      "name": "phoneNumber",
+      "type": "activityTrigger",
+      "direction": "in"
+    },
+    {
+      "type": "twilioSms",
+      "name": "message",
+      "from": "+12513135683",
+      "accountSidSetting": "AzureWebJobsTwilioAccountSid",
+      "authTokenSetting": "AzureWebJobsTwilioAuthToken",
+      "direction": "out"
+    }
+  ]
+}
