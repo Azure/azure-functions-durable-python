@@ -45,15 +45,6 @@ Follow these instructions to get started with Durable Functions in Python:
 
 **🚀 [Python Durable Functions quickstart](https://docs.microsoft.com/azure/azure-functions/durable/quickstart-python-vscode)**
 
-## Samples
-
-Take a look at this project's [samples directory](./samples/):
-
-* [Function Chaining](./samples/function_chaining)
-* [Fan-out/Fan-in - Simple](./samples/fan_out_fan_in)
-* [Fan-out/Fan-in - TensorFlow](./samples/fan_out_fan_in_tensorflow)
-* [External Events - Human Interaction & Timeouts](./samples/external_events)
-
 ## Tooling
 
 * Python Durable Functions requires [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local) version 3.0.2630 or higher.
