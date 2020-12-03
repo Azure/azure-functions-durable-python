@@ -3,6 +3,8 @@ from .models.entities import OperationResult, EntityState
 from datetime import datetime
 from typing import Callable, Any, List, Dict
 
+class InternalEntityException(Exception):
+    pass
 
 class Entity:
     """Durable Entity Class.
@@ -49,11 +51,14 @@ class Entity:
                 # populate context
                 operation = operation_data["name"]
                 if operation is None:
-                    raise Exception("Durable Functions Internal Error: Entity operation was missing a name field")
+                    raise InternalEntityException("Durable Functions Internal Error: Entity operation was missing a name field")
                 context._operation = operation
                 context._input = operation_data["input"]
                 self.fn(context)
                 result = context._result
+
+            except InternalEntityException as e:
+                raise e
 
             except Exception as e:
                 is_error = True
