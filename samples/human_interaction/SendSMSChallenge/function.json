@@ -8,7 +8,7 @@
     {
       "type": "twilioSms",
       "name": "message",
-      "from": "+12513135683",
+      "from": "",
       "accountSidSetting": "AzureWebJobsTwilioAccountSid",
       "authTokenSetting": "AzureWebJobsTwilioAuthToken",
       "direction": "out"
