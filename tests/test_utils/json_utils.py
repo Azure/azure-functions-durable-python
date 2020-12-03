@@ -24,7 +24,7 @@ def convert_history_event_to_json_dict(
     add_attrib(json_dict, history_event, 'FireAt')
     add_attrib(json_dict, history_event, 'TimerId')
     add_attrib(json_dict, history_event, 'Name')
+    add_attrib(json_dict, history_event, 'InstanceId')
     add_json_attrib(json_dict, history_event,
                     'orchestration_instance', 'OrchestrationInstance')
-
     return json_dict
