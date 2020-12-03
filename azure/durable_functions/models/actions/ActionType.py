@@ -11,4 +11,6 @@ class ActionType(IntEnum):
     CONTINUE_AS_NEW: int = 4
     CREATE_TIMER: int = 5
     WAIT_FOR_EXTERNAL_EVENT: int = 6
+    CALL_ENTITY = 7
     CALL_HTTP: int = 8
+    SIGNAL_ENTITY: int = 9

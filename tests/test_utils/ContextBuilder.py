@@ -63,6 +63,13 @@ class ContextBuilder:
         event.TaskScheduledId = id_
         self.history_events.append(event)
 
+    def add_event_sent_event(self, instance_id):
+        event = self.get_base_event(HistoryEventType.EVENT_SENT)
+        event.InstanceId = instance_id
+        event.Name = "op"
+        event.Input = json.dumps({ "id": "0000" }) # usually provided by the extension
+        self.history_events.append(event)
+
     def add_task_scheduled_event(
             self, name: str, id_: int, version: str = '', input_=None):
         event = self.get_base_event(HistoryEventType.TASK_SCHEDULED, id_=id_)
@@ -109,10 +116,13 @@ class ContextBuilder:
         event.Input = input_
         self.history_events.append(event)
 
-    def add_event_raised_event(self, name: str, id_: int, input_=None, timestamp=None):
+    def add_event_raised_event(self, name:str, id_: int, input_=None, timestamp=None, is_entity=False):
         event = self.get_base_event(HistoryEventType.EVENT_RAISED, id_=id_, timestamp=timestamp)
         event.Name = name
-        event.Input = input_
+        if is_entity:
+            event.Input = json.dumps({ "result": json.dumps(input_) })
+        else:
+            event.Input = input_
         # event.timestamp = timestamp
         self.history_events.append(event)
 
