@@ -5,8 +5,7 @@
 
 # Durable Functions for Python
 
- [Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview) is a programming model for describing _stateful_ workflows in a serverless enviroment. Durable Functions empowers programmers to specify their
- workflows _as code_, meaning that developers can make good use of Python's idioms,
+ [Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview) is a programming model for describing _stateful_ workflows in a serverless enviroment. Durable Functions empowers programmers to specify their workflows _as code_, meaning that developers can make good use of Python's idioms,
  tools, libraries, and its overall programming ecosystem to implement complex systems with ease.
 
  🐍  Find us on PyPi [here](https://pypi.org/project/azure-functions-durable/) 🐍   
