@@ -8,9 +8,9 @@
     {
       "type": "twilioSms",
       "name": "message",
-      "from": "",
-      "accountSidSetting": "AzureWebJobsTwilioAccountSid",
-      "authTokenSetting": "AzureWebJobsTwilioAuthToken",
+      "from": "%TwilioPhoneNumber%",
+      "accountSidSetting": "TwilioAccountSid",
+      "authTokenSetting": "TwilioAuthToken",
       "direction": "out"
     }
   ]
