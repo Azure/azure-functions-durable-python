@@ -1,7 +1,0 @@
-azure-functions
-setuptools>=41.0.0
-tensorflow==1.14
-Pillow
-requests
-azure-cognitiveservices-search-imagesearch
-azure-functions-durable>=1.0.0b6
