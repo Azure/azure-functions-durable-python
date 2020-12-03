@@ -109,8 +109,8 @@ class DurableEntityContext:
 
         serialized_state = json_dict["state"]
         if serialized_state is not None:
-            json_dict["state"] = json.loads(serialized_state,
-                                            object_hook=_deserialize_custom_object)
+            json_dict["state"] = from_json_util(serialized_state)
+
         batch = json_dict.pop("batch")
         return cls(**json_dict), batch
 
@@ -160,7 +160,7 @@ class DurableEntityContext:
         input_ = None
         req_input = self._input
         req_input = json.loads(req_input)
-        input_ = None if req_input is None else self.from_json_util(req_input)
+        input_ = None if req_input is None else from_json_util(req_input)
         return input_
 
     def set_result(self, result: Any) -> None:
@@ -179,22 +179,22 @@ class DurableEntityContext:
         self._exists = False
         self._state = None
 
-    def from_json_util(self, json_str: str) -> Any:
-        """Load an arbitrary datatype from its JSON representation.
+def from_json_util(self, json_str: str) -> Any:
+    """Load an arbitrary datatype from its JSON representation.
 
-        The Out-of-proc SDK has a special JSON encoding strategy
-        to enable arbitrary datatypes to be serialized. This utility
-        loads a JSON with the assumption that it follows that encoding
-        method.
+    The Out-of-proc SDK has a special JSON encoding strategy
+    to enable arbitrary datatypes to be serialized. This utility
+    loads a JSON with the assumption that it follows that encoding
+    method.
 
-        Parameters
-        ----------
-        json_str: str
-            A JSON-formatted string, from durable-extension
+    Parameters
+    ----------
+    json_str: str
+        A JSON-formatted string, from durable-extension
 
-        Returns
-        -------
-        Any:
-            The original datatype that was serialized
-        """
-        return json.loads(json_str, object_hook=_deserialize_custom_object)
+    Returns
+    -------
+    Any:
+        The original datatype that was serialized
+    """
+    return json.loads(json_str, object_hook=_deserialize_custom_object)

@@ -7,7 +7,7 @@ from typing import Callable, Any, List, Dict
 class Entity:
     """Durable Entity Class.
 
-    Responsible for execuitng the user-defined entity function.
+    Responsible for executing the user-defined entity function.
     """
 
     def __init__(self, entity_func: Callable[[DurableEntityContext], None]):
@@ -40,18 +40,18 @@ class Entity:
             entity execution.
         """
         response = EntityState(results=[], signals=[])
-        for packet in batch:
+        for operation_data in batch:
             result: Any = None
             is_error: bool = False
             start_time: datetime = datetime.now()
 
             try:
                 # populate context
-                operation = packet["name"]
+                operation = operation_data["name"]
                 if operation is None:
-                    raise Exception("Entity operation is unassigned.")
+                    raise Exception("Durable Functions Internal Error: Entity operation was missing a name field")
                 context._operation = operation
-                context._input = packet["input"]
+                context._input = operation_data["input"]
                 self.fn(context)
                 result = context._result
 
