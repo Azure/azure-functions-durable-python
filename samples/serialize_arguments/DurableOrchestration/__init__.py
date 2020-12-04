@@ -2,7 +2,7 @@ import logging
 
 import azure.functions as func
 import azure.durable_functions as df
-from ..shared_code.MyClasses import SerializableClass # TODO: this import is highlight 'red' in VSCode, but works at runtime
+from ..shared_code.MyClasses import SerializableClass
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
     """This function provides the core function chaining orchestration logic
