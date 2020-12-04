@@ -1,0 +1,10 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "name": "repoID",
+      "type": "activityTrigger",
+      "direction": "in"
+    }
+  ]
+}
