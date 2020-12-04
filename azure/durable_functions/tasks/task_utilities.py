@@ -1,8 +1,8 @@
 import json
 from ..models.history import HistoryEventType, HistoryEvent
 from azure.functions._durable_functions import _deserialize_custom_object
-from dateutil import parser
-from typing import List, Optional
+from datetime import datetime
+from typing import List, Optional, Dict, Any
 from ..models.actions.Action import Action
 from ..models.Task import Task
 
@@ -22,13 +22,63 @@ def parse_history_event(directive_result):
 
     # We provide the ability to deserialize custom objects, because the output of this
     # will be passed directly to the orchestrator as the output of some activity
-    if event_type == HistoryEventType.EVENT_RAISED:
-        return json.loads(directive_result.Input, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED:
         return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
     if event_type == HistoryEventType.TASK_COMPLETED:
         return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
+    if event_type == HistoryEventType.EVENT_RAISED:
+        # TODO: Investigate why the payload is in "Input" instead of "Result"
+        return json.loads(directive_result.Input, object_hook=_deserialize_custom_object)
     return None
+
+
+def find_event(state: List[HistoryEvent], event_type: HistoryEventType,
+               extra_constraints: Dict[str, Any]) -> Optional[HistoryEvent]:
+    """Find event in the histories array as per some constraints.
+
+    Parameters
+    ----------
+    state: List[HistoryEvent]
+        The list of events so far in the orchestaration
+    event_type: HistoryEventType
+        The type of the event we're looking for
+    extra_constraints: Dict[str, Any]
+        A dictionary of key-value pairs where the key is a property of the
+        sought-after event, and value are its expected contents.
+
+    Returns
+    -------
+    Optional[HistoryEvent]
+        The event being searched-for, if found. Else, None.
+    """
+    def satisfies_contraints(e: HistoryEvent) -> bool:
+        """Determine if an event matches our search criteria.
+
+        Parameters
+        ----------
+        e: HistoryEvent
+            An event from the state array
+
+        Returns
+        -------
+        bool
+            True if the event matches our constraints. Else, False.
+        """
+        for attr, val in extra_constraints.items():
+            if hasattr(e, attr) and getattr(e, attr) == val:
+                continue
+            else:
+                return False
+        return True
+
+    tasks = [e for e in state
+             if e.event_type == event_type
+             and satisfies_contraints(e) and not e.is_processed]
+
+    if len(tasks) == 0:
+        return None
+
+    return tasks[0]
 
 
 def find_event_raised(state, name):
@@ -251,8 +301,9 @@ def find_sub_orchestration(
             err = "Tried to lookup suborchestration in history but had not name to reference it."
             raise ValueError(err)
 
-        # TODO: The HistoryEvent does not necessarily have an name or an instance_id
-        #       We should create sub-classes of these types like JS does
+        # TODO: The HistoryEvent does not necessarily have a name or an instance_id
+        #       We should create sub-classes of these types like JS does, to ensure their
+        #       precense.
         err_message: str = ""
         if not(event.Name == name):
             mid_message = "a function name of {} instead of the provided function name of {}."

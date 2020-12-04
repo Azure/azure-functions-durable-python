@@ -1,19 +1,36 @@
 import json
-from typing import Callable, Iterator, Any, Dict
+from typing import Callable, Iterator, Any, Dict, List
 from jsonschema import validate
 
-from azure.durable_functions.models import DurableOrchestrationContext
+from azure.durable_functions.models import DurableOrchestrationContext, DurableEntityContext
 from azure.durable_functions.orchestrator import Orchestrator
+from azure.durable_functions.entity import Entity
 from .schemas.OrchetrationStateSchema import schema
 
 
 def assert_orchestration_state_equals(expected, result):
+    """Ensure that the observable OrchestratorState matches the expected result.
+    """
     assert_attribute_equal(expected, result, "isDone")
     assert_actions_are_equal(expected, result)
     assert_attribute_equal(expected, result, "output")
     assert_attribute_equal(expected, result, "error")
     assert_attribute_equal(expected, result, "customStatus")
 
+def assert_entity_state_equals(expected, result):
+    """Ensure the that the observable EntityState json matches the expected result.
+    """
+    assert_attribute_equal(expected, result,"entityExists")
+    assert "results" in result
+    observed_results = result["results"]
+    expected_results = expected["results"]
+    assert_results_are_equal(expected_results, observed_results)
+    assert_attribute_equal(expected, result, "entityState")
+    assert_attribute_equal(expected, result, "signals")
+
+def assert_results_are_equal(expected: Dict[str, Any], result: Dict[str, Any]) -> bool:
+    assert_attribute_equal(expected, result, "result")
+    assert_attribute_equal(expected, result, "isError")
 
 def assert_attribute_equal(expected, result, attribute):
     if attribute in expected:
@@ -47,6 +64,33 @@ def get_orchestration_state_result(
     orchestrator = Orchestrator(activity_func)
     result_of_handle = orchestrator.handle(
         DurableOrchestrationContext.from_json(context_as_string))
+    result = json.loads(result_of_handle)
+    return result
+
+def get_entity_state_result(
+        context_builder: DurableEntityContext,
+        user_code: Callable[[DurableEntityContext], Any],
+        ) -> Dict[str, Any]:
+    """Simulate the result of running the entity function with the provided context and batch.
+
+    Parameters
+    ----------
+    context_builder: DurableEntityContext
+        A mocked entity context
+    user_code: Callable[[DurableEntityContext], Any]
+        A function implementing an entity
+
+    Returns:
+    -------
+    Dict[str, Any]:
+        JSON-response of the entity
+    """
+    # The durable-extension automatically wraps the data within a 'self' key
+    context_as_string = context_builder.to_json_string()
+    entity = Entity(user_code)
+
+    context, batch = DurableEntityContext.from_json(context_as_string)
+    result_of_handle = entity.handle(context, batch)
     result = json.loads(result_of_handle)
     return result
 
