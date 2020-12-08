@@ -2,7 +2,6 @@
 
 Exposes the different API components intended for public consumption
 """
-from sys import version
 from .orchestrator import Orchestrator
 from .entity import Entity
 from .models.utils.entity_utils import EntityId
