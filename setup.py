@@ -9,7 +9,7 @@ import glob
 from setuptools import setup, find_packages
 from distutils.command import build
 
-with open("README.md", "r") as fh:
+with open("README.md", "r",  encoding="utf8") as fh:
     long_description = fh.read()
 
 class BuildModule(build.build):

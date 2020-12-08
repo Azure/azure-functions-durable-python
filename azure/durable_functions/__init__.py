@@ -2,6 +2,7 @@
 
 Exposes the different API components intended for public consumption
 """
+from sys import version
 from .orchestrator import Orchestrator
 from .entity import Entity
 from .models.utils.entity_utils import EntityId
@@ -10,6 +11,26 @@ from .models.DurableOrchestrationContext import DurableOrchestrationContext
 from .models.DurableEntityContext import DurableEntityContext
 from .models.RetryOptions import RetryOptions
 from .models.TokenSource import ManagedIdentityTokenSource
+import json
+
+def validate_extension_bundles():
+    host_path = "host.json"
+    bundles_key = "extensionBundle"
+    version_key = "version"
+    with open(host_path) as f:
+        host_settings = json.loads(f.read())
+        try:
+            version_range = host_settings[bundles_key][version_key]
+        except Exception:
+            # If bundle info is not  available, we ignore it.
+            # It's possible the user is using a manual extension install
+            return
+        if version_range == "[1.*, 2.0.0)":
+            message = "Bundles V1 is deprecated. Please update to Bundles V2 in your `host.json`."\
+                "You can set extensionBundles version to be: [2.*, 3.0.0)"
+            raise Exception(message)
+
+validate_extension_bundles()
 
 __all__ = [
     'Orchestrator',
