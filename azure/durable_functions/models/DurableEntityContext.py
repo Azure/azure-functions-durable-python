@@ -179,7 +179,8 @@ class DurableEntityContext:
         self._exists = False
         self._state = None
 
-def from_json_util(self, json_str: str) -> Any:
+
+def from_json_util(json_str: str) -> Any:
     """Load an arbitrary datatype from its JSON representation.
 
     The Out-of-proc SDK has a special JSON encoding strategy
