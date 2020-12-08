@@ -1,4 +1,6 @@
 import os
+from os import path
+import pathlib
 from azure.storage.blob import BlobServiceClient
 from azure.core.exceptions import ResourceExistsError
 
@@ -18,7 +20,9 @@ def main(filePath: str) -> str:
         pass
 
     # Create a blob client using the local file name as the name for the blob
-    blob_client = blob_service_client.get_blob_client(container=container_name, blob=filePath)
+    parent_dir, fname = pathlib.Path(filePath).parts[-2:] # Get last two path components
+    blob_name = parent_dir + "_" + fname
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
 
     # Count bytes i nfile
     byte_count = os.path.getsize(filePath)
