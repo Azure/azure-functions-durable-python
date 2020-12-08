@@ -11,11 +11,18 @@ from .models.DurableEntityContext import DurableEntityContext
 from .models.RetryOptions import RetryOptions
 from .models.TokenSource import ManagedIdentityTokenSource
 import json
+from pathlib import Path
 
 def validate_extension_bundles():
     host_path = "host.json"
     bundles_key = "extensionBundle"
     version_key = "version"
+    host_file = Path(host_path)
+
+    if not host_file.exists():
+        # If it doesn't exist, we ignore it
+        return
+
     with open(host_path) as f:
         host_settings = json.loads(f.read())
         try:
