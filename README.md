@@ -1,6 +1,6 @@
 |Branch|Status|
 |---|---|
-|master|[![Build Status](https://azfunc.visualstudio.com/Azure%20Functions%20Python/_apis/build/status/Azure%20Functions%20Durable%20Python?branchName=master)](https://azfunc.visualstudio.com/Azure%20Functions%20Python/_build/latest?definitionId=44&branchName=master)|
+|main|[![Build Status](https://azfunc.visualstudio.com/Azure%20Functions%20Python/_apis/build/status/Azure%20Functions%20Durable%20Python?branchName=main)](https://azfunc.visualstudio.com/Azure%20Functions%20Python/_build/latest?definitionId=44&branchName=main)|
 |dev|[![Build Status](https://azfunc.visualstudio.com/Azure%20Functions%20Python/_apis/build/status/Azure%20Functions%20Durable%20Python?branchName=dev)](https://azfunc.visualstudio.com/Azure%20Functions%20Python/_build/latest?definitionId=44&branchName=dev)|
 
 # Durable Functions for Python
