@@ -20,6 +20,34 @@ def generator_function(context):
 
     return outputs
 
+def generator_function_deterministic_utc_time(context):
+    outputs = []
+
+    now = context.current_utc_datetime
+    if not now:
+        raise Exception("No time! 1st attempt")
+    task1 = yield context.call_activity("Hello", "Tokyo")
+
+    now = context.current_utc_datetime
+    if not now:
+        raise Exception("No time! 2nd attempt")
+    task2 = yield context.call_activity("Hello", "Seattle")
+
+    now = context.current_utc_datetime
+    if not now:
+        raise Exception("No time! 3rd attempt")
+    task3 = yield context.call_activity("Hello", "London")
+
+    now = context.current_utc_datetime
+    if not now:
+        raise Exception("No time! 4th attempt")
+
+    outputs.append(task1)
+    outputs.append(task2)
+    outputs.append(task3)
+
+    return outputs
+
 def generator_function_rasing_ex(context):
     outputs = []
 
@@ -220,3 +248,32 @@ def test_tokyo_and_seattle_and_london_with_serialization_state():
 
     assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
+
+def test_utc_time_is_never_none():
+    """Tests an orchestrator that errors out if its current_utc_datetime is ever None.
+
+    If we receive all activity results, it means we never error'ed out. Our test has
+    a history events array with identical timestamps, simulating events arriving
+    very close to one another."""
+
+    # we set `increase_time` to False to make sure the changes are resilient
+    # to undistinguishable timestamps (events arrive very close to each other)
+    context_builder = ContextBuilder('test_simple_function', increase_time=False)
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
+    add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_deterministic_utc_time)
+
+    expected_state = base_expected_state(
+        ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    add_hello_action(expected_state, 'London')
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+

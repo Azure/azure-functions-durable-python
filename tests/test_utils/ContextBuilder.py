@@ -13,7 +13,8 @@ from azure.durable_functions.models.history.HistoryEventType \
 
 
 class ContextBuilder:
-    def __init__(self, name: str=""):
+    def __init__(self, name: str="", increase_time: bool = True):
+        self.increase_time = increase_time
         self.instance_id = uuid.uuid4()
         self.is_replaying: bool = False
         self.input_ = None
@@ -26,7 +27,8 @@ class ContextBuilder:
     def get_base_event(
             self, event_type: HistoryEventType, id_: int = -1,
             is_played: bool = False, timestamp=None) -> HistoryEvent:
-        self.current_datetime = self.current_datetime + timedelta(seconds=1)
+        if self.increase_time:
+            self.current_datetime = self.current_datetime + timedelta(seconds=1)
         if not timestamp:
             timestamp = self.current_datetime
         event = HistoryEvent(EventType=event_type, EventId=id_,

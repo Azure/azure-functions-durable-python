@@ -39,7 +39,7 @@ class DurableOrchestrationContext:
         self.decision_started_event: HistoryEvent = \
             [e_ for e_ in self.histories
              if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]
-        self._current_utc_datetime = \
+        self._current_utc_datetime: datetime.datetime = \
             self.decision_started_event.timestamp
         self._new_uuid_counter = 0
         self.actions: List[List[Action]] = []
