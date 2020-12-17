@@ -39,8 +39,8 @@ def validate_extension_bundles():
             # It's possible the user is using a manual extension install
             return
         if version_range == "[1.*, 2.0.0)":
-            message = "Bundles V1 is deprecated. Please update to Bundles V2 in your `host.json`. "\
-                "You can set extensionBundles version to be: [2.*, 3.0.0)"
+            message = "Bundles V1 is deprecated. Please update to Bundles V2 in your `host.json`."\
+                " You can set extensionBundles version to be: [2.*, 3.0.0)"
             raise Exception(message)
 
 
