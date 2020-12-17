@@ -1,7 +1,7 @@
 import json
 from ..models.history import HistoryEventType, HistoryEvent
 from azure.functions._durable_functions import _deserialize_custom_object
-from datetime import datetime
+from dateutil import parser
 from typing import List, Optional, Dict, Any
 from ..models.actions.Action import Action
 from ..models.Task import Task
