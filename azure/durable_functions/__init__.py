@@ -12,9 +12,15 @@ from .models.RetryOptions import RetryOptions
 from .models.TokenSource import ManagedIdentityTokenSource
 import json
 from pathlib import Path
+import sys
+import os
 
 
 def validate_extension_bundles():
+    # No need to validate if we're running tests
+    if "pytest" in sys.modules:
+        return
+
     host_path = "host.json"
     bundles_key = "extensionBundle"
     version_key = "version"
@@ -33,7 +39,7 @@ def validate_extension_bundles():
             # It's possible the user is using a manual extension install
             return
         if version_range == "[1.*, 2.0.0)":
-            message = "Bundles V1 is deprecated. Please update to Bundles V2 in your `host.json`."\
+            message = "Bundles V1 is deprecated. Please update to Bundles V2 in your `host.json`. "\
                 "You can set extensionBundles version to be: [2.*, 3.0.0)"
             raise Exception(message)
 
