@@ -16,6 +16,12 @@ import sys
 
 
 def validate_extension_bundles():
+    """Throw an exception if host.json contains bundle-range V1.
+
+    Raises
+    ------
+        Exception: Exception prompting the user to update to bundles V2
+    """
     # No need to validate if we're running tests
     if "pytest" in sys.modules:
         return
@@ -34,15 +40,18 @@ def validate_extension_bundles():
         try:
             version_range = host_settings[bundles_key][version_key]
         except Exception:
-            # If bundle info is not  available, we ignore it.
-            # It's possible the user is using a manual extension install
+            # If bundle info is not available, we ignore it.
+            # For example: it's possible the user is using a manual extension install
             return
+        # We do a best-effort attempt to detect bundles V1
+        # This is the string hard-coded into the bundles V1 template in VSCode
         if version_range == "[1.*, 2.0.0)":
             message = "Bundles V1 is deprecated. Please update to Bundles V2 in your `host.json`."\
                 " You can set extensionBundles version to be: [2.*, 3.0.0)"
             raise Exception(message)
 
 
+# Validate that users are not in extension bundles V1
 validate_extension_bundles()
 
 __all__ = [
