@@ -10,10 +10,12 @@ from .Task import Task
 from .TaskSet import TaskSet
 from .DurableHttpRequest import DurableHttpRequest
 from .TokenSource import ManagedIdentityTokenSource
+from .DurableEntityContext import DurableEntityContext
 
 __all__ = [
     'DurableOrchestrationBindings',
     'DurableOrchestrationClient',
+    'DurableEntityContext',
     'DurableOrchestrationContext',
     'DurableHttpRequest',
     'ManagedIdentityTokenSource',

@@ -1,0 +1,27 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "name": "req",
+      "type": "httpTrigger",
+      "direction": "in",
+      "route": "orchestrators/{functionName}",
+      "methods": [
+        "post",
+        "get"
+      ]
+    },
+    {
+      "direction": "out",
+      "name": "message",
+      "type": "http"
+    },
+    {
+      "name": "starter",
+      "type": "durableClient",
+      "direction": "in",
+      "datatype": "string"
+    }
+  ]
+}

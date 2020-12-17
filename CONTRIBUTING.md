@@ -70,7 +70,7 @@ Note: Conda based environments are not yet supported in Azure Functions.
 ### Setting up durable-py debugging
 
 
-1.  Git clone your fork and use any starter sample from this [folder] in your fork (https://github.com/Azure/azure-functions-durable-python/tree/dev/samples/) and open this folder in your VS Code editor.
+1.  Git clone your fork and use any starter sample from this [folder](https://github.com/Azure/azure-functions-durable-python/tree/dev/samples/) in your fork and open this folder in your VS Code editor.
 
 2. Initialize this folder as an Azure Functions project using the VS Code Extension using these [instructions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-vs-code?pivots=programming-language-python). This step will create a Python virtual environment if one doesn't exist already.
 

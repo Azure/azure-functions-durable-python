@@ -1,27 +1,20 @@
 import logging
 
-def main(key: str) -> str:
+def main(num: int) -> int:
     """Activity function performing a specific step in the chain
     
     Parameters
     ----------
-    key : str
-        key to a dictionary that advances the chain
+    num : int
+        number whose value to increase by one
     
     Returns
     -------
-    [int]
-        value in the dictionary as a result
+    int
+        the input, plus one
     """
 
-    logging.warning(f"Activity Triggered: {key}")
-    switch_statement = {}
-    switch_statement["One"] = "Two"
-    switch_statement["Two"] = "Three"
-    try:
-        if switch_statement[key]:
-            return f'{switch_statement[key]}'
-    except KeyError as e:
-        return f'One'
+    logging.info(f"Activity Triggered: {num}")
+    return num + 1
 
     

@@ -9,9 +9,11 @@ from .history import HistoryEvent, HistoryEventType
 from .actions import Action
 from ..models.Task import Task
 from ..models.TokenSource import TokenSource
+from .utils.entity_utils import EntityId
 from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
     wait_for_external_event_task, continue_as_new, new_uuid, call_http, create_timer_task, \
-    call_sub_orchestrator_task, call_sub_orchestrator_with_retry_task
+    call_sub_orchestrator_task, call_sub_orchestrator_with_retry_task, call_entity_task, \
+    signal_entity_task
 from azure.functions._durable_functions import _deserialize_custom_object
 
 
@@ -34,7 +36,6 @@ class DurableOrchestrationContext:
         self._new_uuid_counter: int = 0
         self._sub_orchestrator_counter: int = 0
         self._continue_as_new_flag: bool = False
-        # TODO: waiting on the `continue_as_new` intellisense until that's implemented
         self.decision_started_event: HistoryEvent = \
             [e_ for e_ in self.histories
              if e_.event_type == HistoryEventType.ORCHESTRATOR_STARTED][0]
@@ -358,6 +359,46 @@ class DurableOrchestrationContext:
             Object containing function level attributes not used by durable orchestrator.
         """
         return self._function_context
+
+    def call_entity(self, entityId: EntityId,
+                    operationName: str, operationInput: Optional[Any] = None):
+        """Get the result of Durable Entity operation given some input.
+
+        Parameters
+        ----------
+        entityId: EntityId
+            The ID of the entity to call
+        operationName: str
+            The operation to execute
+        operationInput: Optional[Any]
+            The input for tne operation, defaults to None.
+
+        Returns
+        -------
+        Task
+            A Task of the entity call
+        """
+        return call_entity_task(self.histories, entityId, operationName, operationInput)
+
+    def signal_entity(self, entityId: EntityId,
+                      operationName: str, operationInput: Optional[Any] = None):
+        """Send a signal operation to Durable Entity given some input.
+
+        Parameters
+        ----------
+        entityId: EntityId
+            The ID of the entity to call
+        operationName: str
+            The operation to execute
+        operationInput: Optional[Any]
+            The input for tne operation, defaults to None.
+
+        Returns
+        -------
+        Task
+            A Task of the entity signal
+        """
+        return signal_entity_task(self, self.histories, entityId, operationName, operationInput)
 
     @property
     def will_continue_as_new(self) -> bool:
