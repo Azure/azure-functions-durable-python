@@ -37,6 +37,7 @@ def validate_extension_bundles():
                 "You can set extensionBundles version to be: [2.*, 3.0.0)"
             raise Exception(message)
 
+
 validate_extension_bundles()
 
 __all__ = [
