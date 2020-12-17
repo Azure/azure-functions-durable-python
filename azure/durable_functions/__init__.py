@@ -13,6 +13,7 @@ from .models.TokenSource import ManagedIdentityTokenSource
 import json
 from pathlib import Path
 
+
 def validate_extension_bundles():
     host_path = "host.json"
     bundles_key = "extensionBundle"
