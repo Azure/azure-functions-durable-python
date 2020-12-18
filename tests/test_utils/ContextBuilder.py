@@ -1,7 +1,7 @@
 import uuid
 import json
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from .json_utils import add_attrib, convert_history_event_to_json_dict
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
@@ -13,20 +13,26 @@ from azure.durable_functions.models.history.HistoryEventType \
 
 
 class ContextBuilder:
-    def __init__(self, name: str=""):
+    def __init__(self, name: str="", increase_time: bool = True, starting_time: Optional[datetime] = None):
+        self.increase_time = increase_time
         self.instance_id = uuid.uuid4()
         self.is_replaying: bool = False
         self.input_ = None
         self.parent_instance_id = None
         self.history_events: List[HistoryEvent] = []
-        self.current_datetime: datetime = datetime.now()
+
+        if starting_time is None:
+            starting_time = datetime.now()
+        self.current_datetime: datetime = starting_time
+
         self.add_orchestrator_started_event()
         self.add_execution_started_event(name)
 
     def get_base_event(
             self, event_type: HistoryEventType, id_: int = -1,
             is_played: bool = False, timestamp=None) -> HistoryEvent:
-        self.current_datetime = self.current_datetime + timedelta(seconds=1)
+        if self.increase_time:
+            self.current_datetime = self.current_datetime + timedelta(seconds=1)
         if not timestamp:
             timestamp = self.current_datetime
         event = HistoryEvent(EventType=event_type, EventId=id_,
