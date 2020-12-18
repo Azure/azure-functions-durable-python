@@ -46,7 +46,8 @@ def validate_extension_bundles():
         # We do a best-effort attempt to detect bundles V1
         # This is the string hard-coded into the bundles V1 template in VSCode
         if version_range == "[1.*, 2.0.0)":
-            message = "Bundles V1 is deprecated. Please update to Bundles V2 in your `host.json`."\
+            message = "Durable Functions for Python does not support Bundles V1."\
+                " Please update to Bundles V2 in your `host.json`."\
                 " You can set extensionBundles version to be: [2.*, 3.0.0)"
             raise Exception(message)
 
