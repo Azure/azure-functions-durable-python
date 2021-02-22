@@ -21,7 +21,7 @@ def validate_extension_bundles():
 
     Effects
     ------
-        Warning: Exception prompting the user to update to bundles V2
+        Warning: Warning prompting the user to update to bundles V2
     """
     # No need to validate if we're running tests
     if "pytest" in sys.modules:
