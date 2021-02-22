@@ -47,7 +47,9 @@ def validate_extension_bundles():
         # We do a best-effort attempt to detect bundles V1
         # This is the string hard-coded into the bundles V1 template in VSCode
         if version_range == "[1.*, 2.0.0)":
-            message = "Durable Functions for Python will stop supporting Bundles V1."\
+            message = "Your application is currently configured to use Extension Bundles V1."\
+                " Durable Functions for Python works best with Bundles V2, "\
+                " which provides additional features like Durable Entities, better performance, and is actively being developed."\
                 " Please update to Bundles V2 in your `host.json`."\
                 " You can set extensionBundles version to be: [2.*, 3.0.0)"
             warnings.warn(message)
