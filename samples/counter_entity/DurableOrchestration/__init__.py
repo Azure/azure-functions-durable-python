@@ -27,7 +27,6 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     state
         The state after applying the operation on the Durable Entity
     """
-    b = df.RetryOptions
     entityId = df.EntityId("Counter", "myCounter")
     context.signal_entity(entityId, "add", 3)
     state = yield context.call_entity(entityId, "get")
