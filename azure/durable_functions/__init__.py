@@ -6,10 +6,10 @@ from .orchestrator import Orchestrator
 from .entity import Entity
 from .models.utils.entity_utils import EntityId
 from .models.DurableOrchestrationClient import DurableOrchestrationClient
-from .models.OrchestrationRuntimeStatus import OrchestrationRuntimeStatus # noqa: 401
+from .models.OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from .models.DurableOrchestrationContext import DurableOrchestrationContext
 from .models.DurableEntityContext import DurableEntityContext
-from .models.RetryOptions import RetryOptions # noqa: 401
+from .models.RetryOptions import RetryOptions
 from .models.TokenSource import ManagedIdentityTokenSource
 import json
 from pathlib import Path
@@ -64,6 +64,6 @@ __all__ = [
     'DurableEntityContext',
     'DurableOrchestrationContext',
     'ManagedIdentityTokenSource',
-    'OrchestrationRuntimeStatus'
+    'OrchestrationRuntimeStatus',
     'RetryOptions'
 ]
