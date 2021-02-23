@@ -14,14 +14,15 @@ from .models.TokenSource import ManagedIdentityTokenSource
 import json
 from pathlib import Path
 import sys
+import warnings
 
 
 def validate_extension_bundles():
-    """Throw an exception if host.json contains bundle-range V1.
+    """Raise a warning if host.json contains bundle-range V1.
 
-    Raises
+    Effects
     ------
-        Exception: Exception prompting the user to update to bundles V2
+        Warning: Warning prompting the user to update to bundles V2
     """
     # No need to validate if we're running tests
     if "pytest" in sys.modules:
@@ -47,10 +48,13 @@ def validate_extension_bundles():
         # We do a best-effort attempt to detect bundles V1
         # This is the string hard-coded into the bundles V1 template in VSCode
         if version_range == "[1.*, 2.0.0)":
-            message = "Durable Functions for Python does not support Bundles V1."\
+            message = "Your application is currently configured to use Extension Bundles V1."\
+                " Durable Functions for Python works best with Bundles V2,"\
+                " which provides additional features like Durable Entities, better performance,"\
+                " and is actively being developed."\
                 " Please update to Bundles V2 in your `host.json`."\
                 " You can set extensionBundles version to be: [2.*, 3.0.0)"
-            raise Exception(message)
+            warnings.warn(message)
 
 
 # Validate that users are not in extension bundles V1
