@@ -91,6 +91,19 @@ def generator_function_with_serialization(context):
 
     return outputs
 
+def generator_function_new_guid(context):
+    """Simple orchestrator that generates 3 GUIDs"""
+    outputs = []
+
+    output1 = context.new_guid()
+    output2 = context.new_guid()
+    output3 = context.new_guid()
+
+    outputs.append(str(output1))
+    outputs.append(str(output2))
+    outputs.append(str(output3))
+    return outputs
+
 
 def base_expected_state(output=None) -> OrchestratorState:
     return OrchestratorState(is_done=False, actions=[], output=output)
@@ -352,4 +365,23 @@ def test_utc_time_updates_correctly():
 
     assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
+
+def test_new_guid_orchestrator():
+    """Tests that the new_guid API is replay-safe and produces new GUIDs every time"""
+    context_builder = ContextBuilder('test_guid_orchestrator')
+
+    # To test that the API is replay-safe, we generate two orchestrators
+    # with the same starting context
+    result1 = get_orchestration_state_result(
+        context_builder, generator_function_new_guid)
+    outputs1 = result1["output"]
+
+    result2 = get_orchestration_state_result(
+        context_builder, generator_function_new_guid)
+    outputs2 = result2["output"]
+
+    # All GUIDs should be unique
+    assert len(outputs1) == len(set(outputs1))
+    # The two GUID lists should be the same
+    assert outputs1 == outputs2
 

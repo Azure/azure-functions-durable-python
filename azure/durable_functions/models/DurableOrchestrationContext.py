@@ -1,6 +1,7 @@
 import json
 import datetime
 from typing import List, Any, Dict, Optional
+from uuid import UUID, uuid5, NAMESPACE_URL
 
 from .RetryOptions import RetryOptions
 from .TaskSet import TaskSet
@@ -444,3 +445,17 @@ class DurableOrchestrationContext:
             The new starting input to the orchestrator.
         """
         return continue_as_new(context=self, input_=input_)
+
+    def new_guid(self) -> UUID:
+        """Generate a replay-safe GUID.
+
+        Returns
+        -------
+        UUID
+            A new globally-unique ID
+        """
+        guid_name = f"{self.instance_id}_{self.current_utc_datetime}"\
+            f"_{self._new_uuid_counter}"
+        self._new_uuid_counter += 1
+        guid = uuid5(NAMESPACE_URL, guid_name)
+        return guid
