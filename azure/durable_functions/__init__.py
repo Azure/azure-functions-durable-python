@@ -6,6 +6,7 @@ from .orchestrator import Orchestrator
 from .entity import Entity
 from .models.utils.entity_utils import EntityId
 from .models.DurableOrchestrationClient import DurableOrchestrationClient
+from .models.OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from .models.DurableOrchestrationContext import DurableOrchestrationContext
 from .models.DurableEntityContext import DurableEntityContext
 from .models.RetryOptions import RetryOptions
@@ -67,5 +68,6 @@ __all__ = [
     'DurableEntityContext',
     'DurableOrchestrationContext',
     'ManagedIdentityTokenSource',
+    'OrchestrationRuntimeStatus',
     'RetryOptions'
 ]
