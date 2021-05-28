@@ -396,6 +396,7 @@ class DurableOrchestrationClient:
         if error_message:
             raise Exception(error_message)
 
+
     async def wait_for_completion_or_create_check_status_response(
             self, request, instance_id: str, timeout_in_milliseconds: int = 10000,
             retry_interval_in_milliseconds: int = 1000) -> func.HttpResponse:
@@ -440,6 +441,8 @@ class DurableOrchestrationClient:
                         lambda: self._create_http_response(200, status.to_json()),
                     OrchestrationRuntimeStatus.Failed:
                         lambda: self._create_http_response(500, status.to_json()),
+                    None:
+                        None
                 }
 
                 result = switch_statement.get(status.runtime_status)
@@ -456,6 +459,7 @@ class DurableOrchestrationClient:
                 await sleep(sleep_time)
             else:
                 return self.create_check_status_response(request, instance_id)
+        return self.create_check_status_response(request, instance_id)
 
     async def signal_entity(self, entityId: EntityId, operation_name: str,
                             operation_input: Optional[Any] = None,
@@ -640,6 +644,7 @@ class DurableOrchestrationClient:
 
         response = await self._post_async_request(request_url, None)
         status: int = response[0]
+        ex_msg: str = ""
         if status == 200 or status == 202:
             return
         elif status == 404:
@@ -648,6 +653,9 @@ class DurableOrchestrationClient:
         elif status == 410:
             ex_msg = "The rewind operation is only supported on failed orchestration instances."
             raise Exception(ex_msg)
-        else:
+        elif isinstance(response[1], str):
             ex_msg = response[1]
+            raise Exception(ex_msg)
+        else:
+            ex_msg = "Received unexpected payload from the durable-extension: " + str(response)
             raise Exception(ex_msg)
