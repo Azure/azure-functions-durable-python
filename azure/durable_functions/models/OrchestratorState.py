@@ -1,6 +1,8 @@
 import json
 from typing import List, Any, Dict, Optional, Union
 
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
+
 from .utils.json_utils import add_attrib
 from azure.durable_functions.models.actions.Action import Action
 
@@ -16,6 +18,7 @@ class OrchestratorState:
                  is_done: bool,
                  actions: List[List[Action]],
                  output: Any,
+                 replay_schema: ReplaySchema,
                  error: str = None,
                  custom_status: Any = None):
         self._is_done: bool = is_done
@@ -23,6 +26,7 @@ class OrchestratorState:
         self._output: Any = output
         self._error: Optional[str] = error
         self._custom_status: Any = custom_status
+        self._replay_schema: ReplaySchema = replay_schema
 
     @property
     def actions(self) -> List[List[Action]]:
@@ -66,6 +70,11 @@ class OrchestratorState:
         """Get the JSON-serializable value used by DurableOrchestrationContext.SetCustomStatus."""
         return self._custom_status
 
+    @property
+    def schema_version(self):
+        """Get the Replay Schema represented in this OrchestratorState payload"""
+        return self._replay_schema.value
+
     def to_json(self) -> Dict[str, Union[str, int]]:
         """Convert object into a json dictionary.
 
@@ -76,6 +85,8 @@ class OrchestratorState:
         """
         json_dict: Dict[str, Union[str, int]] = {}
         add_attrib(json_dict, self, '_is_done', 'isDone')
+        if self._replay_schema != ReplaySchema.V1:
+            add_attrib(json_dict, self, 'schema_version', 'schemaVersion')
         self._add_actions(json_dict)
         if not (self._output is None):
             json_dict['output'] = self._output
