@@ -139,7 +139,7 @@ class Orchestrator:
                     and hasattr(generation_state, "action")):
                 self.durable_context.actions.append([generation_state.action])
             elif (isinstance(generation_state, TaskSet)
-                and hasattr(generation_state, "actions")):
+                    and hasattr(generation_state, "actions")):
                 self.durable_context.actions.append(generation_state.actions)
             generation_state._is_yielded = True
 
