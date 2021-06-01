@@ -45,7 +45,7 @@ class DurableOrchestrationContext:
             self.decision_started_event.timestamp
         self._new_uuid_counter = 0
         self._function_context: FunctionContext = FunctionContext(**kwargs)
-        self.replay_schema = ReplaySchema.V1 #ReplaySchema(upperSchemaVersion)
+        self.replay_schema = ReplaySchema.V1  # ReplaySchema(upperSchemaVersion)
         self.actions: List[List[Action]] = []
         if self.replay_schema == ReplaySchema.V2:
             self.actions.append([])

@@ -1,5 +1,8 @@
 from enum import Enum
 
+
 class ReplaySchema(Enum):
-   V1 = 0
-   V2 = 1
+    """Enum representing the ReplaySchemas supported by this SDK version."""
+
+    V1 = 0
+    V2 = 1

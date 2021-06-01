@@ -72,7 +72,7 @@ class OrchestratorState:
 
     @property
     def schema_version(self):
-        """Get the Replay Schema represented in this OrchestratorState payload"""
+        """Get the Replay Schema represented in this OrchestratorState payload."""
         return self._replay_schema.value
 
     def to_json(self) -> Dict[str, Union[str, int]]:

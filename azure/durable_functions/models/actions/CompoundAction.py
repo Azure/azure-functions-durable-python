@@ -3,9 +3,7 @@ from typing import Dict, Union
 from .Action import Action
 from ..utils.json_utils import add_attrib
 from typing import List
-from ..Task import Task
-from abc import abstractmethod, abstractproperty
-from azure.durable_functions.models.ReplaySchema import ReplaySchema
+from abc import abstractmethod
 
 
 class CompoundAction(Action):
@@ -20,6 +18,7 @@ class CompoundAction(Action):
     @property
     @abstractmethod
     def action_type(self) -> int:
+        """Get this object's action type as an integer."""
         ...
 
     def to_json(self) -> Dict[str, Union[str, int]]:
