@@ -461,8 +461,9 @@ class DurableOrchestrationContext:
         self._new_uuid_counter += 1
         guid = uuid5(NAMESPACE_URL, guid_name)
         return guid
-    
+
     def _pretty_print_history(self) -> str:
+        """Get a pretty-printed version of the orchestration's internal history."""
         def history_to_string(event):
             json_dict = {}
             for key, val in inspect.getmembers(event):
