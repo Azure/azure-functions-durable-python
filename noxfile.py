@@ -16,5 +16,6 @@ def lint(session):
 
 @nox.session(python=["3.7", "3.8"])
 def typecheck(session):
+    session.install("-r", "requirements.txt")
     session.install("mypy")
     session.run("mypy", "./azure/")

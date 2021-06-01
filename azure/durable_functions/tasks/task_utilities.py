@@ -304,7 +304,7 @@ def find_sub_orchestration(
         # TODO: The HistoryEvent does not necessarily have a name or an instance_id
         #       We should create sub-classes of these types like JS does, to ensure their
         #       precense.
-        
+
         if event.Name is None:
             raise ValueError("History Event for suborchestration found with no {Name} field")
         event_name: str = event.Name

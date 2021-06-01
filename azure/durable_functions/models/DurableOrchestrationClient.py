@@ -396,7 +396,6 @@ class DurableOrchestrationClient:
         if error_message:
             raise Exception(error_message)
 
-
     async def wait_for_completion_or_create_check_status_response(
             self, request, instance_id: str, timeout_in_milliseconds: int = 10000,
             retry_interval_in_milliseconds: int = 1000) -> func.HttpResponse:
