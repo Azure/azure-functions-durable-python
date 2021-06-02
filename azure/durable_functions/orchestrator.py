@@ -134,12 +134,14 @@ class Orchestrator:
         # Do not add new tasks to action if continue_as_new was called
         if self.durable_context.will_continue_as_new:
             return
-        if (isinstance(generation_state, Task)
-                and hasattr(generation_state, "action")):
-            self.durable_context.actions.append([generation_state.action])
-        elif (isinstance(generation_state, TaskSet)
-              and hasattr(generation_state, "actions")):
-            self.durable_context.actions.append(generation_state.actions)
+        if not generation_state._is_yielded:
+            if (isinstance(generation_state, Task)
+                    and hasattr(generation_state, "action")):
+                self.durable_context.actions.append([generation_state.action])
+            elif (isinstance(generation_state, TaskSet)
+                    and hasattr(generation_state, "actions")):
+                self.durable_context.actions.append(generation_state.actions)
+            generation_state._is_yielded = True
 
     def _update_timestamp(self):
         last_timestamp = self.durable_context.decision_started_event.timestamp
