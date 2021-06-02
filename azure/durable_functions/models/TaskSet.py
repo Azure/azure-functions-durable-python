@@ -25,6 +25,7 @@ class TaskSet:
         self._timestamp: datetime = timestamp
         self._exception = exception
         self._is_played = is_played
+        self._is_yielded: bool = False
 
     @property
     def is_completed(self) -> bool:
