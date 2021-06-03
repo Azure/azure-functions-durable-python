@@ -304,14 +304,18 @@ def find_sub_orchestration(
         # TODO: The HistoryEvent does not necessarily have a name or an instance_id
         #       We should create sub-classes of these types like JS does, to ensure their
         #       precense.
+
+        if event.Name is None:
+            raise ValueError("History Event for suborchestration found with no {Name} field")
+        event_name: str = event.Name
         err_message: str = ""
         if not(event.Name == name):
             mid_message = "a function name of {} instead of the provided function name of {}."
-            err_message = gen_err_message(counter, mid_message, event.Name, name)
+            err_message = gen_err_message(counter, mid_message, event_name, name)
             raise ValueError(err_message)
         if instance_id and not(event.InstanceId == instance_id):
             mid_message = "an instance id of {} instead of the provided instance id of {}."
-            err_message = gen_err_message(counter, mid_message, event.Name, name)
+            err_message = gen_err_message(counter, mid_message, event_name, name)
             raise ValueError(err_message)
 
     return event

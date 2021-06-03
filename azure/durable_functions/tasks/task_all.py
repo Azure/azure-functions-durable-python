@@ -64,7 +64,7 @@ def task_all(tasks: List[Task], replay_schema: ReplaySchema):
 
     # Incomplete TaskSets do not have results or end-time
     if not is_completed:
-        results = None
+        results = []
         end_time = None
 
     if replay_schema == ReplaySchema.V2:
