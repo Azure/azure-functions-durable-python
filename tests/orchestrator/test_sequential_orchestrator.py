@@ -1,3 +1,5 @@
+from azure.durable_functions.models.actions.WhenAnyAction import WhenAnyAction
+from azure.durable_functions.models.actions.WhenAllAction import WhenAllAction
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from datetime import datetime, timedelta
 from .orchestrator_test_utils \
@@ -26,6 +28,19 @@ def generator_function_duplicate_yield(context):
     task1 = context.call_activity("Hello", "Tokyo")
     yield task1
     yield task1
+
+    return ""
+
+def generator_function_compound_tasks(context):
+    yield context.call_activity("Hello", "Tokyo")
+
+    task1 = context.call_activity("Hello", "Tokyo")
+    task2 = context.call_activity("Hello", "Tokyo")
+    task3 = context.call_activity("Hello", "Tokyo")
+    task4 = context.task_any([task3])
+    task5 = context.task_all([task1, task2, task4])
+    task6 = context.task_any([task5])
+    yield task6
 
     return ""
 
@@ -114,13 +129,12 @@ def generator_function_new_guid(context):
 
 
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema)
 
 
 def add_hello_action(state: OrchestratorState, input_: str):
     action = CallActivityAction(function_name='Hello', input_=input_)
     state.actions.append([action])
-
 
 def add_hello_completed_events(
         context_builder: ContextBuilder, id_: int, result: str):
@@ -409,3 +423,26 @@ def test_duplicate_yields_do_not_add_duplicate_actions():
     assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
+def test_compound_tasks_return_single_action_in_V2():
+    """Tests that compound tasks, in the v2 replay schema, are represented as a single "deep" action"""
+    context_builder = ContextBuilder('test_v2_replay_schema', replay_schema=ReplaySchema.V2)
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_compound_tasks)
+
+    expected_state = base_expected_state(replay_schema=ReplaySchema.V2)
+    expected_state._actions = [
+        [CallActivityAction("Hello", "Tokyo"), WhenAnyAction(
+            [WhenAllAction(
+                [CallActivityAction("Hello", "Tokyo"), CallActivityAction("Hello", "Tokyo"), WhenAnyAction(
+                    [CallActivityAction("Hello", "Tokyo")])
+                ])
+            ])
+        ]
+    ]
+    expected_state._is_done = False
+    expected = expected_state.to_json()
+
+    #assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)

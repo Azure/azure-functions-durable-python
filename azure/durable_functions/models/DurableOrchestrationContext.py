@@ -45,9 +45,9 @@ class DurableOrchestrationContext:
             self.decision_started_event.timestamp
         self._new_uuid_counter = 0
         self._function_context: FunctionContext = FunctionContext(**kwargs)
-        self.replay_schema = ReplaySchema.V1  # ReplaySchema(upperSchemaVersion)
+        self._replay_schema = ReplaySchema(upperSchemaVersion)
         self.actions: List[List[Action]] = []
-        if self.replay_schema == ReplaySchema.V2:
+        if self._replay_schema == ReplaySchema.V2:
             self.actions.append([])
 
         # make _input always a string
@@ -242,7 +242,7 @@ class DurableOrchestrationContext:
         TaskSet
             The results of all activities.
         """
-        return task_all(tasks=activities, replay_schema=self.replay_schema)
+        return task_all(tasks=activities, replay_schema=self._replay_schema)
 
     def task_any(self, activities: List[Task]) -> TaskSet:
         """Schedule the execution of all activities.
@@ -262,7 +262,7 @@ class DurableOrchestrationContext:
         TaskSet
             The first [[Task]] instance to complete.
         """
-        return task_any(tasks=activities, replay_schema=self.replay_schema)
+        return task_any(tasks=activities, replay_schema=self._replay_schema)
 
     def set_custom_status(self, status: Any):
         """Set the customized orchestration status for your orchestrator function.
