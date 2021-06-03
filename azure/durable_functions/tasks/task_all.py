@@ -59,7 +59,7 @@ def task_all(tasks: List[Task]):
 
     # Incomplete TaskSets do not have results or end-time
     if not is_completed:
-        results = None
+        results = []
         end_time = None
 
     # Construct TaskSet
