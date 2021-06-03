@@ -21,6 +21,13 @@ def generator_function(context):
 
     return outputs
 
+def generator_function_duplicate_yield(context):
+    task1 = context.call_activity("Hello", "Tokyo")
+    yield task1
+    yield task1
+
+    return ""
+
 def generator_function_time_is_not_none(context):
     outputs = []
 
@@ -384,4 +391,20 @@ def test_new_guid_orchestrator():
     assert len(outputs1) == len(set(outputs1))
     # The two GUID lists should be the same
     assert outputs1 == outputs2
+
+def test_duplicate_yields_do_not_add_duplicate_actions():
+    """Tests that yield'ing a Task twice does not double the task's actions"""
+    context_builder = ContextBuilder('test_guid_orchestrator')
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_duplicate_yield)
+
+    expected_state = base_expected_state("")
+    add_hello_action(expected_state, 'Tokyo')
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
 

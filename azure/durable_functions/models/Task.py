@@ -26,6 +26,7 @@ class Task:
         self._id = id_
         self._exception = exc
         self._is_played = is_played
+        self._is_yielded: bool = False
 
     @property
     def is_completed(self) -> bool:
