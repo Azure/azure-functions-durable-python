@@ -462,7 +462,7 @@ class DurableOrchestrationContext:
         guid = uuid5(NAMESPACE_URL, guid_name)
         return guid
 
-    def _pretty_print_history(self) -> List[str]:
+    def _pretty_print_history(self) -> str:
         """Get a pretty-printed version of the orchestration's internal history."""
         def history_to_string(event):
             json_dict = {}
@@ -472,4 +472,4 @@ class DurableOrchestrationContext:
                         val = val.replace(tzinfo=timezone.utc).timetuple()
                     json_dict[key] = val
             return json.dumps(json_dict)
-        return list(map(history_to_string, self._histories))
+        return str(list(map(history_to_string, self._histories)))
