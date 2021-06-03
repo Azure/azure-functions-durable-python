@@ -462,7 +462,7 @@ class DurableOrchestrationContext:
         guid = uuid5(NAMESPACE_URL, guid_name)
         return guid
 
-    def _pretty_print_history(self) -> str:
+    def _pretty_print_history(self) -> List[str]:
         """Get a pretty-printed version of the orchestration's internal history."""
         def history_to_string(event):
             json_dict = {}
