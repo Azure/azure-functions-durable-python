@@ -6,7 +6,7 @@
       "name": "req",
       "type": "httpTrigger",
       "direction": "in",
-      "route": "entity/{entityName:alpha}/{entityKey}",
+      "route": "entity/{entityName}/{entityKey}",
       "methods": [
         "get"
       ]
