@@ -45,12 +45,25 @@ class DurableOrchestrationContext:
         self._new_uuid_counter = 0
         self.actions: List[List[Action]] = []
         self._function_context: FunctionContext = FunctionContext(**kwargs)
-
+        self._sequence_number = 0
         # make _input always a string
         # (consistent with Python Functions generic trigger/input bindings)
         if (isinstance(input, Dict)):
             input = json.dumps(input)
         self._input: Any = input
+
+
+    # TODO: how do we handle APIs with retry?
+    def task_common(self, api_name: str, input_: any = None):
+        self.context._sequence_number += 1
+        id_ = self.context._sequence_number
+        action, task = self.get_task_and_action(api_name, input_) 
+        self.open_tasks[id_] = task
+        self.add_to_actions(action)
+    
+    def get_task_and_action(self, api_name: str, input_: any):
+        raise NotImplementedError
+
 
     @classmethod
     def from_json(cls, json_string: str):

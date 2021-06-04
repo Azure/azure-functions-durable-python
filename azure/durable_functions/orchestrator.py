@@ -182,3 +182,75 @@ class Orchestrator:
             return Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context_body))
 
         return handle
+
+# =================
+
+# task completed
+activity_task = self.context.open_tasks[event.taskScheduledId]
+if activity_task is None:
+    # log warning about duplicate event
+    break
+self.context.open_tasks.pop(event.taskScheduledId)
+result = event.result
+activity_task.set_result(result)
+resume_generator?
+
+# 
+
+
+
+
+#
+
+
+def initiate_task(event):
+    pass
+
+def resolve_task(event, field):
+    key = getattr(event, field)
+    task = self.context.open_tasks[key]
+    if task is None:
+         return
+    self.context.open_tasks.pop(key)
+    task.set_result(...)
+    pass
+
+
+def resume_generator(self):
+    if self.generator is None:
+        raise Exception("Protocol error: Protocol error: The orchestrator generator has not been started yet! Was the orchestration history corrupted?")
+    
+    # TODO: where are we handling exceptions?
+    current_task = self.current_task
+    if current_task.is_completed:
+        gen_output = self.generator.send(current_task.result)
+        if not isinstance(gen_output, Task) and not gen_output.is_done:
+            # TODO: iffy abbout this `is_done` flag
+            raise Exception("Orchestrator generators must only yield task")
+        self.current_task = gen_output
+
+
+class CompositeTask(Task):
+    def handle_child_completion(self, child):
+        raise NotImplementedError
+
+class MutableTask(Task):
+    def set_result(self, result):
+        self.is_completed = True
+        self.result = result
+        if self.has_parent:
+            self.parent.handle_child_completion(self)
+
+    def set_error(self, error):
+        self.is_completed = True
+        self.is_faulted = True
+        self.error = error
+
+        if self.has_parent:
+            self.parent.handle_child_completion(self)    
+
+class WhenAllTask(CompositeTask):
+    pass
+
+class WhenAnyTask(CompositeTask):
+    pass
