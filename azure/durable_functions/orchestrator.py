@@ -3,6 +3,7 @@
 Responsible for orchestrating the execution of the user defined generator
 function.
 """
+from azure.durable_functions.models.TaskOrchestrationExecutor import TaskOrchestrationExecutor
 from typing import Callable, Iterator, Any, Generator
 
 from .models import (
@@ -32,8 +33,13 @@ class Orchestrator:
         :param activity_func: Generator function to orchestrate.
         """
         self.fn: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]] = activity_func
+        self.task_orchestration_executor = TaskOrchestrationExecutor()
 
     def handle(self, context: DurableOrchestrationContext):
+        self.task_orchestration_executor.execute(context)
+
+
+
         """Handle the orchestration of the user defined generator function.
 
         Called each time the durable extension executes an activity and needs
