@@ -1,0 +1,2 @@
+class WhenAllTask:
+    pass

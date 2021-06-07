@@ -33,12 +33,12 @@ class Orchestrator:
         :param activity_func: Generator function to orchestrate.
         """
         self.fn: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]] = activity_func
-        self.task_orchestration_executor = TaskOrchestrationExecutor()
+        self.task_orchestration_executor = None
 
     def handle(self, context: DurableOrchestrationContext):
-        self.task_orchestration_executor.execute(context)
-
-
+        self.task_orchestration_executor = TaskOrchestrationExecutor()
+        return self.task_orchestration_executor.execute(context, context.histories, self.fn)
+        raise NotImplementedError
 
         """Handle the orchestration of the user defined generator function.
 
@@ -184,52 +184,7 @@ class Orchestrator:
         return handle
 
 # =================
-
-# task completed
-activity_task = self.context.open_tasks[event.taskScheduledId]
-if activity_task is None:
-    # log warning about duplicate event
-    break
-self.context.open_tasks.pop(event.taskScheduledId)
-result = event.result
-activity_task.set_result(result)
-resume_generator?
-
-# 
-
-
-
-
-#
-
-
-def initiate_task(event):
-    pass
-
-def resolve_task(event, field):
-    key = getattr(event, field)
-    task = self.context.open_tasks[key]
-    if task is None:
-         return
-    self.context.open_tasks.pop(key)
-    task.set_result(...)
-    pass
-
-
-def resume_generator(self):
-    if self.generator is None:
-        raise Exception("Protocol error: Protocol error: The orchestrator generator has not been started yet! Was the orchestration history corrupted?")
-    
-    # TODO: where are we handling exceptions?
-    current_task = self.current_task
-    if current_task.is_completed:
-        gen_output = self.generator.send(current_task.result)
-        if not isinstance(gen_output, Task) and not gen_output.is_done:
-            # TODO: iffy abbout this `is_done` flag
-            raise Exception("Orchestrator generators must only yield task")
-        self.current_task = gen_output
-
-
+"""
 class CompositeTask(Task):
     def handle_child_completion(self, child):
         raise NotImplementedError
@@ -254,3 +209,4 @@ class WhenAllTask(CompositeTask):
 
 class WhenAnyTask(CompositeTask):
     pass
+"""

@@ -1,3 +1,5 @@
+from azure.durable_functions.models.MutableTask import MutableTask
+from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction
 import json
 import datetime
 from typing import List, Any, Dict, Optional
@@ -51,6 +53,7 @@ class DurableOrchestrationContext:
         if (isinstance(input, Dict)):
             input = json.dumps(input)
         self._input: Any = input
+        self.open_tasks = {}
 
 
     # TODO: how do we handle APIs with retry?
@@ -99,10 +102,13 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called activity function completes or fails.
         """
-        return call_activity_task(
-            state=self.histories,
-            name=name,
-            input_=input_)
+        id_ = self._sequence_number
+        self._sequence_number += 1
+        new_action = CallActivityAction(name, input_)
+        task = MutableTask(id_)
+        self.actions.append([new_action])
+        self.open_tasks[id_] = task
+        return task
 
     def call_activity_with_retry(self,
                                  name: str, retry_options: RetryOptions,
