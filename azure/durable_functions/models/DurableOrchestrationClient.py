@@ -9,6 +9,7 @@ import azure.functions as func
 
 from .PurgeHistoryResult import PurgeHistoryResult
 from .DurableOrchestrationStatus import DurableOrchestrationStatus
+from .EntityStateResponse import EntityStateResponse
 from .RpcManagementOptions import RpcManagementOptions
 from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from ..models.DurableOrchestrationBindings import DurableOrchestrationBindings
@@ -131,6 +132,56 @@ class DurableOrchestrationClient:
             a dictionary object of orchestrator instance management urls
         """
         return self.get_client_response_links(None, instance_id)
+
+    async def read_entity_state(
+        self,
+        entityId: EntityId,
+        task_hub_name: Optional[str] = None,
+        connection_name: Optional[str] = None,
+    ) -> EntityStateResponse:
+        """Read the state of the entity.
+
+        Parameters
+        ----------
+        entityId : EntityId
+            The EntityId of the targeted entity.
+        task_hub_name : Optional[str]
+            The task hub name of the target entity.
+        connection_name : Optional[str]
+            The name of the connection string associated with [task_hub_name].
+
+        Raises
+        ------
+        Exception:
+            When an unexpected status code is returned
+
+        Returns
+        -------
+        EntityStateResponse
+            container object representing the state of the entity
+        """
+        options = RpcManagementOptions(
+            connection_name=connection_name,
+            task_hub_name=task_hub_name,
+            entity_Id=entityId,
+        )
+
+        request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
+        response = await self._get_async_request(request_url)
+
+        switch_statement = {
+            200: lambda: EntityStateResponse(True, response[1]),
+            404: lambda: EntityStateResponse(False),
+        }
+
+        result = switch_statement.get(response[0])
+
+        if not result:
+            raise Exception(
+                f"The operation failed with an unexpected status code {response[0]}"
+            )
+
+        return result()
 
     def get_client_response_links(
             self,
@@ -440,6 +491,8 @@ class DurableOrchestrationClient:
                         lambda: self._create_http_response(200, status.to_json()),
                     OrchestrationRuntimeStatus.Failed:
                         lambda: self._create_http_response(500, status.to_json()),
+                    None:
+                        None
                 }
 
                 result = switch_statement.get(status.runtime_status)
@@ -456,6 +509,7 @@ class DurableOrchestrationClient:
                 await sleep(sleep_time)
             else:
                 return self.create_check_status_response(request, instance_id)
+        return self.create_check_status_response(request, instance_id)
 
     async def signal_entity(self, entityId: EntityId, operation_name: str,
                             operation_input: Optional[Any] = None,
@@ -640,6 +694,7 @@ class DurableOrchestrationClient:
 
         response = await self._post_async_request(request_url, None)
         status: int = response[0]
+        ex_msg: str = ""
         if status == 200 or status == 202:
             return
         elif status == 404:
@@ -648,6 +703,9 @@ class DurableOrchestrationClient:
         elif status == 410:
             ex_msg = "The rewind operation is only supported on failed orchestration instances."
             raise Exception(ex_msg)
-        else:
+        elif isinstance(response[1], str):
             ex_msg = response[1]
+            raise Exception(ex_msg)
+        else:
+            ex_msg = "Received unexpected payload from the durable-extension: " + str(response)
             raise Exception(ex_msg)
