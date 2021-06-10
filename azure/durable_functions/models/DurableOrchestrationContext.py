@@ -1,3 +1,14 @@
+from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
+from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
+from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import CallSubOrchestratorWithRetryAction
+from azure.durable_functions.models.RetryableTask import RetryAbleTask
+from azure.durable_functions.models.actions.CallActivityWithRetryAction import CallActivityWithRetryAction
+from azure.durable_functions.models.actions.ContinueAsNewAction import ContinueAsNewAction
+from azure.durable_functions.models.actions.WaitForExternalEventAction import WaitForExternalEventAction
+from azure.durable_functions.models.actions.CallSubOrchestratorAction import CallSubOrchestratorAction
+from azure.durable_functions.models.actions.CreateTimerAction import CreateTimerAction
+from azure.durable_functions.models.WhenAllTask import WhenAllTask
+from azure.durable_functions.models.WhenAnyTask import WhenAnyTask
 from azure.durable_functions.models.MutableTask import MutableTask
 from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction
 import json
@@ -13,10 +24,7 @@ from .actions import Action
 from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from .utils.entity_utils import EntityId
-from ..tasks import call_activity_task, task_all, task_any, call_activity_with_retry_task, \
-    wait_for_external_event_task, continue_as_new, new_uuid, call_http, create_timer_task, \
-    call_sub_orchestrator_task, call_sub_orchestrator_with_retry_task, call_entity_task, \
-    signal_entity_task
+from ..tasks import new_uuid, call_entity_task, signal_entity_task
 from azure.functions._durable_functions import _deserialize_custom_object
 
 
@@ -52,21 +60,10 @@ class DurableOrchestrationContext:
         # (consistent with Python Functions generic trigger/input bindings)
         if (isinstance(input, Dict)):
             input = json.dumps(input)
+        if not(isinstance(input, str)): #TODO: why is this necessary now?
+            input = json.dumps(input)
         self._input: Any = input
-        self.open_tasks = {}
-
-
-    # TODO: how do we handle APIs with retry?
-    def task_common(self, api_name: str, input_: any = None):
-        self.context._sequence_number += 1
-        id_ = self.context._sequence_number
-        action, task = self.get_task_and_action(api_name, input_) 
-        self.open_tasks[id_] = task
-        self.add_to_actions(action)
-    
-    def get_task_and_action(self, api_name: str, input_: any):
-        raise NotImplementedError
-
+        self.open_tasks: Dict[Task] = {}
 
     @classmethod
     def from_json(cls, json_string: str):
@@ -87,6 +84,23 @@ class DurableOrchestrationContext:
         json_dict = json.loads(json_string)
         return cls(**json_dict)
 
+    def _get_next_task_id(self):
+        id_ = self._sequence_number
+        self._sequence_number += 1
+        return id_
+
+    def _generate_task(self, action, retry_options = None):
+        id_ = self._get_next_task_id()
+        task = MutableTask(id_, action)
+        self.open_tasks[task.id] = task
+
+        if not(retry_options is None):
+            task = RetryAbleTask(task, retry_options, self)
+        return task
+    
+    def _add_to_actions(self, actions):
+        self.actions.append(actions)
+
     def call_activity(self, name: str, input_: Optional[Any] = None) -> Task:
         """Schedule an activity for execution.
 
@@ -102,12 +116,8 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called activity function completes or fails.
         """
-        id_ = self._sequence_number
-        self._sequence_number += 1
-        new_action = CallActivityAction(name, input_)
-        task = MutableTask(id_)
-        self.actions.append([new_action])
-        self.open_tasks[id_] = task
+        action = CallActivityAction(name, input_)
+        task = self._generate_task(action)
         return task
 
     def call_activity_with_retry(self,
@@ -130,11 +140,10 @@ class DurableOrchestrationContext:
             A Durable Task that completes when the called activity function completes or
             fails completely.
         """
-        return call_activity_with_retry_task(
-            state=self.histories,
-            retry_options=retry_options,
-            name=name,
-            input_=input_)
+
+        action = CallActivityWithRetryAction(name, retry_options, input_)
+        task = self._generate_task(action, retry_options)
+        return task
 
     def call_http(self, method: str, uri: str, content: Optional[str] = None,
                   headers: Optional[Dict[str, str]] = None,
@@ -159,9 +168,16 @@ class DurableOrchestrationContext:
         Task
             The durable HTTP request to schedule.
         """
-        return call_http(
-            state=self.histories, method=method, uri=uri, content=content, headers=headers,
-            token_source=token_source)
+        json_content: Optional[str] = None
+        if content and content is not isinstance(content, str):
+            json_content = json.dumps(content)
+        else:
+            json_content = content
+
+        request = DurableHttpRequest(method, uri, json_content, headers, token_source)
+        action = CallHttpAction(request)
+        task = self._generate_task(action)
+        return task
 
     def call_sub_orchestrator(self,
                               name: str, input_: Optional[Any] = None,
@@ -182,12 +198,9 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called sub-orchestrator completes or fails.
         """
-        return call_sub_orchestrator_task(
-            context=self,
-            state=self.histories,
-            name=name,
-            input_=input_,
-            instance_id=instance_id)
+        action = CallSubOrchestratorAction(name, input_, instance_id)
+        task = self._generate_task(action)
+        return task
 
     def call_sub_orchestrator_with_retry(self,
                                          name: str, retry_options: RetryOptions,
@@ -211,13 +224,9 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called sub-orchestrator completes or fails.
         """
-        return call_sub_orchestrator_with_retry_task(
-            context=self,
-            state=self.histories,
-            retry_options=retry_options,
-            name=name,
-            input_=input_,
-            instance_id=instance_id)
+        action = CallSubOrchestratorWithRetryAction(name, retry_options, input_, instance_id)
+        task = self._generate_task(action, retry_options)
+        return task
 
     def get_input(self) -> Optional[Any]:
         """Get the orchestration input."""
@@ -257,7 +266,7 @@ class DurableOrchestrationContext:
         TaskSet
             The results of all activities.
         """
-        return task_all(tasks=activities)
+        return WhenAllTask(activities) #task_all(tasks=activities)
 
     def task_any(self, activities: List[Task]) -> TaskSet:
         """Schedule the execution of all activities.
@@ -277,7 +286,7 @@ class DurableOrchestrationContext:
         TaskSet
             The first [[Task]] instance to complete.
         """
-        return task_any(tasks=activities)
+        return WhenAnyTask(activities) #task_all(tasks=activities)
 
     def set_custom_status(self, status: Any):
         """Set the customized orchestration status for your orchestrator function.
@@ -438,7 +447,9 @@ class DurableOrchestrationContext:
         TimerTask
             A Durable Timer Task that schedules the timer to wake up the activity
         """
-        return create_timer_task(state=self.histories, fire_at=fire_at)
+        action = CreateTimerAction(fire_at)
+        task = self._generate_task(action)
+        return task
 
     def wait_for_external_event(self, name: str) -> Task:
         """Wait asynchronously for an event to be raised with the name `name`.
@@ -453,7 +464,9 @@ class DurableOrchestrationContext:
         Task
             Task to wait for the event
         """
-        return wait_for_external_event_task(state=self.histories, name=name)
+        action = WaitForExternalEventAction(name)
+        task = self._generate_task(action)
+        return task
 
     def continue_as_new(self, input_: Any):
         """Schedule the orchestrator to continue as new.
@@ -463,7 +476,10 @@ class DurableOrchestrationContext:
         input_ : Any
             The new starting input to the orchestrator.
         """
-        return continue_as_new(context=self, input_=input_)
+        new_action = ContinueAsNewAction(input_)
+        self._add_to_actions([new_action])
+        self._continue_as_new_flag = True
+        return
 
     def new_guid(self) -> UUID:
         """Generate a replay-safe GUID.
@@ -478,3 +494,8 @@ class DurableOrchestrationContext:
         self._new_uuid_counter += 1
         guid = uuid5(NAMESPACE_URL, guid_name)
         return guid
+    
+    def _schedule_implicit_child_task(self, parent) -> MutableTask:
+        task = self._generate_task(None)
+        task.parent = parent
+        return task

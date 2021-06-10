@@ -81,7 +81,7 @@ def test_custom_status_tokyo_seattle():
 
    # Complete the two event so that it sets the custom status accordingly
    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
-   add_hello_completed_events(context_builder, 0, "\"Hello Seattle!\"")
+   add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
 
    result = get_orchestration_state_result(
         context_builder, generator_function)

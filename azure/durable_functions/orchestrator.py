@@ -37,6 +37,7 @@ class Orchestrator:
 
     def handle(self, context: DurableOrchestrationContext):
         self.task_orchestration_executor = TaskOrchestrationExecutor()
+        self.durable_context = context
         return self.task_orchestration_executor.execute(context, context.histories, self.fn)
         raise NotImplementedError
 
