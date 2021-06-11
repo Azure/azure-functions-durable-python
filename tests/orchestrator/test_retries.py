@@ -123,12 +123,9 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
         Tuple[ContextBuilder, int, List[int]]:
             The updated context, the updated counter, a list of event IDs for each scheduled event
         """
-        scheduled_ids: List[int] = []
-        for id_ in range(num_activities):
-            scheduled_ids.append(id_)
-            context.add_task_scheduled_event(name='Hello', id_=id_)
-            id_counter += 1
-        return context, id_counter, scheduled_ids
+        id_counter = id_counter + 1
+        context.add_task_scheduled_event(name='Hello', id_=id_counter)
+        return context, id_counter
 
     def _fail_events(context: ContextBuilder, id_counter: int) -> Tuple[ContextBuilder, int]:
         """Add event failed to the context.
@@ -146,10 +143,9 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
             The updated context, the updated id_counter
         """
         context.add_orchestrator_started_event()
-        for id_ in scheduled_ids:
-            context.add_task_failed_event(
-                id_=id_, reason=REASONS, details=DETAILS)
-            id_counter += 1
+        context.add_task_failed_event(
+            id_=id_counter, reason=REASONS, details=DETAILS)
+        #id_counter += 1
         return context, id_counter
 
     def _schedule_timers(context: ContextBuilder, id_counter: int) -> Tuple[ContextBuilder, int, List[datetime]]:
@@ -167,10 +163,9 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
         Tuple[ContextBuilder, int, List[datetime]]:
             The updated context, the updated counter, a list of timer deadlines
         """
+        id_counter = id_counter + 1
         deadlines: List[datetime] = []
-        for _ in range(num_activities):
-            deadlines.append((id_counter, context.add_timer_created_event(id_counter)))
-            id_counter += 1
+        deadlines.append((id_counter, context.add_timer_created_event(id_counter)))
         return context, id_counter, deadlines
     
     def _fire_timer(context: ContextBuilder, id_counter: int, deadlines: List[datetime]) -> Tuple[ContextBuilder, int]:
@@ -192,7 +187,7 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
         """
         for id_, fire_at in deadlines:
             context.add_timer_fired_event(id_=id_, fire_at=fire_at)
-            id_counter += 1
+            #id_counter += 1
         return context, id_counter
 
     def _complete_event(context: ContextBuilder, id_counter: int) -> Tuple[ContextBuilder, int]:
@@ -210,45 +205,45 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
         Tuple[ContextBuilder, int]
             The updated context, the updated id_counter
         """
-        for id_, city in zip(scheduled_ids, CITIES):
-            result = f"\"{RESULT_PREFIX}{city}\""
-            context.add_task_completed_event(id_=id_, result=result)
-            id_counter += 1
+        result = f"\"{RESULT_PREFIX}city\""
+        context.add_task_completed_event(id_=id_counter, result=result)
+            #id_counter += 1
         return context, id_counter
 
 
-    id_counter = 0
+    id_counter = -1
 
-    # Schedule the events
-    context, id_counter, scheduled_ids = _schedule_events(context, id_counter)
-    context.add_orchestrator_completed_event()
+    for _ in range(num_activities):
+        # Schedule the events
+        context, id_counter = _schedule_events(context, id_counter)
+        context.add_orchestrator_completed_event()
 
-    # Record failures, schedule timers
-    context, id_counter = _fail_events(context, id_counter)
-    context, id_counter, deadlines = _schedule_timers(context, id_counter)
-    context.add_orchestrator_completed_event()
-
-    # Fire timers, re-schedule events
-    context.add_orchestrator_started_event()
-    context, id_counter = _fire_timer(context, id_counter, deadlines)
-    context, id_counter, scheduled_ids = _schedule_events(context, id_counter)
-    context.add_orchestrator_completed_event()
-
-    context.add_orchestrator_started_event()
-
-    # Either complete the event or, if we want all failed events, then
-    # fail the events, schedule timer, and fire time.
-    if will_fail:
+        # Record failures, schedule timers
         context, id_counter = _fail_events(context, id_counter)
         context, id_counter, deadlines = _schedule_timers(context, id_counter)
         context.add_orchestrator_completed_event()
 
+        # Fire timers, re-schedule events
         context.add_orchestrator_started_event()
         context, id_counter = _fire_timer(context, id_counter, deadlines)
-    else:
-        context, id_counter = _complete_event(context, id_counter)
+        context, id_counter = _schedule_events(context, id_counter)
+        context.add_orchestrator_completed_event()
 
-    context.add_orchestrator_completed_event()
+        context.add_orchestrator_started_event()
+
+        # Either complete the event or, if we want all failed events, then
+        # fail the events, schedule timer, and fire time.
+        if will_fail:
+            context, id_counter = _fail_events(context, id_counter)
+            context, id_counter, deadlines = _schedule_timers(context, id_counter)
+            context.add_orchestrator_completed_event()
+
+            context.add_orchestrator_started_event()
+            context, id_counter = _fire_timer(context, id_counter, deadlines)
+        else:
+            context, id_counter = _complete_event(context, id_counter)
+
+        context.add_orchestrator_completed_event()
     return context
 
 def test_redundant_completion_doesnt_get_processed():
@@ -303,7 +298,7 @@ def test_retries_can_fail():
         assert str.startswith(error_str, expected_error_str)
 
 def test_retries_with_serializable_input():
-    """Tests that retried tasks work with serialized input classes."""
+    # Tests that retried tasks work with serialized input classes.
     context = get_context_with_retries()
 
     result_1 = get_orchestration_state_result(
