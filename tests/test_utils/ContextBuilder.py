@@ -1,3 +1,4 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import uuid
 import json
 from datetime import datetime, timedelta
@@ -13,7 +14,7 @@ from azure.durable_functions.models.history.HistoryEventType \
 
 
 class ContextBuilder:
-    def __init__(self, name: str="", increase_time: bool = True, starting_time: Optional[datetime] = None):
+    def __init__(self, name: str="", increase_time: bool = True, starting_time: Optional[datetime] = None, replay_schema: ReplaySchema = ReplaySchema.V1):
         self.increase_time = increase_time
         self.instance_id = uuid.uuid4()
         self.is_replaying: bool = False
@@ -24,6 +25,7 @@ class ContextBuilder:
         if starting_time is None:
             starting_time = datetime.now()
         self.current_datetime: datetime = starting_time
+        self.upperSchemaVersion = replay_schema.value
 
         self.add_orchestrator_started_event()
         self.add_execution_started_event(name)
@@ -139,6 +141,7 @@ class ContextBuilder:
         add_attrib(json_dict, self, 'parent_instance_id', 'parentInstanceId')
         add_attrib(json_dict, self, 'is_replaying', 'isReplaying')
         add_attrib(json_dict, self, 'input_', "input")
+        add_attrib(json_dict, self, 'upperSchemaVersion', "upperSchemaVersion")
 
         history_list_as_dict = self.get_history_list_as_dict()
         json_dict['history'] = history_list_as_dict

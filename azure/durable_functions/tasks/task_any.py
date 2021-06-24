@@ -1,7 +1,9 @@
+from azure.durable_functions.models.actions.WhenAnyAction import WhenAnyAction
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from ..models.TaskSet import TaskSet
 
 
-def task_any(tasks):
+def task_any(tasks, replay_schema: ReplaySchema):
     """Determine whether any of the given tasks is completed.
 
     Parameters
@@ -22,8 +24,10 @@ def task_any(tasks):
     error_message = []
     for task in tasks:
         if isinstance(task, TaskSet):
-            for action in task.actions:
-                all_actions.append(action)
+            if replay_schema == ReplaySchema.V1:
+                all_actions.extend(task.actions)
+            else:
+                all_actions.append(task.actions)
         else:
             all_actions.append(task.action)
 
@@ -34,6 +38,9 @@ def task_any(tasks):
             completed_tasks.append(task)
 
     completed_tasks.sort(key=lambda t: t.timestamp)
+
+    if replay_schema == ReplaySchema.V2:
+        all_actions = WhenAnyAction(all_actions)
 
     if len(faulted_tasks) == len(tasks):
         return TaskSet(True, all_actions, None, is_faulted=True, exception=Exception(
