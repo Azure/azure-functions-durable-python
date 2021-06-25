@@ -12,6 +12,7 @@ def assert_orchestration_state_equals(expected, result):
     """Ensure that the observable OrchestratorState matches the expected result.
     """
     assert_attribute_equal(expected, result, "isDone")
+    assert_attribute_equal(expected, result, "schemaVersion")
     assert_actions_are_equal(expected, result)
     assert_attribute_equal(expected, result, "output")
     assert_attribute_equal(expected, result, "error")

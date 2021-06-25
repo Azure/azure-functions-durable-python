@@ -1,3 +1,4 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from tests.test_utils.ContextBuilder import ContextBuilder
 from .orchestrator_test_utils \
     import get_orchestration_property, assert_orchestration_state_equals, assert_valid_schema
@@ -17,8 +18,8 @@ def generator_function(context):
         deadline = deadline + timedelta(seconds=30)
         yield context.create_timer(deadline)
 
-def base_expected_state(output=None) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output)
+def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
 
 def add_timer_fired_events(context_builder: ContextBuilder, id_: int, timestamp: str,
         is_played: bool = True):

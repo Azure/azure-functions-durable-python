@@ -5,6 +5,8 @@ function.
 """
 from typing import Callable, Iterator, Any, Generator
 
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
+
 from .models import (
     DurableOrchestrationContext,
     Task,
@@ -55,6 +57,7 @@ class Orchestrator:
         # `fn_output` is the return value instead of a generator
         if not isinstance(fn_output, Iterator):
             orchestration_state = OrchestratorState(
+                replay_schema=self.durable_context._replay_schema,
                 is_done=True,
                 output=fn_output,
                 actions=self.durable_context.actions,
@@ -75,6 +78,7 @@ class Orchestrator:
                         # `will_continue_as_new` essentially "tracks"
                         # whether or not the orchestration is done.
                         orchestration_state = OrchestratorState(
+                            replay_schema=self.durable_context._replay_schema,
                             is_done=self.durable_context.will_continue_as_new,
                             output=None,
                             actions=self.durable_context.actions,
@@ -95,6 +99,7 @@ class Orchestrator:
 
             except StopIteration as sie:
                 orchestration_state = OrchestratorState(
+                    replay_schema=self.durable_context._replay_schema,
                     is_done=True,
                     output=sie.value,
                     actions=self.durable_context.actions,
@@ -102,6 +107,7 @@ class Orchestrator:
             except Exception as e:
                 exception_str = str(e)
                 orchestration_state = OrchestratorState(
+                    replay_schema=self.durable_context._replay_schema,
                     is_done=False,
                     output=None,  # Should have no output, after generation range
                     actions=self.durable_context.actions,
@@ -134,12 +140,19 @@ class Orchestrator:
         # Do not add new tasks to action if continue_as_new was called
         if self.durable_context.will_continue_as_new:
             return
-        if (isinstance(generation_state, Task)
-                and hasattr(generation_state, "action")):
-            self.durable_context.actions.append([generation_state.action])
-        elif (isinstance(generation_state, TaskSet)
-              and hasattr(generation_state, "actions")):
-            self.durable_context.actions.append(generation_state.actions)
+        if not generation_state._is_yielded:
+            if isinstance(generation_state, Task):
+                if self.durable_context._replay_schema == ReplaySchema.V1:
+                    self.durable_context.actions.append([generation_state.action])
+                else:
+                    self.durable_context.actions[0].append(generation_state.action)
+
+            elif isinstance(generation_state, TaskSet):
+                if self.durable_context._replay_schema == ReplaySchema.V1:
+                    self.durable_context.actions.append(generation_state.actions)
+                else:
+                    self.durable_context.actions[0].append(generation_state.actions)
+            generation_state._is_yielded = True
 
     def _update_timestamp(self):
         last_timestamp = self.durable_context.decision_started_event.timestamp

@@ -1,7 +1,10 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import json
 import datetime
+import inspect
 from typing import List, Any, Dict, Optional
 from uuid import UUID, uuid5, NAMESPACE_URL
+from datetime import timezone
 
 from .RetryOptions import RetryOptions
 from .TaskSet import TaskSet
@@ -28,7 +31,7 @@ class DurableOrchestrationContext:
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     def __init__(self,
                  history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
-                 parentInstanceId: str, input: Any = None, **kwargs):
+                 parentInstanceId: str, input: Any = None, upperSchemaVersion: int = 0, **kwargs):
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
@@ -43,8 +46,11 @@ class DurableOrchestrationContext:
         self._current_utc_datetime: datetime.datetime = \
             self.decision_started_event.timestamp
         self._new_uuid_counter = 0
-        self.actions: List[List[Action]] = []
         self._function_context: FunctionContext = FunctionContext(**kwargs)
+        self._replay_schema = ReplaySchema(upperSchemaVersion)
+        self.actions: List[List[Action]] = []
+        if self._replay_schema == ReplaySchema.V2:
+            self.actions.append([])
 
         # make _input always a string
         # (consistent with Python Functions generic trigger/input bindings)
@@ -238,7 +244,7 @@ class DurableOrchestrationContext:
         TaskSet
             The results of all activities.
         """
-        return task_all(tasks=activities)
+        return task_all(tasks=activities, replay_schema=self._replay_schema)
 
     def task_any(self, activities: List[Task]) -> TaskSet:
         """Schedule the execution of all activities.
@@ -258,7 +264,7 @@ class DurableOrchestrationContext:
         TaskSet
             The first [[Task]] instance to complete.
         """
-        return task_any(tasks=activities)
+        return task_any(tasks=activities, replay_schema=self._replay_schema)
 
     def set_custom_status(self, status: Any):
         """Set the customized orchestration status for your orchestrator function.
@@ -459,3 +465,15 @@ class DurableOrchestrationContext:
         self._new_uuid_counter += 1
         guid = uuid5(NAMESPACE_URL, guid_name)
         return guid
+
+    def _pretty_print_history(self) -> str:
+        """Get a pretty-printed version of the orchestration's internal history."""
+        def history_to_string(event):
+            json_dict = {}
+            for key, val in inspect.getmembers(event):
+                if not key.startswith('_') and not inspect.ismethod(val):
+                    if isinstance(val, datetime.date):
+                        val = val.replace(tzinfo=timezone.utc).timetuple()
+                    json_dict[key] = val
+            return json.dumps(json_dict)
+        return str(list(map(history_to_string, self._histories)))

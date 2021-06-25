@@ -1,3 +1,4 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from .orchestrator_test_utils \
     import assert_orchestration_state_equals, get_orchestration_state_result, assert_valid_schema
 from tests.test_utils.ContextBuilder import ContextBuilder
@@ -13,8 +14,8 @@ def generator_function(context):
     context.continue_as_new("Cause I can")
 
 
-def base_expected_state(output=None) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output)
+def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
 
 
 def add_hello_action(state: OrchestratorState, input_: str):

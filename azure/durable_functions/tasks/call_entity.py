@@ -51,7 +51,7 @@ def call_entity_task(
     event_raised = None
     if event_sent:
         event_input = None
-        if hasattr(event_sent, "Input"):
+        if hasattr(event_sent, "Input") and event_sent.Input is not None:
             event_input = RequestMessage.from_json(event_sent.Input)
             hist_type = HistoryEventType.EVENT_RAISED
             extra_constraints = {

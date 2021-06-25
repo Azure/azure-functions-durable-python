@@ -1,6 +1,7 @@
 import pytest
 import json
 from dateutil.parser import parse as dt_parse
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 
 from azure.durable_functions.models.DurableOrchestrationContext \
     import DurableOrchestrationContext
@@ -23,10 +24,32 @@ def starting_context():
         '"isReplaying":false,"parentInstanceId":null} ')
     return context
 
+@pytest.fixture
+def starting_context_v2():
+    context = DurableOrchestrationContext.from_json(
+        '{"history":[{"EventType":12,"EventId":-1,"IsPlayed":false,'
+        '"Timestamp":"2019-12-08T23:18:41.3240927Z"}, '
+        '{"OrchestrationInstance":{'
+        '"InstanceId":"48d0f95957504c2fa579e810a390b938", '
+        '"ExecutionId":"fd183ee02e4b4fd18c95b773cfb5452b"},"EventType":0,'
+        '"ParentInstance":null, '
+        '"Name":"DurableOrchestratorTrigger","Version":"","Input":"null",'
+        '"Tags":null,"EventId":-1,"IsPlayed":false, '
+        '"Timestamp":"2019-12-08T23:18:39.756132Z"}],"input":null,'
+        '"instanceId":"48d0f95957504c2fa579e810a390b938", '
+        '"upperSchemaVersion": 1, '
+        '"isReplaying":false,"parentInstanceId":null} ')
+    return context
+
 
 def test_extracts_is_replaying(starting_context):
     assert not starting_context.is_replaying
 
+def test_assumes_v1_replayschema(starting_context):
+    assert starting_context._replay_schema is ReplaySchema.V1
+
+def test_assumes_v2_replayschema(starting_context_v2):
+    assert starting_context_v2._replay_schema is ReplaySchema.V2
 
 def test_extracts_instance_id(starting_context):
     assert "48d0f95957504c2fa579e810a390b938" == starting_context.instance_id

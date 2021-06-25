@@ -1,3 +1,5 @@
+from azure.durable_functions.models.actions.WhenAllAction import WhenAllAction
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from datetime import datetime
 from typing import List, Optional, Any
 
@@ -6,7 +8,7 @@ from ..models.TaskSet import TaskSet
 from ..models.actions import Action
 
 
-def task_all(tasks: List[Task]):
+def task_all(tasks: List[Task], replay_schema: ReplaySchema):
     """Determine the state of scheduling the activities for execution with retry options.
 
     Parameters
@@ -33,7 +35,10 @@ def task_all(tasks: List[Task]):
     for task in tasks:
         # Add actions and results
         if isinstance(task, TaskSet):
-            actions.extend(task.actions)
+            if replay_schema == ReplaySchema.V1:
+                actions.extend(task.actions)
+            else:
+                actions.append(task.actions)
         else:
             # We know it's an atomic Task
             actions.append(task.action)
@@ -59,8 +64,11 @@ def task_all(tasks: List[Task]):
 
     # Incomplete TaskSets do not have results or end-time
     if not is_completed:
-        results = None
+        results = []
         end_time = None
+
+    if replay_schema == ReplaySchema.V2:
+        actions = WhenAllAction(actions)
 
     # Construct TaskSet
     taskset = TaskSet(
