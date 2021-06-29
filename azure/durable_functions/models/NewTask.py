@@ -1,7 +1,8 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from build.lib.azure.durable_functions.models.actions.Action import Action
 from azure.durable_functions.models.Task import Task
 import enum
-from typing import Any, List, Optional, Set
+from typing import Any, List, Optional, Set, Union
 
 class TaskState(enum.Enum):
     """The possible states that a Task can be in.
@@ -33,7 +34,7 @@ class TaskBase:
         self.parent: CompoundTask = None
 
         self.value: Any = None
-        self.actions: List[Action] = actions
+        self.action_repr: Union[List[Action], Action] = actions
         self.is_played = False
 
     def set_is_played(self, is_played: bool):
@@ -104,7 +105,7 @@ class CompoundTask(TaskBase):
     instantiated on its own.
     """
 
-    def __init__(self, tasks: List[Task]):
+    def __init__(self, tasks: List[Task], action_wrapper=None):
         """Instantiate CompoundTask attributes.
 
         Parameters
@@ -113,9 +114,18 @@ class CompoundTask(TaskBase):
             The children/sub-tasks of this Task
         """
         super().__init__(-1, [])
+        child_actions = []
         for task in tasks:
             task.parent = self
-            self.actions.extend(task.actions)
+            action_repr = task.action_repr
+            if isinstance(action_repr, list):
+                child_actions.extend(action_repr)
+            else:
+                child_actions.append(action_repr)
+        if action_wrapper is None:
+            self.action_repr = child_actions
+        else: # replay_schema is ReplaySchema.V2
+            self.action_repr = action_wrapper(child_actions)
         self._first_error: Optional[Exception] = None
         self.pending_tasks: Set[TaskBase] = set(tasks)
         self.completed_tasks: List[TaskBase] = []

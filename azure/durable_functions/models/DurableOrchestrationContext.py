@@ -15,7 +15,7 @@ from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import json
 import datetime
 import inspect
-from typing import List, Any, Dict, Optional
+from typing import List, Any, Dict, Optional, Union
 from uuid import UUID, uuid5, NAMESPACE_URL
 from datetime import timezone
 
@@ -59,9 +59,8 @@ class DurableOrchestrationContext:
         self._function_context: FunctionContext = FunctionContext(**kwargs)
         self._sequence_number = 0
         self._replay_schema = ReplaySchema(upperSchemaVersion)
-        self.actions: List[List[Action]] = []
-        if self._replay_schema == ReplaySchema.V2:
-            self.actions.append([])
+
+        self._action_payload: Union[List[List[Action]], List[Action]] = []
 
         # make _input always a string
         # (consistent with Python Functions generic trigger/input bindings)
@@ -87,28 +86,46 @@ class DurableOrchestrationContext:
             New instance of the durable orchestration context class
         """
         # We should consider parsing the `Input` field here as well,
-        # intead of doing so lazily when `get_input` is called.
+        # instead of doing so lazily when `get_input` is called.
         json_dict = json.loads(json_string)
         return cls(**json_dict)
 
-    def _get_next_task_id(self):
+    def _generate_task(self, action: Action, retry_options: Optional[RetryOptions] = None) -> Union[AtomicTask, RetryAbleTask]:
+        """Generate an atomic or retryable Task based on an input
+
+        Parameters
+        ----------
+        action : Action
+            The action backing the Task
+        retry_options : Optional[RetryOptions]
+            RetryOptions for a with-retry task, by default None
+
+        Returns
+        -------
+        Union[AtomicTask, RetryAbleTask]
+            Either an atomic task or a retry-able task
+        """
+        # Produce a new task ID
         id_ = self._sequence_number
         self._sequence_number += 1
-        return id_
 
-    def _generate_task(self, action, retry_options = None):
-        id_ = self._get_next_task_id()
+        # Create an atomic task
         task = AtomicTask(id_, action)
         self.open_tasks[task.id] = task
 
         if not(retry_options is None):
+            # if task is retryable, provide the retryable wrapper class
             task = RetryAbleTask(task, retry_options, self)
-        return task
-    
-    def _add_to_actions(self, actions):
-        self.actions.append(actions)
+        return task        
 
-    def _set_is_replaying(self, is_replaying):
+    def _set_is_replaying(self, is_replaying: bool):
+        """Sets the internal `is_replaying` flag
+
+        Parameters
+        ----------
+        is_replaying : bool
+            New value of the `is_replaying` flag
+        """
         self._is_replaying = is_replaying
 
     def call_activity(self, name: str, input_: Optional[Any] = None) -> Task:
@@ -276,8 +293,7 @@ class DurableOrchestrationContext:
         TaskSet
             The results of all activities.
         """
-        return WhenAllTask(activities) #task_all(tasks=activities)
-        #return task_all(tasks=activities, replay_schema=self._replay_schema)
+        return WhenAllTask(activities, replay_schema=self._replay_schema)
 
     def task_any(self, activities: List[Task]) -> TaskSet:
         """Schedule the execution of all activities.
@@ -297,8 +313,7 @@ class DurableOrchestrationContext:
         TaskSet
             The first [[Task]] instance to complete.
         """
-        return WhenAnyTask(activities) #task_all(tasks=activities)
-        #return task_any(tasks=activities, replay_schema=self._replay_schema)
+        return WhenAnyTask(activities, replay_schema=self._replay_schema)
 
     def set_custom_status(self, status: Any):
         """Set the customized orchestration status for your orchestrator function.
@@ -489,7 +504,9 @@ class DurableOrchestrationContext:
             The new starting input to the orchestrator.
         """
         new_action = ContinueAsNewAction(input_)
-        self._add_to_actions([new_action])
+        if self._replay_schema is ReplaySchema.V1:
+            new_action = [new_action]
+        self._add_to_actions(new_action)
         self._continue_as_new_flag = True
         return
 
@@ -506,6 +523,25 @@ class DurableOrchestrationContext:
         self._new_uuid_counter += 1
         guid = uuid5(NAMESPACE_URL, guid_name)
         return guid
+
+    @property
+    def _actions(self) -> List[List[Action]]:
+        """Get the actions payload of this context, for replay in the extension
+
+        Returns
+        -------
+        List[List[Action]]
+            The actions of this context
+        """
+        actions = self._action_payload
+        if self._replay_schema is ReplaySchema.V2:
+            actions = [actions]
+        return actions
+
+    def _add_to_actions(self, action_repr: Union[List[Action], Action]):
+        if self.will_continue_as_new:
+            return
+        self._action_payload.append(action_repr)
     
     def _schedule_implicit_child_task(self, parent) -> AtomicTask:
         task = self._generate_task(None)

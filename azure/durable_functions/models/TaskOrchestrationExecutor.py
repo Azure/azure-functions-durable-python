@@ -3,7 +3,7 @@ from azure.durable_functions.tasks.task_utilities import parse_history_event
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
 from azure.durable_functions.models.MutableTask import AtomicTask
-from typing import Any, List, NamedTuple, Optional
+from typing import Any, List, Optional
 from azure.durable_functions.models.history.HistoryEventType import HistoryEventType
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
 from types import GeneratorType
@@ -179,8 +179,8 @@ class TaskOrchestrationExecutor:
                 # new task is received. it needs to be resolved to a value
                 self.current_task = new_task
                 self.current_task.was_yielded = True
-                self.context._add_to_actions(self.current_task.actions)
-    
+                self.context._add_to_actions(self.current_task.action_repr)
+
     def get_orchestrator_state_str(self) -> str:
         """Obtain a JSON-formatted string representing the orchestration's state.
 
@@ -198,7 +198,7 @@ class TaskOrchestrationExecutor:
         """
         state = OrchestratorState(
             is_done=self.orchestration_invocation_succeeded,
-            actions=self.context.actions,
+            actions=self.context._actions,
             output=self.output,
             replay_schema=self.context._replay_schema,
             error=None if self.exception is None else str(self.exception),

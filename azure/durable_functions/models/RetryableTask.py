@@ -14,12 +14,12 @@ class RetryAbleTask(WhenAllTask):
     def __init__(self, child: TaskBase, retry_options: RetryOptions, context):
         self.id_ = str(child.id) + "_retryable_proxy"
         tasks = [child]
-        super().__init__(tasks)
+        super().__init__(tasks, context._replay_schema)
 
         self.retry_options = retry_options
         self.num_attempts = 1
         self.context = context
-        self.actions = child.actions
+        self.actions = child.action_repr
     
 
     def try_set_value(self, child: TaskBase):
