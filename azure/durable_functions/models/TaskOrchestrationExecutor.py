@@ -200,6 +200,7 @@ class TaskOrchestrationExecutor:
             is_done=self.orchestration_invocation_succeeded,
             actions=self.context.actions,
             output=self.output,
+            replay_schema=self.context._replay_schema,
             error=None if self.exception is None else str(self.exception),
             custom_status=self.context.custom_status
         )
