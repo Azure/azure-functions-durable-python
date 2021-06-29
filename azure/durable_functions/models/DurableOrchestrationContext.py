@@ -9,7 +9,7 @@ from azure.durable_functions.models.actions.CallSubOrchestratorAction import Cal
 from azure.durable_functions.models.actions.CreateTimerAction import CreateTimerAction
 from azure.durable_functions.models.WhenAllTask import WhenAllTask
 from azure.durable_functions.models.WhenAnyTask import WhenAnyTask
-from azure.durable_functions.models.MutableTask import MutableTask
+from azure.durable_functions.models.MutableTask import AtomicTask
 from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction
 import json
 import datetime
@@ -91,7 +91,7 @@ class DurableOrchestrationContext:
 
     def _generate_task(self, action, retry_options = None):
         id_ = self._get_next_task_id()
-        task = MutableTask(id_, action)
+        task = AtomicTask(id_, action)
         self.open_tasks[task.id] = task
 
         if not(retry_options is None):
@@ -100,6 +100,9 @@ class DurableOrchestrationContext:
     
     def _add_to_actions(self, actions):
         self.actions.append(actions)
+
+    def _set_is_replaying(self, is_replaying):
+        self._is_replaying = is_replaying
 
     def call_activity(self, name: str, input_: Optional[Any] = None) -> Task:
         """Schedule an activity for execution.
@@ -495,7 +498,7 @@ class DurableOrchestrationContext:
         guid = uuid5(NAMESPACE_URL, guid_name)
         return guid
     
-    def _schedule_implicit_child_task(self, parent) -> MutableTask:
+    def _schedule_implicit_child_task(self, parent) -> AtomicTask:
         task = self._generate_task(None)
         task.parent = parent
         return task

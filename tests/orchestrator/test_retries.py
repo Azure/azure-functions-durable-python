@@ -190,7 +190,7 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
             #id_counter += 1
         return context, id_counter
 
-    def _complete_event(context: ContextBuilder, id_counter: int) -> Tuple[ContextBuilder, int]:
+    def _complete_event(context: ContextBuilder, id_counter: int, city:str) -> Tuple[ContextBuilder, int]:
         """Add event / task completions to the context.
 
         Parameters
@@ -205,7 +205,7 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
         Tuple[ContextBuilder, int]
             The updated context, the updated id_counter
         """
-        result = f"\"{RESULT_PREFIX}city\""
+        result = f"\"{RESULT_PREFIX}{city}\""
         context.add_task_completed_event(id_=id_counter, result=result)
             #id_counter += 1
         return context, id_counter
@@ -213,7 +213,7 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
 
     id_counter = -1
 
-    for _ in range(num_activities):
+    for city in CITIES:
         # Schedule the events
         context, id_counter = _schedule_events(context, id_counter)
         context.add_orchestrator_completed_event()
@@ -241,7 +241,7 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
             context.add_orchestrator_started_event()
             context, id_counter = _fire_timer(context, id_counter, deadlines)
         else:
-            context, id_counter = _complete_event(context, id_counter)
+            context, id_counter = _complete_event(context, id_counter, city)
 
         context.add_orchestrator_completed_event()
     return context

@@ -1,137 +1,206 @@
-from azure.durable_functions.models.NewTask import TaskState
+from azure.durable_functions.models.NewTask import TaskBase, TaskState
 from azure.durable_functions.tasks.task_utilities import parse_history_event
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
-from azure.durable_functions.models.MutableTask import MutableTask
-from typing import List
+from azure.durable_functions.models.MutableTask import AtomicTask
+from typing import Any, List, NamedTuple, Optional
 from azure.durable_functions.models.history.HistoryEventType import HistoryEventType
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
 from types import GeneratorType
+from collections import namedtuple
 
 class TaskOrchestrationExecutor:
+    """Manages the execution and replay of user-defined orchestrations.
+    """
 
     def __init__(self):
-        self.initialize()
-    
-    def initialize(self):
-        self.current_task = MutableTask(-1, [])
-        self.current_task.handle_result(None)
+        """Initialize TaskOrchestrationExecutor.
+        """
 
-        self.orchestrator_returned = False
-        self.output = None
-        self.exception = None
+        # A mapping of event types to a tuple of
+        #   (1) whether the event type represents a task success
+        #   (2) the attribute in the corresponding event object that identifies the Task
+        # this mapping is used for processing events that transition a Task from its running state
+        # to a terminal one
+        SetTaskValuePayload = namedtuple("SetTaskValuePayload", ("is_success", "task_id_key"))
+        self.event_to_SetTaskValuePayload = dict([
+            (HistoryEventType.TASK_COMPLETED, SetTaskValuePayload(True, "TaskScheduledId")),
+            (HistoryEventType.TIMER_FIRED, SetTaskValuePayload(True, "TimerId")),
+            (HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED, SetTaskValuePayload(True, "TaskScheduledId")),
+            (HistoryEventType.EVENT_RAISED, SetTaskValuePayload(True, "Name")),
+            (HistoryEventType.TASK_FAILED, SetTaskValuePayload(False, "TaskScheduledId")),
+            (HistoryEventType.SUB_ORCHESTRATION_INSTANCE_FAILED, SetTaskValuePayload(False, "TaskScheduledId"))
+        ])
+        self.task_completion_events = set(self.event_to_SetTaskValuePayload.keys())
+        self.initialize()
+
+    def initialize(self):
+        """Initialize the TaskOrchestrationExecutor for a new orchestration invocation.
+        """
+        # The first task is just a placeholder to kickstart the generator.
+        # So it's value is `None`.
+        # TODO: need to set the `is_replaying` flag in here!
+        self.current_task: TaskBase = AtomicTask(-1, [])
+        self.current_task.set_value(is_error=False, value=None)
+
+        self.output: Any = None
+        self.exception: Optional[Exception] = None
+        self.orchestrator_returned: bool = False
 
     def execute(self, context: DurableOrchestrationContext, history: List[HistoryEvent], fn) -> str:
+        """Execute an orchestration using the orchestration history to evaluate Tasks and replay events.
+
+        Parameters
+        ----------
+        context : DurableOrchestrationContext
+            The user's orchestration context, to interact with the user code.
+        history : List[HistoryEvent]
+            The orchestration history, to evaluate tasks and replay events.
+        fn : function
+            The user's orchestration function.
+
+        Returns
+        -------
+        str
+            A JSON-formatted string of the user's orchestration state, payload for the extension.
+        """
+
         self.context = context
         evaluated_user_code = fn(context)
 
+        # If user code is a generator, then it uses `yield` statements (the DF API)
+        # and so we iterate through the DF history, generating tasks and populating
+        # them with values when the history provides them
         if isinstance(evaluated_user_code, GeneratorType):
             self.generator = evaluated_user_code
             for event in history:
-                context._is_replaying = event.is_played
                 self.process_event(event)
-                if self._is_done_executing():
+                if self.has_execution_completed:
                     break
-        elif not self.context._continue_as_new_flag:
+    
+        # Due to backwards compatibility reasons, it's possible
+        # for the `continue_as_new` API to be called without `yield` statements.
+        # Therefore, we explicitely check if `continue_as_new` was used before
+        # flatting the orchestration as returned/completed
+        elif not self.context.will_continue_as_new:
             self.orchestrator_returned = True
             self.output = evaluated_user_code
-        return self.gen_orchestrator_state()
-
+        return self.get_orchestrator_state_str()
 
     def process_event(self, event: HistoryEvent):
+        """Evaluate a history event to either update some orchestration internal state deterministically,
+        or, more commonly, to evaluate some Task.
+
+        Parameters
+        ----------
+        event : HistoryEvent
+            The history event to process
+        """
+
         event_type = event.event_type
         if event_type == HistoryEventType.ORCHESTRATOR_STARTED:
-            return
-        if event_type == HistoryEventType.ORCHESTRATOR_COMPLETED:
-            return
-        elif event_type == HistoryEventType.EXECUTION_STARTED:
-            self.context.current_utc_datetime = event.timestamp
-            self.resume()
-        elif event_type == HistoryEventType.TASK_SCHEDULED:
-            return
-        elif event_type == HistoryEventType.TASK_COMPLETED:
-            self.f(event, "TaskScheduledId", "Result")
-        elif event_type == HistoryEventType.TASK_FAILED:
-            self.f2(event, "TaskScheduledId")
-        elif event.event_type == HistoryEventType.TIMER_CREATED:
-            return
-        elif event.event_type == HistoryEventType.TIMER_FIRED:
-            # similar to the activity completion block
-            self.f(event, "TimerId", "TimerId")
-        elif event.event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_CREATED:
-            return
-        elif event.event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED:
-            self.f(event, "TaskScheduledId", "Result")
-        elif event.event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_FAILED:
-            self.f2(event, "TaskScheduledId")
-        elif event.event_type == HistoryEventType.EVENT_SENT:
-            return
-        elif event.event_type == HistoryEventType.EVENT_RAISED:
-            self.f(event, "Name", "Input")
+            # update orchestration's deterministic timestamp
+            timestamp = event.timestamp
+            if timestamp > self.context.current_utc_datetime:
+                self.context.current_utc_datetime = event.timestamp
         elif event.event_type == HistoryEventType.CONTINUE_AS_NEW:
+            # re-initialize the orchestration state
             self.initialize()
+        elif event_type == HistoryEventType.EXECUTION_STARTED:
+            # begin replaying user code
+            self.resume_user_code()
+        elif self.is_task_completion_event(event.event_type):
+            # transition a task to a success or failure state
+            (is_success, id_key) = self.event_to_SetTaskValuePayload[event_type]
+            self.set_task_value(event, is_success, id_key)
+
+    def set_task_value(self, event: HistoryEvent, is_success: bool, id_key: str):
+        """Set a running task to either a success or failed state, and sets its value.
+
+        Parameters
+        ----------
+        event : HistoryEvent
+            The history event containing the value for the Task
+        is_success : bool
+            Whether the Task succeeded or failed (throws exception)
+        id_key : str
+            The attribute in the event object containing the ID of the Task to target
+        """
+
+        # get target task
+        key = getattr(event, id_key)
+        task: TaskBase = self.context.open_tasks.pop(key) 
+
+        if is_success:
+            # retrieve result
+            new_value = parse_history_event(event)
         else:
-            raise NotImplementedError
+            # generate exception
+            new_value = Exception(f"{event.Reason} \n {event.Details}")
 
-    def f(self, event, key_attribute, result_attribute):
-        key = getattr(event, key_attribute, None)
-        if key is None:
-            raise Exception("TBD")
-        task = self.context.open_tasks[key]
-        self.context.open_tasks.pop(key)
-
-        result = getattr(event, result_attribute, None)
-        if result is None:
-            raise Exception("TBD")
-        result = parse_history_event(event)
-        task.handle_result(result)
-        self.resume()
-
-    def f2(self, event, key_attribute):
-        key = getattr(event, key_attribute, None)
-        if key is None:
-            raise Exception("TBD")
-        task = self.context.open_tasks[key]
-        self.context.open_tasks.pop(key)
-
-        exception = Exception(f"{event.Reason} \n {event.Details}")
-        task.handle_error(exception)
-        self.resume()
+        # with a yielded task now evaluated, we can try to resume the user code
+        task.set_value(is_error=not(is_success), value=new_value)
+        task.set_is_played(event._is_played)   
+        self.resume_user_code()
     
-    def resume(self):
-        current_task = self.current_task
-        if not (current_task.state is TaskState.RUNNING):
-            task = self.step(current_task)
-            if not(task is None):
-                if not(task.was_yielded):
-                    task.was_yielded = True
-                    self.current_task = task
-                    self.context._add_to_actions(task.actions)
+    def resume_user_code(self):
+        """Attempt to continue executing user code, assuming that the active/current task
+        has resolved to a value.
+        """
 
-                else:
-                    # TODO: test, but I think this means that we yielded a completed task?
-                    self.resume()
-  
-    def step(self, task):
+        current_task = self.current_task
+        self.context._set_is_replaying(current_task.is_played)
+        if current_task.state is TaskState.RUNNING:
+            # if the current task hasn't been resolved, we can't
+            # continue executing the user code.
+            return
+
         new_task = None
         try:
-            if task.state is TaskState.FAILED:
-                new_task = self.generator.throw(task.error)
-            else:
-                new_task = self.generator.send(task.result)
+            # resume orchestration with a resolved task's value
+            task_value = current_task.value
+            task_succeeded = current_task.state is TaskState.SUCCEEDED
+            new_task = self.generator.send(task_value) if task_succeeded else self.generator.throw(task_value)
         except StopIteration as stop_exception:
+            # the orchestration returned,
+            # flag it as such and capture its output
             self.orchestrator_returned = True
             self.output = stop_exception.value
         except Exception as exception:
+            # the orchestration threw an exception
             self.exception = exception
-        return new_task
+        
+        if new_task is not None:
+            if new_task.was_yielded:
+                # user yielded the same task multiple times, continue executing code
+                # until a new/not-previously-yielded task is encountered
+                self.resume_user_code()
+            else:
+                # new task is received. it needs to be resolved to a value
+                self.current_task = new_task
+                self.current_task.was_yielded = True
+                self.context._add_to_actions(self.current_task.actions)
     
-    def gen_orchestrator_state(self) -> str:
+    def get_orchestrator_state_str(self) -> str:
+        """Obtain a JSON-formatted string representing the orchestration's state.
+
+        Returns
+        -------
+        str
+            String represented orchestration's state, payload to the extension
+
+        Raises
+        ------
+        Exception
+            When the orchestration's state represents an error. The exception's
+            message contains in it the string representation of the orchestration's
+            state
+        """
         state = OrchestratorState(
-            is_done=self.is_done,
+            is_done=self.orchestration_invocation_succeeded,
             actions=self.context.actions,
             output=self.output,
-            error=str(self.exception) if isinstance(self.exception, Exception) else None,
+            error=None if self.exception is None else str(self.exception),
             custom_status=self.context.custom_status
         )
 
@@ -145,9 +214,40 @@ class TaskOrchestrationExecutor:
             raise Exception(formatted_error) from self.exception
         return state.to_json_string()
     
-    def _is_done_executing(self) -> bool:
-        return self.is_done or isinstance(self.exception, Exception)
+    def is_task_completion_event(self, event_type: HistoryEventType) -> bool:
+        """Determine if some event_type corresponds to a Task-resolution event.
+
+        Parameters
+        ----------
+        event_type : HistoryEventType
+            The event_type to analyze.
+
+        Returns
+        -------
+        bool
+            True if the event corresponds to a Task being resolved. False otherwise.
+        """
+        return event_type in self.task_completion_events
 
     @property
-    def is_done(self):
+    def has_execution_completed(self) -> bool:
+        """Determines if the orchestration invocation is completed, either
+        through returning, continuing-as-new, or through an exception.
+
+        Returns
+        -------
+        bool
+            Whether the orchestration invocation is completed.
+        """
+        return self.orchestration_invocation_succeeded or not(self.exception is None)
+
+    @property
+    def orchestration_invocation_succeeded(self) -> bool:
+        """Whether the orchestration returned or continued-as-new.
+
+        Returns
+        -------
+        bool
+            Whether the orchestration returned or continued-as-new
+        """
         return self.orchestrator_returned or self.context.will_continue_as_new
