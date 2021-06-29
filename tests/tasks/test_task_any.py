@@ -1,3 +1,4 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from datetime import datetime, date
 import json
 from azure.durable_functions.models import Task, TaskSet
@@ -23,7 +24,7 @@ def test_has_completed_task():
     task3 = Task(is_completed=True, is_faulted=False, action=all_actions[2],timestamp=date(2000,1,1))
 
     tasks = [task1, task2, task3]
-    returned_taskset = task_any(tasks)
+    returned_taskset = task_any(tasks, replay_schema=ReplaySchema.V1)
     expected_taskset = TaskSet(is_completed=True, actions=all_actions, result=task3, timestamp=date(2000,1,1))
 
     assert_taskset_equal(expected_taskset, returned_taskset)
@@ -35,7 +36,7 @@ def test_has_no_completed_task():
     task3 = Task(is_completed=False, is_faulted=False, action=all_actions[2],timestamp=date(2000,1,1))
 
     tasks = [task1, task2, task3]
-    returned_taskset = task_any(tasks)
+    returned_taskset = task_any(tasks, replay_schema=ReplaySchema.V1)
     expected_taskset = TaskSet(is_completed=False, actions=all_actions, result=None)
 
     assert_taskset_equal(expected_taskset, returned_taskset)
@@ -47,7 +48,7 @@ def test_all_faulted_task_should_fail():
     task3 = Task(is_completed=False, is_faulted=True, action=all_actions[2], timestamp=date(2000,1,1), exc=Exception("test failure"))
 
     tasks = [task1, task2, task3]
-    returned_taskset = task_any(tasks)
+    returned_taskset = task_any(tasks, replay_schema=ReplaySchema.V1)
     error_messages = [Exception("test failure") for _ in range(3)]
     expected_exception = Exception(f"All tasks have failed, errors messages in all tasks:{error_messages}")
     expected_taskset = TaskSet(is_completed=True, actions=all_actions, result=None, is_faulted=True, exception=expected_exception)
@@ -60,7 +61,7 @@ def test_one_faulted_task_should_still_proceed():
     task3 = Task(is_completed=False, is_faulted=False, action=all_actions[2],timestamp=date(2000,1,1))
 
     tasks = [task1, task2, task3]
-    returned_taskset = task_any(tasks)
+    returned_taskset = task_any(tasks, replay_schema=ReplaySchema.V1)
     expected_taskset = TaskSet(is_completed=False, actions=all_actions, result=None)
 
     assert_taskset_equal(expected_taskset, returned_taskset)
@@ -72,7 +73,7 @@ def test_taskset_and_tasks_as_args():
             result=[None, None], timestamp=date(2000,1,1))
 
     tasks = [task1, task2]
-    returned_taskset = task_any(tasks)
+    returned_taskset = task_any(tasks, replay_schema=ReplaySchema.V1)
     expected_taskset = TaskSet(is_completed=True, actions=all_actions, result=task2, timestamp=date(2000,1,1))
 
     assert_taskset_equal(expected_taskset, returned_taskset)

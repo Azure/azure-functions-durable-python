@@ -14,3 +14,5 @@ class ActionType(IntEnum):
     CALL_ENTITY = 7
     CALL_HTTP: int = 8
     SIGNAL_ENTITY: int = 9
+    WHEN_ANY = 11
+    WHEN_ALL = 12

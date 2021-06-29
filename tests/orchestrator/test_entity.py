@@ -1,3 +1,4 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from .orchestrator_test_utils \
     import assert_orchestration_state_equals, get_orchestration_state_result, assert_valid_schema, \
             get_entity_state_result, assert_entity_state_equals
@@ -148,8 +149,8 @@ def add_call_entity_action_for_entity(state: OrchestratorState, id_: df.EntityId
     state.actions.append([action])
 
 
-def base_expected_state(output=None) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output)
+def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.V1.value)
 
 def add_call_entity_action(state: OrchestratorState, id_: df.EntityId, op: str, input_: Any):
     action = CallEntityAction(entity_id=id_, operation=op, input_=input_)

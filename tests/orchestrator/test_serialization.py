@@ -1,10 +1,11 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from tests.test_utils.ContextBuilder import ContextBuilder
 from .orchestrator_test_utils \
     import get_orchestration_state_result, assert_orchestration_state_equals, assert_valid_schema
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 
-def base_expected_state(output=None) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output)
+def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
 
 def generator_function(context):
     return False
