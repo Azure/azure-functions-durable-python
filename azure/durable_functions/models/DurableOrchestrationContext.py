@@ -1,3 +1,4 @@
+from azure.durable_functions.models.NewTask import CompoundTask
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
 from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import CallSubOrchestratorWithRetryAction
@@ -539,11 +540,34 @@ class DurableOrchestrationContext:
         return actions
 
     def _add_to_actions(self, action_repr: Union[List[Action], Action]):
+        """Add a Task's actions payload to the context's actions array
+
+        Parameters
+        ----------
+        action_repr : Union[List[Action], Action]
+            The tasks to add
+        """
+        # Do not add further actions after `continue_as_new` has been
+        # called
         if self.will_continue_as_new:
             return
         self._action_payload.append(action_repr)
     
-    def _schedule_implicit_child_task(self, parent) -> AtomicTask:
+    def _produce_anonymous_task(self, parent: CompoundTask) -> AtomicTask:
+        """Creates an anonymous task, i.e one that isn't explicitely scheduled by the user.
+        This is to manage retryable tasks, where each retryable task may schedule
+        intermediate "anonymous" tasks such as timers as well as activities
+
+        Parameters
+        ----------
+        parent : CompoundTask
+            The parent task that requires this anonymous task
+
+        Returns
+        -------
+        AtomicTask
+            The anonymous task
+        """
         task = self._generate_task(None)
         task.parent = parent
         return task
