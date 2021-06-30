@@ -6,12 +6,7 @@ function.
 from azure.durable_functions.models.TaskOrchestrationExecutor import TaskOrchestrationExecutor
 from typing import Callable, Any, Generator
 
-from azure.durable_functions.models.ReplaySchema import ReplaySchema
-
-from .models import (
-    DurableOrchestrationContext,
-    Task,
-    TaskSet)
+from .models import DurableOrchestrationContext
 
 import azure.functions as func
 
@@ -32,11 +27,23 @@ class Orchestrator:
         :param activity_func: Generator function to orchestrate.
         """
         self.fn: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]] = activity_func
-        self.task_orchestration_executor = None
-
-    def handle(self, context: DurableOrchestrationContext):
-        self.durable_context = context
         self.task_orchestration_executor = TaskOrchestrationExecutor()
+
+    def handle(self, context: DurableOrchestrationContext) -> str:
+        """Execute the user's orchestration.
+
+        Parameters
+        ----------
+        context : DurableOrchestrationContext
+            The DF orchestration context
+
+        Returns
+        -------
+        str
+            The JSON-formatted string representing the user's orchestration
+            state after this invocation
+        """
+        self.durable_context = context
         return self.task_orchestration_executor.execute(context, context.histories, self.fn)
 
     @classmethod

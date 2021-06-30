@@ -6,8 +6,6 @@ from .OrchestratorState import OrchestratorState
 from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from .PurgeHistoryResult import PurgeHistoryResult
 from .RetryOptions import RetryOptions
-from .Task import Task
-from .TaskSet import TaskSet
 from .DurableHttpRequest import DurableHttpRequest
 from .TokenSource import ManagedIdentityTokenSource
 from .DurableEntityContext import DurableEntityContext
@@ -22,7 +20,5 @@ __all__ = [
     'OrchestratorState',
     'OrchestrationRuntimeStatus',
     'PurgeHistoryResult',
-    'RetryOptions',
-    'Task',
-    'TaskSet'
+    'RetryOptions'
 ]

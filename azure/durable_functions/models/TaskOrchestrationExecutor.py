@@ -1,22 +1,21 @@
-from azure.durable_functions.models.NewTask import TaskBase, TaskState
-from azure.durable_functions.tasks.task_utilities import parse_history_event
+from azure.durable_functions.models.NewTask import TaskBase, TaskState, AtomicTask
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
-from azure.durable_functions.models.MutableTask import AtomicTask
 from typing import Any, List, Optional
 from azure.durable_functions.models.history.HistoryEventType import HistoryEventType
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
 from types import GeneratorType
 from collections import namedtuple
+import json
+from ..models.entities.ResponseMessage import ResponseMessage
+from azure.functions._durable_functions import _deserialize_custom_object
+
 
 class TaskOrchestrationExecutor:
-    """Manages the execution and replay of user-defined orchestrations.
-    """
+    """Manages the execution and replay of user-defined orchestrations."""
 
     def __init__(self):
-        """Initialize TaskOrchestrationExecutor.
-        """
-
+        """Initialize TaskOrchestrationExecutor."""
         # A mapping of event types to a tuple of
         #   (1) whether the event type represents a task success
         #   (2) the attribute in the corresponding event object that identifies the Task
@@ -26,17 +25,18 @@ class TaskOrchestrationExecutor:
         self.event_to_SetTaskValuePayload = dict([
             (HistoryEventType.TASK_COMPLETED, SetTaskValuePayload(True, "TaskScheduledId")),
             (HistoryEventType.TIMER_FIRED, SetTaskValuePayload(True, "TimerId")),
-            (HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED, SetTaskValuePayload(True, "TaskScheduledId")),
+            (HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED,
+             SetTaskValuePayload(True, "TaskScheduledId")),
             (HistoryEventType.EVENT_RAISED, SetTaskValuePayload(True, "Name")),
             (HistoryEventType.TASK_FAILED, SetTaskValuePayload(False, "TaskScheduledId")),
-            (HistoryEventType.SUB_ORCHESTRATION_INSTANCE_FAILED, SetTaskValuePayload(False, "TaskScheduledId"))
+            (HistoryEventType.SUB_ORCHESTRATION_INSTANCE_FAILED,
+             SetTaskValuePayload(False, "TaskScheduledId"))
         ])
         self.task_completion_events = set(self.event_to_SetTaskValuePayload.keys())
         self.initialize()
 
     def initialize(self):
-        """Initialize the TaskOrchestrationExecutor for a new orchestration invocation.
-        """
+        """Initialize the TaskOrchestrationExecutor for a new orchestration invocation."""
         # The first task is just a placeholder to kickstart the generator.
         # So it's value is `None`.
         # TODO: need to set the `is_replaying` flag in here!
@@ -47,7 +47,8 @@ class TaskOrchestrationExecutor:
         self.exception: Optional[Exception] = None
         self.orchestrator_returned: bool = False
 
-    def execute(self, context: DurableOrchestrationContext, history: List[HistoryEvent], fn) -> str:
+    def execute(self, context: DurableOrchestrationContext,
+                history: List[HistoryEvent], fn) -> str:
         """Execute an orchestration using the orchestration history to evaluate Tasks and replay events.
 
         Parameters
@@ -64,7 +65,6 @@ class TaskOrchestrationExecutor:
         str
             A JSON-formatted string of the user's orchestration state, payload for the extension.
         """
-
         self.context = context
         evaluated_user_code = fn(context)
 
@@ -77,7 +77,7 @@ class TaskOrchestrationExecutor:
                 self.process_event(event)
                 if self.has_execution_completed:
                     break
-    
+
         # Due to backwards compatibility reasons, it's possible
         # for the `continue_as_new` API to be called without `yield` statements.
         # Therefore, we explicitely check if `continue_as_new` was used before
@@ -88,15 +88,16 @@ class TaskOrchestrationExecutor:
         return self.get_orchestrator_state_str()
 
     def process_event(self, event: HistoryEvent):
-        """Evaluate a history event to either update some orchestration internal state deterministically,
-        or, more commonly, to evaluate some Task.
+        """Evaluate a history event.
+
+        This might result in updating some orchestration internal state deterministically,
+        to evaluating some Task, or have no side-effects.
 
         Parameters
         ----------
         event : HistoryEvent
             The history event to process
         """
-
         event_type = event.event_type
         if event_type == HistoryEventType.ORCHESTRATOR_STARTED:
             # update orchestration's deterministic timestamp
@@ -127,9 +128,31 @@ class TaskOrchestrationExecutor:
             The attribute in the event object containing the ID of the Task to target
         """
 
+        def parse_history_event(directive_result):
+            """Based on the type of event, parse the JSON.serializable portion of the event."""
+            event_type = directive_result.event_type
+            if event_type is None:
+                raise ValueError("EventType is not found in task object")
+
+            # We provide the ability to deserialize custom objects, because the output of this
+            # will be passed directly to the orchestrator as the output of some activity
+            if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED:
+                return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
+            if event_type == HistoryEventType.TASK_COMPLETED:
+                return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
+            if event_type == HistoryEventType.EVENT_RAISED:
+                # TODO: Investigate why the payload is in "Input" instead of "Result"
+                response = json.loads(directive_result.Input,
+                                      object_hook=_deserialize_custom_object)
+                response = ResponseMessage.from_dict(response)
+                return json.loads(response.result)
+            return None
+
         # get target task
         key = getattr(event, id_key)
-        task: TaskBase = self.context.open_tasks.pop(key) 
+        if event.event_type == HistoryEventType.EVENT_RAISED:
+            key = int(key)
+        task: TaskBase = self.context.open_tasks.pop(key)
 
         if is_success:
             # retrieve result
@@ -140,14 +163,14 @@ class TaskOrchestrationExecutor:
 
         # with a yielded task now evaluated, we can try to resume the user code
         task.set_value(is_error=not(is_success), value=new_value)
-        task.set_is_played(event._is_played)   
+        task.set_is_played(event._is_played)
         self.resume_user_code()
-    
-    def resume_user_code(self):
-        """Attempt to continue executing user code, assuming that the active/current task
-        has resolved to a value.
-        """
 
+    def resume_user_code(self):
+        """Attempt to continue executing user code.
+
+        We can only continue executing if the active/current task has resolved to a value.
+        """
         current_task = self.current_task
         self.context._set_is_replaying(current_task.is_played)
         if current_task.state is TaskState.RUNNING:
@@ -160,7 +183,8 @@ class TaskOrchestrationExecutor:
             # resume orchestration with a resolved task's value
             task_value = current_task.value
             task_succeeded = current_task.state is TaskState.SUCCEEDED
-            new_task = self.generator.send(task_value) if task_succeeded else self.generator.throw(task_value)
+            new_task = self.generator.send(
+                task_value) if task_succeeded else self.generator.throw(task_value)
         except StopIteration as stop_exception:
             # the orchestration returned,
             # flag it as such and capture its output
@@ -169,7 +193,7 @@ class TaskOrchestrationExecutor:
         except Exception as exception:
             # the orchestration threw an exception
             self.exception = exception
-        
+
         if new_task is not None:
             if new_task.was_yielded:
                 # user yielded the same task multiple times, continue executing code
@@ -214,7 +238,7 @@ class TaskOrchestrationExecutor:
             # Raise exception, re-set stack to original location
             raise Exception(formatted_error) from self.exception
         return state.to_json_string()
-    
+
     def is_task_completion_event(self, event_type: HistoryEventType) -> bool:
         """Determine if some event_type corresponds to a Task-resolution event.
 
@@ -232,8 +256,10 @@ class TaskOrchestrationExecutor:
 
     @property
     def has_execution_completed(self) -> bool:
-        """Determines if the orchestration invocation is completed, either
-        through returning, continuing-as-new, or through an exception.
+        """Determine if the orchestration invocation is completed.
+
+        An orchestration can complete either by returning,
+        continuing-as-new, or through an exception.
 
         Returns
         -------

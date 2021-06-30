@@ -1,35 +1,39 @@
-from azure.durable_functions.models.NewTask import CompoundTask
+from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
+from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
+from azure.durable_functions.models.actions.NoOpAction import NoOpAction
+from azure.durable_functions.models.NewTask import CompoundTask, TaskBase
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
-from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import CallSubOrchestratorWithRetryAction
-from azure.durable_functions.models.RetryableTask import RetryAbleTask
-from azure.durable_functions.models.actions.CallActivityWithRetryAction import CallActivityWithRetryAction
-from azure.durable_functions.models.actions.ContinueAsNewAction import ContinueAsNewAction
-from azure.durable_functions.models.actions.WaitForExternalEventAction import WaitForExternalEventAction
-from azure.durable_functions.models.actions.CallSubOrchestratorAction import CallSubOrchestratorAction
+from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import \
+    CallSubOrchestratorWithRetryAction
+from azure.durable_functions.models.actions.CallActivityWithRetryAction import \
+    CallActivityWithRetryAction
+from azure.durable_functions.models.actions.ContinueAsNewAction import \
+    ContinueAsNewAction
+from azure.durable_functions.models.actions.WaitForExternalEventAction import \
+    WaitForExternalEventAction
+from azure.durable_functions.models.actions.CallSubOrchestratorAction import \
+    CallSubOrchestratorAction
 from azure.durable_functions.models.actions.CreateTimerAction import CreateTimerAction
-from azure.durable_functions.models.WhenAllTask import WhenAllTask
-from azure.durable_functions.models.WhenAnyTask import WhenAnyTask
-from azure.durable_functions.models.MutableTask import AtomicTask
+from azure.durable_functions.models.NewTask import WhenAllTask, WhenAnyTask, AtomicTask, \
+    RetryAbleTask
 from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import json
 import datetime
 import inspect
 from typing import List, Any, Dict, Optional, Union
-from uuid import UUID, uuid5, NAMESPACE_URL
+from uuid import UUID, uuid5, NAMESPACE_URL, NAMESPACE_OID
 from datetime import timezone
 
 from .RetryOptions import RetryOptions
-from .TaskSet import TaskSet
 from .FunctionContext import FunctionContext
 from .history import HistoryEvent, HistoryEventType
 from .actions import Action
-from ..models.Task import Task
 from ..models.TokenSource import TokenSource
 from .utils.entity_utils import EntityId
-from ..tasks import new_uuid, call_entity_task, signal_entity_task
 from azure.functions._durable_functions import _deserialize_custom_object
+from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 
 
 class DurableOrchestrationContext:
@@ -61,16 +65,17 @@ class DurableOrchestrationContext:
         self._sequence_number = 0
         self._replay_schema = ReplaySchema(upperSchemaVersion)
 
-        self._action_payload: Union[List[List[Action]], List[Action]] = []
+        self._action_payload_v1: List[List[Action]] = []
+        self._action_payload_v2: List[Action] = []
 
         # make _input always a string
         # (consistent with Python Functions generic trigger/input bindings)
         if (isinstance(input, Dict)):
             input = json.dumps(input)
-        if not(isinstance(input, str)): #TODO: why is this necessary now?
+        if not(isinstance(input, str)):  # TODO: why is this necessary now?
             input = json.dumps(input)
         self._input: Any = input
-        self.open_tasks: Dict[Task] = {}
+        self.open_tasks: Dict[int, TaskBase] = {}
 
     @classmethod
     def from_json(cls, json_string: str):
@@ -91,13 +96,15 @@ class DurableOrchestrationContext:
         json_dict = json.loads(json_string)
         return cls(**json_dict)
 
-    def _generate_task(self, action: Action, retry_options: Optional[RetryOptions] = None) -> Union[AtomicTask, RetryAbleTask]:
-        """Generate an atomic or retryable Task based on an input
+    def _generate_task(self, action: Action,
+                       retry_options: Optional[RetryOptions] = None) -> Union[AtomicTask,
+                                                                              RetryAbleTask]:
+        """Generate an atomic or retryable Task based on an input.
 
         Parameters
         ----------
         action : Action
-            The action backing the Task
+            The action backing the Task.
         retry_options : Optional[RetryOptions]
             RetryOptions for a with-retry task, by default None
 
@@ -111,16 +118,21 @@ class DurableOrchestrationContext:
         self._sequence_number += 1
 
         # Create an atomic task
-        task = AtomicTask(id_, action)
+        action_payload: Union[Action, List[Action]]
+        if self._replay_schema is ReplaySchema.V1:
+            action_payload = [action]
+        else:
+            action_payload = action
+        task: Union[AtomicTask, RetryAbleTask] = AtomicTask(id_, action_payload)
         self.open_tasks[task.id] = task
 
         if not(retry_options is None):
             # if task is retryable, provide the retryable wrapper class
             task = RetryAbleTask(task, retry_options, self)
-        return task        
+        return task
 
     def _set_is_replaying(self, is_replaying: bool):
-        """Sets the internal `is_replaying` flag
+        """Set the internal `is_replaying` flag.
 
         Parameters
         ----------
@@ -129,7 +141,7 @@ class DurableOrchestrationContext:
         """
         self._is_replaying = is_replaying
 
-    def call_activity(self, name: str, input_: Optional[Any] = None) -> Task:
+    def call_activity(self, name: str, input_: Optional[Any] = None) -> TaskBase:
         """Schedule an activity for execution.
 
         Parameters
@@ -150,7 +162,7 @@ class DurableOrchestrationContext:
 
     def call_activity_with_retry(self,
                                  name: str, retry_options: RetryOptions,
-                                 input_: Optional[Any] = None) -> Task:
+                                 input_: Optional[Any] = None) -> TaskBase:
         """Schedule an activity for execution with retry options.
 
         Parameters
@@ -168,14 +180,13 @@ class DurableOrchestrationContext:
             A Durable Task that completes when the called activity function completes or
             fails completely.
         """
-
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
         return task
 
     def call_http(self, method: str, uri: str, content: Optional[str] = None,
                   headers: Optional[Dict[str, str]] = None,
-                  token_source: TokenSource = None) -> Task:
+                  token_source: TokenSource = None) -> TaskBase:
         """Schedule a durable HTTP call to the specified endpoint.
 
         Parameters
@@ -209,7 +220,7 @@ class DurableOrchestrationContext:
 
     def call_sub_orchestrator(self,
                               name: str, input_: Optional[Any] = None,
-                              instance_id: Optional[str] = None) -> Task:
+                              instance_id: Optional[str] = None) -> TaskBase:
         """Schedule sub-orchestration function named `name` for execution.
 
         Parameters
@@ -233,7 +244,7 @@ class DurableOrchestrationContext:
     def call_sub_orchestrator_with_retry(self,
                                          name: str, retry_options: RetryOptions,
                                          input_: Optional[Any] = None,
-                                         instance_id: Optional[str] = None) -> Task:
+                                         instance_id: Optional[str] = None) -> TaskBase:
         """Schedule sub-orchestration function named `name` for execution, with retry-options.
 
         Parameters
@@ -274,9 +285,17 @@ class DurableOrchestrationContext:
         str
             New UUID that is safe for replay within an orchestration or operation.
         """
-        return new_uuid(context=self)
+        URL_NAMESPACE: str = "9e952958-5e33-4daf-827f-2fa12937b875"
 
-    def task_all(self, activities: List[Task]) -> TaskSet:
+        uuid_name_value = \
+            f"{self._instance_id}" \
+            f"_{self.current_utc_datetime.strftime(DATETIME_STRING_FORMAT)}" \
+            f"_{self._new_uuid_counter}"
+        self._new_uuid_counter += 1
+        namespace_uuid = uuid5(NAMESPACE_OID, URL_NAMESPACE)
+        return str(uuid5(namespace_uuid, uuid_name_value))
+
+    def task_all(self, activities: List[TaskBase]) -> TaskBase:
         """Schedule the execution of all activities.
 
         Similar to Promise.all. When called with `yield` or `return`, returns an
@@ -296,7 +315,7 @@ class DurableOrchestrationContext:
         """
         return WhenAllTask(activities, replay_schema=self._replay_schema)
 
-    def task_any(self, activities: List[Task]) -> TaskSet:
+    def task_any(self, activities: List[TaskBase]) -> TaskBase:
         """Schedule the execution of all activities.
 
         Similar to Promise.race. When called with `yield` or `return`, returns
@@ -435,7 +454,24 @@ class DurableOrchestrationContext:
         Task
             A Task of the entity call
         """
-        return call_entity_task(self.histories, entityId, operationName, operationInput)
+        action = CallEntityAction(entityId, operationName, operationInput)
+        task = self._generate_task(action)
+        return task
+
+    def _record_fire_and_forget_action(self, action: Action):
+        """Append a responseless-API action object to the actions array.
+
+        Parameters
+        ----------
+        action : Action
+            The action to append
+        """
+        new_action: Union[List[Action], Action]
+        if self._replay_schema is ReplaySchema.V2:
+            new_action = action
+        else:
+            new_action = [action]
+        self._add_to_actions(new_action)
 
     def signal_entity(self, entityId: EntityId,
                       operationName: str, operationInput: Optional[Any] = None):
@@ -455,14 +491,18 @@ class DurableOrchestrationContext:
         Task
             A Task of the entity signal
         """
-        return signal_entity_task(self, self.histories, entityId, operationName, operationInput)
+        # TODO: refactor this since it's shared code w/ continueAsNew
+        action = SignalEntityAction(entityId, operationName, operationInput)
+        task = self._generate_task(action)
+        self._record_fire_and_forget_action(action)
+        return task
 
     @property
     def will_continue_as_new(self) -> bool:
         """Return true if continue_as_new was called."""
         return self._continue_as_new_flag
 
-    def create_timer(self, fire_at: datetime.datetime) -> Task:
+    def create_timer(self, fire_at: datetime.datetime) -> TaskBase:
         """Create a Durable Timer Task to implement a deadline at which to wake-up the orchestrator.
 
         Parameters
@@ -472,14 +512,14 @@ class DurableOrchestrationContext:
 
         Returns
         -------
-        TimerTask
+        TaskBase
             A Durable Timer Task that schedules the timer to wake up the activity
         """
         action = CreateTimerAction(fire_at)
         task = self._generate_task(action)
         return task
 
-    def wait_for_external_event(self, name: str) -> Task:
+    def wait_for_external_event(self, name: str) -> TaskBase:
         """Wait asynchronously for an event to be raised with the name `name`.
 
         Parameters
@@ -504,12 +544,9 @@ class DurableOrchestrationContext:
         input_ : Any
             The new starting input to the orchestrator.
         """
-        new_action = ContinueAsNewAction(input_)
-        if self._replay_schema is ReplaySchema.V1:
-            new_action = [new_action]
-        self._add_to_actions(new_action)
+        continue_as_new_action: Action = ContinueAsNewAction(input_)
+        self._record_fire_and_forget_action(continue_as_new_action)
         self._continue_as_new_flag = True
-        return
 
     def new_guid(self) -> UUID:
         """Generate a replay-safe GUID.
@@ -527,20 +564,20 @@ class DurableOrchestrationContext:
 
     @property
     def _actions(self) -> List[List[Action]]:
-        """Get the actions payload of this context, for replay in the extension
+        """Get the actions payload of this context, for replay in the extension.
 
         Returns
         -------
         List[List[Action]]
             The actions of this context
         """
-        actions = self._action_payload
-        if self._replay_schema is ReplaySchema.V2:
-            actions = [actions]
-        return actions
+        if self._replay_schema is ReplaySchema.V1:
+            return self._action_payload_v1
+        else:
+            return [self._action_payload_v2]
 
     def _add_to_actions(self, action_repr: Union[List[Action], Action]):
-        """Add a Task's actions payload to the context's actions array
+        """Add a Task's actions payload to the context's actions array.
 
         Parameters
         ----------
@@ -551,10 +588,18 @@ class DurableOrchestrationContext:
         # called
         if self.will_continue_as_new:
             return
-        self._action_payload.append(action_repr)
-    
-    def _produce_anonymous_task(self, parent: CompoundTask) -> AtomicTask:
-        """Creates an anonymous task, i.e one that isn't explicitely scheduled by the user.
+
+        if self._replay_schema is ReplaySchema.V1 and isinstance(action_repr, list):
+            self._action_payload_v1.append(action_repr)
+        elif self._replay_schema is ReplaySchema.V2 and isinstance(action_repr, Action):
+            self._action_payload_v2.append(action_repr)
+        else:
+            raise Exception(f"DF-internal exception: ActionRepr of signature {type(action_repr)}"
+                            f"is not compatible on ReplaySchema {self._replay_schema.name}. ")
+
+    def _produce_anonymous_task(self, parent: CompoundTask) -> TaskBase:
+        """Create an anonymous task, i.e one that isn't explicitely scheduled by the user.
+
         This is to manage retryable tasks, where each retryable task may schedule
         intermediate "anonymous" tasks such as timers as well as activities
 
@@ -568,7 +613,7 @@ class DurableOrchestrationContext:
         AtomicTask
             The anonymous task
         """
-        task = self._generate_task(None)
+        task = self._generate_task(NoOpAction())
         task.parent = parent
         return task
 
