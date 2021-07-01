@@ -307,7 +307,6 @@ class RetryAbleTask(WhenAllTask):
                 # still have some retries left.
                 # increase size of pending tasks by adding a timer task
                 # and then re-scheduling the current task after that
-                # TODO: rename these calls below
                 timer_task = self.context._produce_anonymous_task(parent=self)
                 self.pending_tasks.add(timer_task)
                 rescheduled_task = self.context._produce_anonymous_task(parent=self)
