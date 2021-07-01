@@ -113,5 +113,4 @@ class OrchestratorState:
             The instance of the object in json string format
         """
         json_dict = self.to_json()
-        print(json_dict)
         return json.dumps(json_dict)
