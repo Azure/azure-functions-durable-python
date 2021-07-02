@@ -49,7 +49,7 @@ class TaskBase:
                 api_action = CompoundAction
         else:
             api_action = actions
-        
+
         self._api_name = api_action.__class__.__name__
 
         self.result: Any = None
