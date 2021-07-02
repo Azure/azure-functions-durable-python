@@ -39,7 +39,6 @@ class TaskOrchestrationExecutor:
         """Initialize the TaskOrchestrationExecutor for a new orchestration invocation."""
         # The first task is just a placeholder to kickstart the generator.
         # So it's value is `None`.
-        # TODO: need to set the `is_replaying` flag in here!
         self.current_task: TaskBase = AtomicTask(-1, [])
         self.current_task.set_value(is_error=False, value=None)
 
@@ -164,8 +163,8 @@ class TaskOrchestrationExecutor:
             new_value = Exception(f"{event.Reason} \n {event.Details}")
 
         # with a yielded task now evaluated, we can try to resume the user code
-        task.set_value(is_error=not(is_success), value=new_value)
         task.set_is_played(event._is_played)
+        task.set_value(is_error=not(is_success), value=new_value)
         self.resume_user_code()
 
     def resume_user_code(self):

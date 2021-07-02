@@ -173,6 +173,7 @@ class CompoundTask(TaskBase):
                 f"This most likely means that Task {child.id} completed twice.")
 
         self.completed_tasks.append(child)
+        self.set_is_played(child.is_played)
         self.try_set_value(child)
 
     def try_set_value(self, child: TaskBase):

@@ -491,7 +491,6 @@ class DurableOrchestrationContext:
         Task
             A Task of the entity signal
         """
-        # TODO: refactor this since it's shared code w/ continueAsNew
         action = SignalEntityAction(entityId, operationName, operationInput)
         task = self._generate_task(action)
         self._record_fire_and_forget_action(action)
