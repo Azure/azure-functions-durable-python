@@ -5,8 +5,8 @@ from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.actions.WaitForExternalEventAction import WaitForExternalEventAction
 
 def generator_function(context):
-    yield context.wait_for_external_event("A")
-    return ""
+    result = yield context.wait_for_external_event("A")
+    return result
 
 def test_continue_when_no_payload():
     context_builder = ContextBuilder()
@@ -26,7 +26,7 @@ def test_succeeds_on_payload():
     result = get_orchestration_state_result(
         context_builder, generator_function)
 
-    expected_state = base_expected_state()
+    expected_state = base_expected_state({"test":"somecontent"})
     expected_state.actions.append([WaitForExternalEventAction("A")])
     expected_state._is_done = True
     expected = expected_state.to_json()

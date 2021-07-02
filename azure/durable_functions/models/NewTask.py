@@ -1,3 +1,4 @@
+from azure.durable_functions.models.actions.CompoundAction import CompoundAction
 from azure.durable_functions.models.RetryOptions import RetryOptions
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from azure.durable_functions.models.actions.Action import Action
@@ -38,6 +39,18 @@ class TaskBase:
         self.state = TaskState.RUNNING
         self.was_yielded: bool = False
         self.parent: Optional[CompoundTask] = None
+        self._api_name: str
+
+        api_action: Action
+        if isinstance(actions, list):
+            if len(actions) == 1:
+                api_action = actions[0]
+            else:
+                api_action = CompoundAction
+        else:
+            api_action = actions
+        
+        self._api_name = api_action.__class__.__name__
 
         self.result: Any = None
         self.action_repr: Union[List[Action], Action] = actions

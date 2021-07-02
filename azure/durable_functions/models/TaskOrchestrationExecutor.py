@@ -144,8 +144,7 @@ class TaskOrchestrationExecutor:
                 # TODO: Investigate why the payload is in "Input" instead of "Result"
                 response = json.loads(directive_result.Input,
                                       object_hook=_deserialize_custom_object)
-                response = ResponseMessage.from_dict(response)
-                return json.loads(response.result)
+                return response
             return None
 
         # get target task
@@ -157,6 +156,9 @@ class TaskOrchestrationExecutor:
         if is_success:
             # retrieve result
             new_value = parse_history_event(event)
+            if task._api_name == "CallEntityAction":
+                new_value = ResponseMessage.from_dict(new_value)
+                new_value = json.loads(new_value.result)
         else:
             # generate exception
             new_value = Exception(f"{event.Reason} \n {event.Details}")
