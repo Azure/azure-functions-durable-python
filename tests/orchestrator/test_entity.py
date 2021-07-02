@@ -150,7 +150,7 @@ def add_call_entity_action_for_entity(state: OrchestratorState, id_: df.EntityId
 
 
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema )
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
 
 def add_call_entity_action(state: OrchestratorState, id_: df.EntityId, op: str, input_: Any):
     action = CallEntityAction(entity_id=id_, operation=op, input_=input_)
