@@ -181,7 +181,7 @@ class TaskOrchestrationExecutor:
         new_task = None
         try:
             # resume orchestration with a resolved task's value
-            task_value = current_task.value
+            task_value = current_task.result
             task_succeeded = current_task.state is TaskState.SUCCEEDED
             new_task = self.generator.send(
                 task_value) if task_succeeded else self.generator.throw(task_value)

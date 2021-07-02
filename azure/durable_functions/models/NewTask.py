@@ -39,7 +39,7 @@ class TaskBase:
         self.was_yielded: bool = False
         self.parent: Optional[CompoundTask] = None
 
-        self.value: Any = None
+        self.result: Any = None
         self.action_repr: Union[List[Action], Action] = actions
         self.is_played = False
 
@@ -95,7 +95,7 @@ class TaskBase:
         else:
             new_state = TaskState.SUCCEEDED
         self.change_state(new_state)
-        self.value = value
+        self.result = value
         self.propagate()
 
     def propagate(self):
@@ -216,12 +216,12 @@ class WhenAllTask(CompoundTask):
             # A WhenAll Task only completes when it has no pending tasks
             # i.e _when all_ of its children have completed
             if len(self.pending_tasks) == 0:
-                results = list(map(lambda x: x.value, self.completed_tasks))
+                results = list(map(lambda x: x.result, self.completed_tasks))
                 self.set_value(is_error=False, value=results)
         else:  # child.state is TaskState.FAILED:
             # a single error is sufficient to fail this task
             if self._first_error is None:
-                self._first_error = child.value
+                self._first_error = child.result
                 self.set_value(is_error=True, value=self._first_error)
 
 
@@ -254,11 +254,11 @@ class WhenAnyTask(CompoundTask):
         if child.state is TaskState.SUCCEEDED:
             if self.state is TaskState.RUNNING:
                 # the first completing sub-task sets the value
-                self.set_value(is_error=False, value=self.value)
+                self.set_value(is_error=False, value=self.result)
         else:  # child.state is TaskState.FAILED:
             if self._first_error is None:
                 # the first failed task sets the value
-                self._first_error = child.value
+                self._first_error = child.result
 
             # do not error out until all pending tasks have completed
             if len(self.pending_tasks) == 0:
@@ -297,12 +297,12 @@ class RetryAbleTask(WhenAllTask):
                 # if all pending tasks have completed,
                 # and we have a successful child, then
                 # we can set the Task's event
-                self.set_value(is_error=False, value=child.value)
+                self.set_value(is_error=False, value=child.result)
 
         else:  # child.state is TaskState.FAILED:
             if self.num_attempts >= self.retry_options.max_number_of_attempts:
                 # we have reached the maximum number of attempts, set error
-                self.set_value(is_error=True, value=child.value)
+                self.set_value(is_error=True, value=child.result)
             else:
                 # still have some retries left.
                 # increase size of pending tasks by adding a timer task

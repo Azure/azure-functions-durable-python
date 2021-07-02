@@ -20,7 +20,7 @@ def generator_function(context):
 
 
 def base_expected_state(output=None, error=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output, error=error, replay_schema=replay_schema.value)
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema)
 
 
 def add_completed_event(
