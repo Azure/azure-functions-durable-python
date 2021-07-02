@@ -10,7 +10,7 @@ from tests.test_utils.ContextBuilder import ContextBuilder
 from .tasks_test_utils import assert_taskset_equal
 
 
-from tests.orchestrator.orchestrator_test_utils \
+from tests.test_utils.orchestrator_test_utils \
     import assert_orchestration_state_equals, get_orchestration_state_result
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState

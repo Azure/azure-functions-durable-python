@@ -6,8 +6,7 @@ from typing import List, Dict, Any, Optional
 
 from .json_utils import add_attrib, convert_history_event_to_json_dict
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
-from tests.orchestrator.models.OrchestrationInstance \
-    import OrchestrationInstance
+from .OrchestrationInstance import OrchestrationInstance
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
 from azure.durable_functions.models.history.HistoryEventType \
     import HistoryEventType
