@@ -72,8 +72,7 @@ class DurableOrchestrationContext:
         # (consistent with Python Functions generic trigger/input bindings)
         if (isinstance(input, Dict)):
             input = json.dumps(input)
-        if not(isinstance(input, str)):  # TODO: why is this necessary now?
-            input = json.dumps(input)
+
         self._input: Any = input
         self.open_tasks: Dict[int, TaskBase] = {}
 
