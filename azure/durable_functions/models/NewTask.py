@@ -6,7 +6,7 @@ from azure.durable_functions.models.actions.WhenAnyAction import WhenAnyAction
 from azure.durable_functions.models.actions.WhenAllAction import WhenAllAction
 
 import enum
-from typing import Any, List, Optional, Set, Union
+from typing import Any, List, Optional, Set, Type, Union
 
 
 class TaskState(enum.Enum):
@@ -40,7 +40,7 @@ class TaskBase:
         self.parent: Optional[CompoundTask] = None
         self._api_name: str
 
-        api_action: Action
+        api_action: Union[Action, Type[CompoundAction]]
         if isinstance(actions, list):
             if len(actions) == 1:
                 api_action = actions[0]
@@ -103,7 +103,8 @@ class TaskBase:
         if is_error:
             if not isinstance(value, Exception):
                 if not (isinstance(value, TaskBase) and isinstance(value.result, Exception)):
-                    raise Exception(f"Task ID {self.id} failed but it's value was not an Exception")
+                    err_message = f"Task ID {self.id} failed but it's value was not an Exception"
+                    raise Exception(err_message)
             new_state = TaskState.FAILED
         else:
             new_state = TaskState.SUCCEEDED
