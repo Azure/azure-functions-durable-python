@@ -30,7 +30,7 @@ class Orchestrator:
         self.task_orchestration_executor = TaskOrchestrationExecutor()
 
     def handle(self, context: DurableOrchestrationContext) -> str:
-        """Execute the user's orchestration.
+        """Handle the orchestration of the user defined generator function.
 
         Parameters
         ----------

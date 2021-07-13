@@ -145,7 +145,6 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
         context.add_orchestrator_started_event()
         context.add_task_failed_event(
             id_=id_counter, reason=REASONS, details=DETAILS)
-        #id_counter += 1
         return context, id_counter
 
     def _schedule_timers(context: ContextBuilder, id_counter: int) -> Tuple[ContextBuilder, int, List[datetime]]:
@@ -187,7 +186,6 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
         """
         for id_, fire_at in deadlines:
             context.add_timer_fired_event(id_=id_, fire_at=fire_at)
-            #id_counter += 1
         return context, id_counter
 
     def _complete_event(context: ContextBuilder, id_counter: int, city:str) -> Tuple[ContextBuilder, int]:
@@ -207,7 +205,6 @@ def get_context_with_retries(will_fail: bool=False) -> ContextBuilder:
         """
         result = f"\"{RESULT_PREFIX}{city}\""
         context.add_task_completed_event(id_=id_counter, result=result)
-            #id_counter += 1
         return context, id_counter
 
 
