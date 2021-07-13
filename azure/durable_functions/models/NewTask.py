@@ -218,10 +218,10 @@ class WhenAllTask(CompoundTask):
         replay_schema : ReplaySchema
             The ReplaySchema, which determines the inner action payload representation
         """
-        action_wrapper = None
+        compound_action_constructor = None
         if replay_schema is ReplaySchema.V2:
-            action_wrapper = WhenAllAction
-        super().__init__(task, action_wrapper)
+            compound_action_constructor = WhenAllAction
+        super().__init__(task, compound_action_constructor)
 
     def try_set_value(self, child: TaskBase):
         """Transition a WhenAll Task to a terminal state and set its value.
@@ -257,10 +257,10 @@ class WhenAnyTask(CompoundTask):
         replay_schema : ReplaySchema
             The ReplaySchema, which determines the inner action payload representation
         """
-        action_wrapper = None
+        compound_action_constructor = None
         if replay_schema is ReplaySchema.V2:
-            action_wrapper = WhenAnyAction
-        super().__init__(task, action_wrapper)
+            compound_action_constructor = WhenAnyAction
+        super().__init__(task, compound_action_constructor)
 
     def try_set_value(self, child: TaskBase):
         """Transition a WhenAny Task to a terminal state and set its value.
