@@ -1,4 +1,4 @@
-from azure.durable_functions.models.NewTask import TaskBase, TaskState, AtomicTask
+from azure.durable_functions.models.NewTask import CompoundTask, TaskBase, TaskState, AtomicTask
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
 from typing import Any, List, Optional
@@ -195,15 +195,14 @@ class TaskOrchestrationExecutor:
             # the orchestration threw an exception
             self.exception = exception
 
-        if new_task is not None:
-            if new_task.was_yielded:
+        self.current_task = new_task
+        if not (new_task is None):
+            if not (new_task.state is TaskState.RUNNING):
                 # user yielded the same task multiple times, continue executing code
                 # until a new/not-previously-yielded task is encountered
                 self.resume_user_code()
             else:
                 # new task is received. it needs to be resolved to a value
-                self.current_task = new_task
-                self.current_task.was_yielded = True
                 self.context._add_to_actions(self.current_task.action_repr)
 
     def get_orchestrator_state_str(self) -> str:
