@@ -126,13 +126,18 @@ class CompoundTask(TaskBase):
     Should never be instantiated on its own.
     """
 
-    def __init__(self, tasks: List[TaskBase], action_wrapper=None):
+    def __init__(self, tasks: List[TaskBase], compound_action_constructor=None):
         """Instantiate CompoundTask attributes.
 
         Parameters
         ----------
         tasks : List[Task]
             The children/sub-tasks of this Task
+        compound_action_constructor : Union[WhenAllAction, WhenAnyAction, None]
+            Either None or, a WhenAllAction or WhenAnyAction constructor.
+            It is None when using the V1 replay protocol, where no Compound Action
+            objects size and compound actions are represented as arrays of actions.
+            It is not None when using the V2 replay protocol.
         """
         super().__init__(-1, [])
         child_actions = []
@@ -143,10 +148,10 @@ class CompoundTask(TaskBase):
                 child_actions.extend(action_repr)
             else:
                 child_actions.append(action_repr)
-        if action_wrapper is None:
+        if compound_action_constructor is None:
             self.action_repr = child_actions
         else:  # replay_schema is ReplaySchema.V2
-            self.action_repr = action_wrapper(child_actions)
+            self.action_repr = compound_action_constructor(child_actions)
         self._first_error: Optional[Exception] = None
         self.pending_tasks: Set[TaskBase] = set(tasks)
         self.completed_tasks: List[TaskBase] = []
