@@ -1,7 +1,7 @@
 from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
 from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
 from azure.durable_functions.models.actions.NoOpAction import NoOpAction
-from azure.durable_functions.models.NewTask import CompoundTask, TaskBase
+from azure.durable_functions.models.Task import CompoundTask, TaskBase
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
 from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import \
@@ -15,7 +15,7 @@ from azure.durable_functions.models.actions.WaitForExternalEventAction import \
 from azure.durable_functions.models.actions.CallSubOrchestratorAction import \
     CallSubOrchestratorAction
 from azure.durable_functions.models.actions.CreateTimerAction import CreateTimerAction
-from azure.durable_functions.models.NewTask import WhenAllTask, WhenAnyTask, AtomicTask, \
+from azure.durable_functions.models.Task import WhenAllTask, WhenAnyTask, AtomicTask, \
     RetryAbleTask
 from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction
 from azure.durable_functions.models.ReplaySchema import ReplaySchema

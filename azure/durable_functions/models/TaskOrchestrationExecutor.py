@@ -1,4 +1,4 @@
-from azure.durable_functions.models.NewTask import TaskBase, TaskState, AtomicTask
+from azure.durable_functions.models.Task import TaskBase, TaskState, AtomicTask
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
 from typing import Any, List, Optional
