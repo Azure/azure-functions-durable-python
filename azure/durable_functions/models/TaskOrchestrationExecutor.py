@@ -5,6 +5,7 @@ from typing import Any, List, Optional
 from azure.durable_functions.models.history.HistoryEventType import HistoryEventType
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
 from types import GeneratorType
+import warnings
 from collections import namedtuple
 import json
 from ..models.entities.ResponseMessage import ResponseMessage
@@ -150,7 +151,11 @@ class TaskOrchestrationExecutor:
         key = getattr(event, id_key)
         if event.event_type == HistoryEventType.EVENT_RAISED:
             key = int(key)
-        task: TaskBase = self.context.open_tasks.pop(key)
+        try:
+            task: TaskBase = self.context.open_tasks.pop(key)
+        except KeyError:
+            warnings.warn(f"Potential duplicate Task completion for TaskId: {key}")
+            return
 
         if is_success:
             # retrieve result
