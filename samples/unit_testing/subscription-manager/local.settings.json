@@ -1,8 +1,0 @@
-{
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "python",
-    "SecurityGroups_SUBSCRIPTION_MANAGERS" : "ef6d2d1a-78eb-4bb1-97c7-bb8a8e509e9c"
-  }
-}
