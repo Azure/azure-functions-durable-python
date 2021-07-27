@@ -1,5 +1,5 @@
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
-from .orchestrator_test_utils \
+from tests.test_utils.orchestrator_test_utils \
     import assert_orchestration_state_equals, get_orchestration_state_result, assert_valid_schema
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState

@@ -5,7 +5,7 @@ from jsonschema import validate
 from azure.durable_functions.models import DurableOrchestrationContext, DurableEntityContext
 from azure.durable_functions.orchestrator import Orchestrator
 from azure.durable_functions.entity import Entity
-from .schemas.OrchetrationStateSchema import schema
+from .OrchetrationStateSchema import schema
 
 
 def assert_orchestration_state_equals(expected, result):

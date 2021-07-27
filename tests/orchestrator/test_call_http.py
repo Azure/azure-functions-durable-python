@@ -4,7 +4,7 @@ from typing import Dict
 
 from azure.durable_functions.constants import HTTP_ACTION_NAME
 from azure.durable_functions.models import DurableHttpRequest
-from .orchestrator_test_utils import assert_orchestration_state_equals, \
+from tests.test_utils.orchestrator_test_utils import assert_orchestration_state_equals, \
     get_orchestration_state_result, assert_valid_schema, assert_dict_are_equal
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState

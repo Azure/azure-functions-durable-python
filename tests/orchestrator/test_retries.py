@@ -3,7 +3,7 @@ from tests.test_utils.testClasses import SerializableClass
 from azure.durable_functions.models.RetryOptions import RetryOptions
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
-from .orchestrator_test_utils import get_orchestration_state_result
+from tests.test_utils.orchestrator_test_utils import get_orchestration_state_result
 from typing import List, Tuple
 from datetime import datetime
 
