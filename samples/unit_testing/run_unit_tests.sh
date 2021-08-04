@@ -2,7 +2,7 @@
 
 # Bash script to run all unit tests from tests folder.
 # Make sure the test name is of the format "test_*.py"
-TESTS="./subscription-manager/tests"
+TESTS="./subscription-manager/unit_tests"
 for TEST_NAME in $TESTS/*
 do
     # Remove non-tests
@@ -13,5 +13,5 @@ do
 
     # Cut out the directory names and trim .py extension
     SUFFIX_NAME=$(echo $TEST_NAME | cut -d "/" -f 4 | cut -d "." -f 1)
-    python -m unittest subscription-manager.tests.$SUFFIX_NAME
+    python -m unittest subscription-manager.unit_tests.$SUFFIX_NAME
 done

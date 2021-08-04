@@ -44,6 +44,8 @@ We are patching the group-id that gets base64 decoded and compared with the abov
 
 Refer [Auth](./subscription-manager/Auth/authorization.py) for details on how this works
 
+---
+
 ## Unit Testing Orchestrator Function
 
 When mocking an orchestrator, the durable orchestration context is mocked like this:
@@ -79,6 +81,8 @@ result = list(orchestrator_fn(mock))
 
 and further inspect the result
 
+---
+
 ## Unit Testing Durable Monitor Pattern
 
 Here the durable monitor calls an activity function to get the status of a subscription creation process. Depending upon the status, it will schedule a durable timer to poll again or will proceed further in the orchestration.
@@ -107,6 +111,8 @@ gen_orchestrator = orchestrator_fn(mock)
 
 For more details refer [this test that simulates the durable timer calls](./subscription-manager/tests/test_createsubscription_suborchestrator.py).
 
+---
+
 ## Unit Testing Callbacks and patching environment variables
 
 If your activity function or orchestrator or any helper methods use environment variables internally, this code below demonstrates how to patch these environment variables in an isolated manner.
@@ -127,6 +133,7 @@ with patch("subscription-manager.StatusCheck.update_callback") as function_mock:
 patch_env_mock.stop()
 ```
 
+---
 ## Unit testing internal Callback methods
 
 The subscription manager uses a custom callback that gets called from another method invoked
@@ -156,11 +163,18 @@ def mock_callback(status: Status):
     # NotFound is returned by LocalSubscription emulation and we expect the same to be set here
     assert updated_status.creation_status == "NotFound"
 ```
+---
 
 ## Running Locally
 
 This example can be run locally the sample call, [test_orchestration.http](./test_orchestration.http) using the [REST Client for VS Code](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
 
+---
 ## Running all unit tests
 
-The script [run_unit_tests.sh](./run_unit_tests.sh) can be used to invoke all the tests with the right module paths wired in
+The script [run_unit_tests.sh](./run_unit_tests.sh) can be used to invoke all the tests with the right module paths wired in.
+- Create a python virtual environment `python3 -m venv env`
+- Activate it `source env/bin/activate`
+- Run unit tests `sh run_unit_tests.sh`
+
+---
