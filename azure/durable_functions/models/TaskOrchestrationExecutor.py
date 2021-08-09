@@ -1,7 +1,7 @@
 from azure.durable_functions.models.Task import TaskBase, TaskState, AtomicTask
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 from azure.durable_functions.models.history.HistoryEventType import HistoryEventType
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
 from types import GeneratorType
@@ -110,10 +110,23 @@ class TaskOrchestrationExecutor:
         elif event_type == HistoryEventType.EXECUTION_STARTED:
             # begin replaying user code
             self.resume_user_code()
+        elif event_type == HistoryEventType.EVENT_SENT:
+            # we want to differentiate between a "proper" event sent, and a signal/call entity
+            key = getattr(event, "event_id")
+            if key in self.context.open_tasks.keys():
+                task = self.context.open_tasks[key]
+                if task._api_name == "CallEntityAction":
+                    # in the signal entity case, the Task is represented
+                    # with a GUID, not with a sequential integer
+                    self.context.open_tasks.pop(key)
+                    event_id = json.loads(event.Input)["id"]
+                    self.context.open_tasks[event_id] = task
+
         elif self.is_task_completion_event(event.event_type):
             # transition a task to a success or failure state
             (is_success, id_key) = self.event_to_SetTaskValuePayload[event_type]
             self.set_task_value(event, is_success, id_key)
+            self.resume_user_code()
 
     def set_task_value(self, event: HistoryEvent, is_success: bool, id_key: str):
         """Set a running task to either a success or failed state, and sets its value.
@@ -149,12 +162,17 @@ class TaskOrchestrationExecutor:
 
         # get target task
         key = getattr(event, id_key)
-        if event.event_type == HistoryEventType.EVENT_RAISED:
-            key = int(key)
         try:
-            task: TaskBase = self.context.open_tasks.pop(key)
+            task: Union[TaskBase, List[TaskBase]] = self.context.open_tasks.pop(key)
+            if isinstance(task, list):
+                task_list = task
+                task = task_list.pop()
+                if len(task_list) > 0:
+                    self.context.open_tasks[key] = task_list
         except KeyError:
-            warnings.warn(f"Potential duplicate Task completion for TaskId: {key}")
+            warning = f"Potential duplicate Task completion for TaskId: {key}"
+            warnings.warn(warning)
+            self.context.deferred_tasks[key] = lambda: self.set_task_value(event, is_success, id_key)
             return
 
         if is_success:
@@ -170,7 +188,6 @@ class TaskOrchestrationExecutor:
         # with a yielded task now evaluated, we can try to resume the user code
         task.set_is_played(event._is_played)
         task.set_value(is_error=not(is_success), value=new_value)
-        self.resume_user_code()
 
     def resume_user_code(self):
         """Attempt to continue executing user code.

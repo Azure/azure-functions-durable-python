@@ -71,9 +71,10 @@ class ContextBuilder:
         event.TaskScheduledId = id_
         self.history_events.append(event)
 
-    def add_event_sent_event(self, instance_id):
+    def add_event_sent_event(self, instance_id, event_id):
         event = self.get_base_event(HistoryEventType.EVENT_SENT)
         event.InstanceId = instance_id
+        event._event_id = event_id
         event.Name = "op"
         event.Input = json.dumps({ "id": "0000" }) # usually provided by the extension
         self.history_events.append(event)

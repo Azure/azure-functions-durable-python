@@ -22,7 +22,7 @@ def test_succeeds_on_payload():
     timestamp = datetime.now()
     json_input = '{"test":"somecontent"}'
     context_builder = ContextBuilder()
-    context_builder.add_event_raised_event(0, input_=json_input, timestamp=timestamp, id_=0)
+    context_builder.add_event_raised_event("A", input_=json_input, timestamp=timestamp, id_=-1)
     result = get_orchestration_state_result(
         context_builder, generator_function)
 

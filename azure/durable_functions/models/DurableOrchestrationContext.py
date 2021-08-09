@@ -1,3 +1,4 @@
+from collections import defaultdict
 from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
 from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
 from azure.durable_functions.models.actions.NoOpAction import NoOpAction
@@ -22,7 +23,7 @@ from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import json
 import datetime
 import inspect
-from typing import List, Any, Dict, Optional, Union
+from typing import DefaultDict, List, Any, Dict, Optional, Tuple, Union
 from uuid import UUID, uuid5, NAMESPACE_URL, NAMESPACE_OID
 from datetime import timezone
 
@@ -74,7 +75,8 @@ class DurableOrchestrationContext:
             input = json.dumps(input)
 
         self._input: Any = input
-        self.open_tasks: Dict[int, TaskBase] = {}
+        self.open_tasks: DefaultDict[Union[int, str], Union[List[TaskBase], TaskBase]] = defaultdict(list)
+        self.deferred_tasks: Dict[Union[int, str], Tuple[HistoryEvent, bool, str]] = {}
 
     @classmethod
     def from_json(cls, json_string: str):
@@ -95,9 +97,32 @@ class DurableOrchestrationContext:
         json_dict = json.loads(json_string)
         return cls(**json_dict)
 
+    def _gen_atomic_task(self, action: Action, id: Union[int, str]) -> AtomicTask:
+        """Generates an atomic task based on a backing action and ID.
+
+        Parameters
+        ----------
+        action : Action
+            The action backing the task
+        id : int
+            The task's ID
+
+        Returns
+        -------
+        AtomicTask
+            The task requested
+        """
+        action_payload: Union[Action, List[Action]]
+        if self._replay_schema is ReplaySchema.V1:
+            action_payload = [action]
+        else:
+            action_payload = action
+        task = AtomicTask(id, action_payload)
+        return task
+
     def _generate_task(self, action: Action,
-                       retry_options: Optional[RetryOptions] = None) -> Union[AtomicTask,
-                                                                              RetryAbleTask]:
+                       retry_options: Optional[RetryOptions] = None,
+                       id_: Optional[Union[int, str]] = None) -> Union[AtomicTask, RetryAbleTask]:
         """Generate an atomic or retryable Task based on an input.
 
         Parameters
@@ -112,18 +137,30 @@ class DurableOrchestrationContext:
         Union[AtomicTask, RetryAbleTask]
             Either an atomic task or a retry-able task
         """
-        # Produce a new task ID
-        id_ = self._sequence_number
-        self._sequence_number += 1
+        # If a user-defined id_ is provided, then we know this isn't
+        # guaranteed to be a uniquely-identified Task. This occurs
+        # in WaitForExternalEvent, where the id_ is the event name.
+        is_unique_task = False
+        if id_ is None:
+            # Generate new ID
+            is_unique_task = True
+            id_ = self._sequence_number
+            self._sequence_number += 1
 
         # Create an atomic task
-        action_payload: Union[Action, List[Action]]
-        if self._replay_schema is ReplaySchema.V1:
-            action_payload = [action]
+        task: Union[AtomicTask, RetryAbleTask]
+        task = self._gen_atomic_task(action, id_)
+
+        if is_unique_task:
+            self.open_tasks[id_] = task
         else:
-            action_payload = action
-        task: Union[AtomicTask, RetryAbleTask] = AtomicTask(id_, action_payload)
-        self.open_tasks[task.id] = task
+            # In non-unique tasks, we add new tasks with the same ID to a list.
+            # This works because open_tasks is a defaultdict defaulting to list.
+            self.open_tasks[id_].append(task)
+
+        if id_ in self.deferred_tasks:
+            task_update_action = self.deferred_tasks[id_]
+            task_update_action()
 
         if not(retry_options is None):
             # if task is retryable, provide the retryable wrapper class
@@ -531,7 +568,7 @@ class DurableOrchestrationContext:
             Task to wait for the event
         """
         action = WaitForExternalEventAction(name)
-        task = self._generate_task(action)
+        task = self._generate_task(action, id_=name)
         return task
 
     def continue_as_new(self, input_: Any):

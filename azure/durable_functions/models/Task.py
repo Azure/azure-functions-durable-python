@@ -24,7 +24,7 @@ class TaskBase:
     instantiated on its own.
     """
 
-    def __init__(self, id_: int, actions: Union[List[Action], Action]):
+    def __init__(self, id_: Union[int, str], actions: Union[List[Action], Action]):
         """Initialize the TaskBase.
 
         Parameters
@@ -35,7 +35,7 @@ class TaskBase:
             The list of DF actions representing this Task.
             Needed for reconstruction in the extension.
         """
-        self.id: int = id_
+        self.id: Union[int, str] = id_
         self.state = TaskState.RUNNING
         self.parent: Optional[CompoundTask] = None
         self._api_name: str

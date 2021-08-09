@@ -161,8 +161,8 @@ def add_signal_entity_action(state: OrchestratorState, id_: df.EntityId, op: str
     state.actions.append([action])
 
 def add_call_entity_completed_events(
-        context_builder: ContextBuilder, op: str, instance_id=str, input_=None):
-    context_builder.add_event_sent_event(instance_id)
+        context_builder: ContextBuilder, op: str, instance_id=str, input_=None, event_id=0):
+    context_builder.add_event_sent_event(instance_id, event_id)
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
     context_builder.add_event_raised_event(name="0000", id_=0, input_=input_, is_entity=True)
@@ -200,7 +200,7 @@ def test_signal_entity_sent():
 def test_call_entity_raised():
     entityId = df.EntityId("Counter", "myCounter")
     context_builder = ContextBuilder('test_simple_function')
-    add_call_entity_completed_events(context_builder, "add", df.EntityId.get_scheduler_id(entityId), 3)
+    add_call_entity_completed_events(context_builder, "add", df.EntityId.get_scheduler_id(entityId), 3, 0)
 
     result = get_orchestration_state_result(
         context_builder, generator_function_call_entity)
