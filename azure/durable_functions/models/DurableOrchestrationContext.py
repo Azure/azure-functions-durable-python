@@ -75,7 +75,8 @@ class DurableOrchestrationContext:
             input = json.dumps(input)
 
         self._input: Any = input
-        self.open_tasks: DefaultDict[Union[int, str], Union[List[TaskBase], TaskBase]] = defaultdict(list)
+        self.open_tasks: DefaultDict[Union[int, str], Union[List[TaskBase], TaskBase]]
+        self.open_tasks = defaultdict(list)
         self.deferred_tasks: Dict[Union[int, str], Tuple[HistoryEvent, bool, str]] = {}
 
     @classmethod
@@ -98,7 +99,7 @@ class DurableOrchestrationContext:
         return cls(**json_dict)
 
     def _gen_atomic_task(self, action: Action, id: Union[int, str]) -> AtomicTask:
-        """Generates an atomic task based on a backing action and ID.
+        """Generate an atomic task based on a backing action and ID.
 
         Parameters
         ----------

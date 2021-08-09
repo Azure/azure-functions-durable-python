@@ -172,7 +172,8 @@ class TaskOrchestrationExecutor:
         except KeyError:
             warning = f"Potential duplicate Task completion for TaskId: {key}"
             warnings.warn(warning)
-            self.context.deferred_tasks[key] = lambda: self.set_task_value(event, is_success, id_key)
+            self.context.deferred_tasks[key] = lambda: self.set_task_value(
+                event, is_success, id_key)
             return
 
         if is_success:
