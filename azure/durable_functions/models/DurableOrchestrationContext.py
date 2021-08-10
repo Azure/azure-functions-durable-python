@@ -625,7 +625,4 @@ class DurableOrchestrationContext:
                 task_update_action()
         else:
             for child in task.children:
-                self._add_to_open_tasks(child)        
-
-# add the sequence of raise vents as test
-# add the non-yielded tasks as test
+                self._add_to_open_tasks(child)
