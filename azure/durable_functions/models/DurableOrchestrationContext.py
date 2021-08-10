@@ -1,8 +1,7 @@
 from collections import defaultdict
 from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
 from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
-from azure.durable_functions.models.actions.NoOpAction import NoOpAction
-from azure.durable_functions.models.Task import CompoundTask, TaskBase
+from azure.durable_functions.models.Task import TaskBase
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
 from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import \
@@ -609,7 +608,7 @@ class DurableOrchestrationContext:
                     json_dict[key] = val
             return json.dumps(json_dict)
         return str(list(map(history_to_string, self._histories)))
-    
+
     def _add_to_open_tasks(self, task: TaskBase):
 
         if isinstance(task, AtomicTask):
@@ -619,7 +618,7 @@ class DurableOrchestrationContext:
                 self.open_tasks[task.id] = task
             elif task.id != -1:
                 self.open_tasks[task.id].append(task)
-            
+
             if task.id in self.deferred_tasks:
                 task_update_action = self.deferred_tasks[task.id]
                 task_update_action()

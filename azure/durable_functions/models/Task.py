@@ -120,6 +120,7 @@ class TaskBase:
         if has_completed and has_parent:
             self.parent.handle_completion(self)
 
+
 class CompoundTask(TaskBase):
     """A Task of Tasks.
 
@@ -199,6 +200,7 @@ class CompoundTask(TaskBase):
             This method needs to be implemented by each subclass.
         """
         raise NotImplementedError
+
 
 class AtomicTask(TaskBase):
     """A Task with no subtasks."""
