@@ -98,32 +98,10 @@ class DurableOrchestrationContext:
         json_dict = json.loads(json_string)
         return cls(**json_dict)
 
-    def _gen_atomic_task(self, action: Action, id: Union[int, str]) -> AtomicTask:
-        """Generate an atomic task based on a backing action and ID.
-
-        Parameters
-        ----------
-        action : Action
-            The action backing the task
-        id : int
-            The task's ID
-
-        Returns
-        -------
-        AtomicTask
-            The task requested
-        """
-        action_payload: Union[Action, List[Action]]
-        if self._replay_schema is ReplaySchema.V1:
-            action_payload = [action]
-        else:
-            action_payload = action
-        task = AtomicTask(id, action_payload)
-        return task
-
     def _generate_task(self, action: Action,
                        retry_options: Optional[RetryOptions] = None,
-                       id_: Optional[Union[int, str]] = None) -> Union[AtomicTask, RetryAbleTask]:
+                       id_: Optional[Union[int, str]] = None,
+                       parent: Optional[TaskBase] = None) -> Union[AtomicTask, RetryAbleTask]:
         """Generate an atomic or retryable Task based on an input.
 
         Parameters
@@ -138,33 +116,20 @@ class DurableOrchestrationContext:
         Union[AtomicTask, RetryAbleTask]
             Either an atomic task or a retry-able task
         """
-        # If a user-defined id_ is provided, then we know this isn't
-        # guaranteed to be a uniquely-identified Task. This occurs
-        # in WaitForExternalEvent, where the id_ is the event name.
-        is_unique_task = False
-        if id_ is None:
-            # Generate new ID
-            is_unique_task = True
-            id_ = self._sequence_number
-            self._sequence_number += 1
-
         # Create an atomic task
         task: Union[AtomicTask, RetryAbleTask]
-        task = self._gen_atomic_task(action, id_)
+        action_payload: Union[Action, List[Action]]
 
-        if is_unique_task:
-            self.open_tasks[id_] = task
+        # TODO: find cleanear way to do this
+        if self._replay_schema is ReplaySchema.V1:
+            action_payload = [action]
         else:
-            # In non-unique tasks, we add new tasks with the same ID to a list.
-            # This works because open_tasks is a defaultdict defaulting to list.
-            self.open_tasks[id_].append(task)
+            action_payload = action
+        task = AtomicTask(id_, action_payload)
+        task.parent = parent
 
-        if id_ in self.deferred_tasks:
-            task_update_action = self.deferred_tasks[id_]
-            task_update_action()
-
+        # if task is retryable, provide the retryable wrapper class
         if not(retry_options is None):
-            # if task is retryable, provide the retryable wrapper class
             task = RetryAbleTask(task, retry_options, self)
         return task
 
@@ -633,26 +598,6 @@ class DurableOrchestrationContext:
             raise Exception(f"DF-internal exception: ActionRepr of signature {type(action_repr)}"
                             f"is not compatible on ReplaySchema {self._replay_schema.name}. ")
 
-    def _produce_anonymous_task(self, parent: CompoundTask) -> TaskBase:
-        """Create an anonymous task, i.e one that isn't explicitely scheduled by the user.
-
-        This is to manage retryable tasks, where each retryable task may schedule
-        intermediate "anonymous" tasks such as timers as well as activities
-
-        Parameters
-        ----------
-        parent : CompoundTask
-            The parent task that requires this anonymous task
-
-        Returns
-        -------
-        AtomicTask
-            The anonymous task
-        """
-        task = self._generate_task(NoOpAction())
-        task.parent = parent
-        return task
-
     def _pretty_print_history(self) -> str:
         """Get a pretty-printed version of the orchestration's internal history."""
         def history_to_string(event):
@@ -664,3 +609,23 @@ class DurableOrchestrationContext:
                     json_dict[key] = val
             return json.dumps(json_dict)
         return str(list(map(history_to_string, self._histories)))
+    
+    def _add_to_open_tasks(self, task: TaskBase):
+
+        if isinstance(task, AtomicTask):
+            if task.id is None:
+                task.id = self._sequence_number
+                self._sequence_number += 1
+                self.open_tasks[task.id] = task
+            elif task.id != -1:
+                self.open_tasks[task.id].append(task)
+            
+            if task.id in self.deferred_tasks:
+                task_update_action = self.deferred_tasks[task.id]
+                task_update_action()
+        else:
+            for child in task.children:
+                self._add_to_open_tasks(child)        
+
+# add the sequence of raise vents as test
+# add the non-yielded tasks as test

@@ -209,6 +209,8 @@ class TaskOrchestrationExecutor:
             task_succeeded = current_task.state is TaskState.SUCCEEDED
             new_task = self.generator.send(
                 task_value) if task_succeeded else self.generator.throw(task_value)
+            
+            self.context._add_to_open_tasks(new_task)
         except StopIteration as stop_exception:
             # the orchestration returned,
             # flag it as such and capture its output

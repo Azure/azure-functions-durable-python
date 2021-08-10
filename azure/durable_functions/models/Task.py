@@ -1,3 +1,4 @@
+from azure.durable_functions.models.actions.NoOpAction import NoOpAction
 from azure.durable_functions.models.actions.CompoundAction import CompoundAction
 from azure.durable_functions.models.RetryOptions import RetryOptions
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
@@ -119,7 +120,6 @@ class TaskBase:
         if has_completed and has_parent:
             self.parent.handle_completion(self)
 
-
 class CompoundTask(TaskBase):
     """A Task of Tasks.
 
@@ -156,6 +156,7 @@ class CompoundTask(TaskBase):
         self._first_error: Optional[Exception] = None
         self.pending_tasks: Set[TaskBase] = set(tasks)
         self.completed_tasks: List[TaskBase] = []
+        self.children = tasks
 
     def handle_completion(self, child: TaskBase):
         """Manage sub-task completion events.
@@ -198,7 +199,6 @@ class CompoundTask(TaskBase):
             This method needs to be implemented by each subclass.
         """
         raise NotImplementedError
-
 
 class AtomicTask(TaskBase):
     """A Task with no subtasks."""
@@ -317,8 +317,10 @@ class RetryAbleTask(WhenAllTask):
                 # still have some retries left.
                 # increase size of pending tasks by adding a timer task
                 # and then re-scheduling the current task after that
-                timer_task = self.context._produce_anonymous_task(parent=self)
+                timer_task = self.context._generate_task(action=NoOpAction(), parent=self)
                 self.pending_tasks.add(timer_task)
-                rescheduled_task = self.context._produce_anonymous_task(parent=self)
+                self.context._add_to_open_tasks(timer_task)
+                rescheduled_task = self.context._generate_task(action=NoOpAction(), parent=self)
                 self.pending_tasks.add(rescheduled_task)
+                self.context._add_to_open_tasks(rescheduled_task)
             self.num_attempts += 1
