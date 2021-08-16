@@ -196,6 +196,23 @@ def test_signal_entity_sent():
     #assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
+def test_signal_entity_sent_and_response_received():
+    entityId = df.EntityId("Counter", "myCounter")
+    context_builder = ContextBuilder('test_simple_function')
+    add_call_entity_completed_events(context_builder, "add", df.EntityId.get_scheduler_id(entityId), 3, 0)
+
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_signal_entity)
+
+    expected_state = base_expected_state()
+    add_signal_entity_action(expected_state, entityId, "add", 3)
+    add_call_entity_action(expected_state, entityId, "get", None)
+    expected = expected_state.to_json()
+
+    #assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
 
 def test_call_entity_raised():
     entityId = df.EntityId("Counter", "myCounter")
