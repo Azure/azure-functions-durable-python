@@ -24,6 +24,15 @@ def generator_function(context):
 
     return outputs
 
+def generator_function_no_yield(context):
+    outputs = []
+
+    task1 = context.call_activity("Hello", "Tokyo")
+    task2 = context.call_activity("Hello", "Seattle")
+    task3 = yield context.call_activity("Hello", "London")
+
+    return task3
+
 def generator_function_duplicate_yield(context):
     task1 = context.call_activity("Hello", "Tokyo")
     yield task1
@@ -266,6 +275,21 @@ def test_tokyo_and_seattle_and_london_state():
         ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
+    add_hello_action(expected_state, 'London')
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_sequential_orchestration_no_yield():
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_completed_events(context_builder, 0, "\"Hello London!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_no_yield)
+
+    expected_state = base_expected_state('Hello London!')
     add_hello_action(expected_state, 'London')
     expected_state._is_done = True
     expected = expected_state.to_json()

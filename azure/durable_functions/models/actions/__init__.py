@@ -7,6 +7,8 @@ from .CallSubOrchestratorAction import CallSubOrchestratorAction
 from .WaitForExternalEventAction import WaitForExternalEventAction
 from .CallHttpAction import CallHttpAction
 from .CreateTimerAction import CreateTimerAction
+from .WhenAllAction import WhenAllAction
+from .WhenAnyAction import WhenAnyAction
 
 __all__ = [
     'Action',
@@ -16,5 +18,7 @@ __all__ = [
     'CallSubOrchestratorAction',
     'CallHttpAction',
     'WaitForExternalEventAction',
-    'CreateTimerAction'
+    'CreateTimerAction',
+    'WhenAnyAction',
+    'WhenAllAction'
 ]
