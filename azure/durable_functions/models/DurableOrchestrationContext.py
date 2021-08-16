@@ -473,6 +473,7 @@ class DurableOrchestrationContext:
         else:
             new_action = [action]
         self._add_to_actions(new_action)
+        self._sequence_number += 1
 
     def signal_entity(self, entityId: EntityId,
                       operationName: str, operationInput: Optional[Any] = None):
