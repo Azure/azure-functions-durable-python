@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.V1.value)
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
 
 def add_timer_fired_events(context_builder: ContextBuilder, id_: int, timestamp: str):
     fire_at: str = context_builder.add_timer_created_event(id_, timestamp)

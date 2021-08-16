@@ -19,3 +19,8 @@ def typecheck(session):
     session.install("-r", "requirements.txt")
     session.install("mypy")
     session.run("mypy", "./azure/")
+
+@nox.session(python=["3.7", "3.8"])
+def autopep(session):
+    session.install("-r", "requirements.txt")
+    session.run("autopep8", "--in-place --aggressive --aggressive --recursive \"./azure/\"")
