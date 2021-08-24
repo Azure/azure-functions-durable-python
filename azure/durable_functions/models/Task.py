@@ -160,8 +160,7 @@ class CompoundTask(TaskBase):
         self.children = tasks
 
         if len(self.children) == 0:
-            self.state =  TaskState.SUCCEEDED
-
+            self.state = TaskState.SUCCEEDED
 
     def handle_completion(self, child: TaskBase):
         """Manage sub-task completion events.
