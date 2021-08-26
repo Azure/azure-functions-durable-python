@@ -332,8 +332,9 @@ class RetryAbleTask(WhenAllTask):
                 self.context._add_to_open_tasks(rescheduled_task)
             self.num_attempts += 1
 
-class CreateTimerTask(WhenAllAction):
-    def __init__(self, fire_at: datetime, context):
+class CreateTimerTask(WhenAllTask):
+    # TODO: test replay v2 representation. Should not serialize as WhenAllTask
+    def __init__(self, fire_at: datetime, context, replay_schema):
         self.context = context
         self.max_delay: datetime = timedelta(seconds=0)
         self.long_timer_interval: datetime = timedelta(seconds=0)
@@ -346,15 +347,19 @@ class CreateTimerTask(WhenAllAction):
         if delay > self.max_delay:
             next_fire_at = current_time + self.long_timer_interval
 
-        #timer_task = self.schedule_timer(next_fire_at)
-        super().__init__([]) # timer_task
+        action = CreateTimerAction(fire_at=fire_at)
+        timer_task = self.context._generate_task(action=action, parent=self)
+        super().__init__([timer_task], replay_schema)
+        # self.pending_tasks.add(timer_task)
+        # self.context._add_to_open_tasks(timer_task)
     
     def try_set_value(self, child: TaskBase):
         current_time = self.context.current_utc_datetime
         remaining_time = self.fire_at - current_time
         next_fire_at: datetime
-        if remaining_time <= 0:
+        if remaining_time <= timedelta(0):
             self.set_value(is_error=False, value=child.result)
+            return
         elif remaining_time < self.long_timer_interval:
             next_fire_at = current_time + timedelta(remaining_time)
         else:

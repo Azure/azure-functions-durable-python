@@ -516,7 +516,7 @@ class DurableOrchestrationContext:
         TaskBase
             A Durable Timer Task that schedules the timer to wake up the activity
         """
-        return CreateTimerTask(fire_at, self)
+        return CreateTimerTask(fire_at, self, self._replay_schema)
 
     def wait_for_external_event(self, name: str) -> TaskBase:
         """Wait asynchronously for an event to be raised with the name `name`.
