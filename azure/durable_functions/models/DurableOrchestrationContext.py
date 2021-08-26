@@ -1,7 +1,7 @@
 from collections import defaultdict
 from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
 from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
-from azure.durable_functions.models.Task import TaskBase
+from azure.durable_functions.models.Task import CreateTimerTask, TaskBase
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
 from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import \
@@ -24,7 +24,7 @@ import datetime
 import inspect
 from typing import DefaultDict, List, Any, Dict, Optional, Tuple, Union
 from uuid import UUID, uuid5, NAMESPACE_URL, NAMESPACE_OID
-from datetime import timezone
+from datetime import timedelta, timezone
 
 from .RetryOptions import RetryOptions
 from .FunctionContext import FunctionContext
@@ -516,9 +516,7 @@ class DurableOrchestrationContext:
         TaskBase
             A Durable Timer Task that schedules the timer to wake up the activity
         """
-        action = CreateTimerAction(fire_at)
-        task = self._generate_task(action)
-        return task
+        return CreateTimerTask(fire_at, self)
 
     def wait_for_external_event(self, name: str) -> TaskBase:
         """Wait asynchronously for an event to be raised with the name `name`.
