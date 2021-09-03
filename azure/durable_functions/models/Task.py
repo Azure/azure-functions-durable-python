@@ -287,7 +287,7 @@ class RetryAbleTask(WhenAllTask):
     """
 
     def __init__(self, child: TaskBase, retry_options: RetryOptions, context):
-        self.id_ = str(child.id) + "_retryable_proxy"
+        # self.id_ = str(child.id) + "_retryable_proxy"
         tasks = [child]
         super().__init__(tasks, context._replay_schema)
 
@@ -295,6 +295,11 @@ class RetryAbleTask(WhenAllTask):
         self.num_attempts = 1
         self.context = context
         self.actions = child.action_repr
+
+    @property
+    def id_(self):
+        return str(list(map(lambda x: x.id, self.children))) + "_retryable_proxy"
+
 
     def try_set_value(self, child: TaskBase):
         """Transition a Retryable Task to a terminal state and set its value.
@@ -304,6 +309,11 @@ class RetryAbleTask(WhenAllTask):
         child : TaskBase
             A sub-task that just completed
         """
+        if isinstance(child.action_repr, list) and isinstance(child.action_repr[0], NoOpAction) and child.action_repr[0].metadata == "timer":
+            rescheduled_task = self.context._generate_task(action=NoOpAction("done again"), parent=self)
+            self.pending_tasks.add(rescheduled_task)
+            self.context._add_to_open_tasks(rescheduled_task)
+            return
         if child.state is TaskState.SUCCEEDED:
             if len(self.pending_tasks) == 0:
                 # if all pending tasks have completed,
@@ -319,10 +329,8 @@ class RetryAbleTask(WhenAllTask):
                 # still have some retries left.
                 # increase size of pending tasks by adding a timer task
                 # and then re-scheduling the current task after that
-                timer_task = self.context._generate_task(action=NoOpAction(), parent=self)
+                timer_task = self.context._generate_task(action=NoOpAction("timer"), parent=self)
                 self.pending_tasks.add(timer_task)
                 self.context._add_to_open_tasks(timer_task)
-                rescheduled_task = self.context._generate_task(action=NoOpAction(), parent=self)
-                self.pending_tasks.add(rescheduled_task)
-                self.context._add_to_open_tasks(rescheduled_task)
+
             self.num_attempts += 1

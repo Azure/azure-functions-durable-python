@@ -5,6 +5,9 @@ from typing import Any, Dict
 class NoOpAction(Action):
     """A no-op action, for anonymous tasks only."""
 
+    def __init__(self, metadata=None):
+        self.metadata=metadata
+
     def action_type(self) -> int:
         """Get the type of action this class represents."""
         raise Exception("Attempted to get action type of an anonymous Action")
