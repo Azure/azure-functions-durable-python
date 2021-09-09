@@ -298,8 +298,17 @@ class RetryAbleTask(WhenAllTask):
 
     @property
     def id_(self):
-        return str(list(map(lambda x: x.id, self.children))) + "_retryable_proxy"
+        """Obtain the task's ID.
 
+        Since this is an internal-only abstraction, the task ID is represented
+        by the ID of its inner/wrapped task _plus_ a suffix: "_retryable_proxy"
+
+        Returns
+        -------
+        [type]
+            [description]
+        """
+        return str(list(map(lambda x: x.id, self.children))) + "_retryable_proxy"
 
     def try_set_value(self, child: TaskBase):
         """Transition a Retryable Task to a terminal state and set its value.
@@ -309,11 +318,11 @@ class RetryAbleTask(WhenAllTask):
         child : TaskBase
             A sub-task that just completed
         """
-
         if self.is_waiting_on_timer:
             # timer fired, re-scheduling original task
             self.is_waiting_on_timer = False
-            rescheduled_task = self.context._generate_task(action=NoOpAction("rescheduled task"), parent=self)
+            rescheduled_task = self.context._generate_task(
+                action=NoOpAction("rescheduled task"), parent=self)
             self.pending_tasks.add(rescheduled_task)
             self.context._add_to_open_tasks(rescheduled_task)
             return
@@ -332,7 +341,8 @@ class RetryAbleTask(WhenAllTask):
                 # still have some retries left.
                 # increase size of pending tasks by adding a timer task
                 # when it completes, we'll retry the original task
-                timer_task = self.context._generate_task(action=NoOpAction("-WithRetry timer"), parent=self)
+                timer_task = self.context._generate_task(
+                    action=NoOpAction("-WithRetry timer"), parent=self)
                 self.pending_tasks.add(timer_task)
                 self.context._add_to_open_tasks(timer_task)
                 self.is_waiting_on_timer = True

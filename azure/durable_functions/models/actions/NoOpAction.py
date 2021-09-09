@@ -5,20 +5,20 @@ from typing import Any, Dict, Optional
 class NoOpAction(Action):
     """A no-op action, for anonymous tasks only."""
 
-    def __init__(self, metadata: Optional[str]=None):
-        """Creates a NoOpAction object.
+    def __init__(self, metadata: Optional[str] = None):
+        """Create a NoOpAction object.
 
         This is an internal-only action class used to represent cases when intermediate
         tasks are used to implement some API. For example, in -WithRetry APIs, intermediate
-        timers are created. We create this NoOp action to track those the backing actions of those tasks,
-        which is necessary because we mimic the DF-internal replay algorithm.
+        timers are created. We create this NoOp action to track those the backing actions
+        of those tasks, which is necessary because we mimic the DF-internal replay algorithm.
 
         Parameters
         ----------
         metadata : Optional[str]
             Used for internal debugging: metadata about the action being represented.
         """
-        self.metadata=metadata
+        self.metadata = metadata
 
     def action_type(self) -> int:
         """Get the type of action this class represents."""
