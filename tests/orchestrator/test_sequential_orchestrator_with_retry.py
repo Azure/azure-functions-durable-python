@@ -1,3 +1,4 @@
+from typing import List, Union
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from .orchestrator_test_utils \
     import get_orchestration_state_result, assert_orchestration_state_equals, assert_valid_schema
@@ -28,16 +29,37 @@ def generator_function(context):
 
     return outputs
 
+def generator_function_concurrent_retries(context):
+    outputs = []
+
+    retry_options = RETRY_OPTIONS
+    task1 = context.call_activity_with_retry(
+        "Hello", retry_options, "Tokyo")
+    task2 = context.call_activity_with_retry(
+        "Hello",  retry_options, "Seattle")
+    task3 = context.call_activity_with_retry(
+        "Hello",  retry_options, "London")
+
+    outputs = yield context.task_all([task1, task2, task3])
+
+    return outputs
+
 
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
     return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
 
 
-def add_hello_action(state: OrchestratorState, input_: str):
+def add_hello_action(state: OrchestratorState, input_: Union[List[str], str]):
     retry_options = RETRY_OPTIONS
-    action = CallActivityWithRetryAction(
-        function_name='Hello', retry_options=retry_options, input_=input_)
-    state._actions.append([action])
+    actions = []
+    inputs = input_
+    if not isinstance(input_, list):
+        inputs = [input_]
+    for input_ in inputs:
+        action = CallActivityWithRetryAction(
+            function_name='Hello', retry_options=retry_options, input_=input_)
+        actions.append(action)
+    state._actions.append(actions)
 
 
 def add_hello_failed_events(
@@ -217,3 +239,29 @@ def test_failed_tokyo_hit_max_attempts():
         
         expected_error_str = f"{error_msg}{error_label}{state_str}"
         assert expected_error_str == error_str
+
+def test_concurrent_retriable_results():
+    failed_reason = 'Reasons'
+    failed_details = 'Stuff and Things'
+    context_builder = ContextBuilder('test_concurrent_retriable_Failures')
+    add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
+    add_hello_failed_events(context_builder, 1, failed_reason, failed_details)
+    add_hello_failed_events(context_builder, 2, failed_reason, failed_details)
+    add_retry_timer_events(context_builder, 3)
+    add_retry_timer_events(context_builder, 4)
+    add_retry_timer_events(context_builder, 5)
+    add_hello_completed_events(context_builder, 6, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 7, "\"Hello Seattle!\"")
+    add_hello_completed_events(context_builder, 8, "\"Hello London!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_concurrent_retries)
+
+    expected_state = base_expected_state()
+    add_hello_action(expected_state, ['Tokyo', 'Seattle', 'London'])
+    expected_state._output = ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
