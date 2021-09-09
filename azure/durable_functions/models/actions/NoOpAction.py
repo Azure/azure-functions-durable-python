@@ -10,13 +10,13 @@ class NoOpAction(Action):
 
         This is an internal-only action class used to represent cases when intermediate
         tasks are used to implement some API. For example, in -WithRetry APIs, intermediate
-        timers are created. We create this NoOp action to track those the backing actions of those cases,
+        timers are created. We create this NoOp action to track those the backing actions of those tasks,
         which is necessary because we mimic the DF-internal replay algorithm.
 
         Parameters
         ----------
         metadata : Optional[str]
-            USed for internal debugging: metadata about the action being represented.
+            Used for internal debugging: metadata about the action being represented.
         """
         self.metadata=metadata
 
