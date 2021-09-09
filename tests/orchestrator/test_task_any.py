@@ -14,6 +14,19 @@ def generator_function(context):
     except:
         return "exception"
 
+def generator_function_no_activity(context):
+    yield context.task_any([])
+    return "Done!"
+
+def test_continues_on_zero_inner_tasks():
+    context_builder = ContextBuilder()
+    result = get_orchestration_state_result(
+        context_builder, generator_function_no_activity)
+    expected_state = base_expected_state("Done!")
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+    assert_orchestration_state_equals(expected, result)
+
 def test_continues_on_zero_results():
     context_builder = ContextBuilder()
     result = get_orchestration_state_result(
