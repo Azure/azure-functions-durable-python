@@ -241,7 +241,7 @@ class WhenAllTask(CompoundTask):
             # A WhenAll Task only completes when it has no pending tasks
             # i.e _when all_ of its children have completed
             if len(self.pending_tasks) == 0:
-                results = list(map(lambda x: x.result, self.completed_tasks))
+                results = list(map(lambda x: x.result, self.children))
                 self.set_value(is_error=False, value=results)
         else:  # child.state is TaskState.FAILED:
             # a single error is sufficient to fail this task

@@ -243,7 +243,7 @@ def test_failed_tokyo_hit_max_attempts():
 def test_concurrent_retriable_results():
     failed_reason = 'Reasons'
     failed_details = 'Stuff and Things'
-    context_builder = ContextBuilder('test_concurrent_retriable_Failures')
+    context_builder = ContextBuilder('test_concurrent_retriable')
     add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
     add_hello_failed_events(context_builder, 1, failed_reason, failed_details)
     add_hello_failed_events(context_builder, 2, failed_reason, failed_details)
@@ -253,6 +253,56 @@ def test_concurrent_retriable_results():
     add_hello_completed_events(context_builder, 6, "\"Hello Tokyo!\"")
     add_hello_completed_events(context_builder, 7, "\"Hello Seattle!\"")
     add_hello_completed_events(context_builder, 8, "\"Hello London!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_concurrent_retries)
+
+    expected_state = base_expected_state()
+    add_hello_action(expected_state, ['Tokyo', 'Seattle', 'London'])
+    expected_state._output = ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_concurrent_retriable_results_unordered_arrival():
+    failed_reason = 'Reasons'
+    failed_details = 'Stuff and Things'
+    context_builder = ContextBuilder('test_concurrent_retriable_unordered_results')
+    add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
+    add_hello_failed_events(context_builder, 1, failed_reason, failed_details)
+    add_hello_failed_events(context_builder, 2, failed_reason, failed_details)
+    add_retry_timer_events(context_builder, 3)
+    add_retry_timer_events(context_builder, 4)
+    add_retry_timer_events(context_builder, 5)
+    add_hello_completed_events(context_builder, 8, "\"Hello London!\"")
+    add_hello_completed_events(context_builder, 6, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 7, "\"Hello Seattle!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_concurrent_retries)
+
+    expected_state = base_expected_state()
+    add_hello_action(expected_state, ['Tokyo', 'Seattle', 'London'])
+    expected_state._output = ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_concurrent_retriable_results_mixed_arrival():
+    failed_reason = 'Reasons'
+    failed_details = 'Stuff and Things'
+    context_builder = ContextBuilder('test_concurrent_retriable_unordered_results')
+    add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
+    add_hello_completed_events(context_builder, 1, "\"Hello Tokyo!\"")
+    add_hello_failed_events(context_builder, 2, failed_reason, failed_details)
+    add_retry_timer_events(context_builder, 3)
+    add_retry_timer_events(context_builder, 4)
+    add_hello_completed_events(context_builder, 6, "\"Hello London!\"")
+    add_hello_completed_events(context_builder, 5, "\"Hello Seattle!\"")
 
     result = get_orchestration_state_result(
         context_builder, generator_function_concurrent_retries)
