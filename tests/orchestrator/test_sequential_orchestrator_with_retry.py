@@ -44,6 +44,19 @@ def generator_function_concurrent_retries(context):
 
     return outputs
 
+def generator_function_two_concurrent_retries(context):
+    outputs = []
+
+    retry_options = RETRY_OPTIONS
+    task1 = context.call_activity_with_retry(
+        "Hello", retry_options, "Tokyo")
+    task2 = context.call_activity_with_retry(
+        "Hello",  retry_options, "Seattle")
+
+    outputs = yield context.task_all([task1, task2])
+
+    return outputs
+
 
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
     return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
@@ -312,6 +325,62 @@ def test_concurrent_retriable_results_mixed_arrival():
     expected_state = base_expected_state()
     add_hello_action(expected_state, ['Tokyo', 'Seattle', 'London'])
     expected_state._output = ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_concurrent_retriable_results_alternating_taskIDs():
+    failed_reason = 'Reasons'
+    failed_details = 'Stuff and Things'
+    context_builder = ContextBuilder('test_concurrent_retriable_unordered_results')
+
+    ## Schedule tasks
+
+    # one task succeeds, the other two fail at first, and succeed on retry
+    context_builder.add_task_scheduled_event(name='Hello', id_=0) # Tokyo task
+    context_builder.add_task_scheduled_event(name='Hello', id_=1) # Seattle task
+
+    context_builder.add_orchestrator_completed_event()
+    context_builder.add_orchestrator_started_event()
+
+    ## Task failures and timer-scheduling
+
+    # tasks fail "out of order"
+    context_builder.add_task_failed_event(
+        id_=1, reason=failed_reason, details=failed_details) # Seattle task
+    fire_at = context_builder.add_timer_created_event(2) # Seattle timer
+
+    context_builder.add_orchestrator_completed_event()
+    context_builder.add_orchestrator_started_event()
+
+    context_builder.add_task_failed_event(
+        id_=0, reason=failed_reason, details=failed_details) # Tokyo task
+    fire_at = context_builder.add_timer_created_event(3) # Tokyo timer
+
+    context_builder.add_orchestrator_completed_event()
+    context_builder.add_orchestrator_started_event()
+
+    ## fire timers
+    context_builder.add_timer_fired_event(id_=2, fire_at=fire_at) # Seattle timer
+    context_builder.add_timer_fired_event(id_=3, fire_at=fire_at) # Tokyo timer
+
+    ## Complete events
+    context_builder.add_task_scheduled_event(name='Hello', id_=4) # Seattle task
+    context_builder.add_task_scheduled_event(name='Hello', id_=5) # Tokyo task
+
+    context_builder.add_orchestrator_completed_event()
+    context_builder.add_orchestrator_started_event()
+    context_builder.add_task_completed_event(id_=4, result="\"Hello Seattle!\"")
+    context_builder.add_task_completed_event(id_=5, result="\"Hello Tokyo!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_two_concurrent_retries)
+
+    expected_state = base_expected_state()
+    add_hello_action(expected_state, ['Tokyo', 'Seattle'])
+    expected_state._output = ["Hello Tokyo!", "Hello Seattle!"]
     expected_state._is_done = True
     expected = expected_state.to_json()
 
