@@ -337,8 +337,6 @@ def test_concurrent_retriable_results_alternating_taskIDs():
     context_builder = ContextBuilder('test_concurrent_retriable_unordered_results')
 
     ## Schedule tasks
-
-    # one task succeeds, the other two fail at first, and succeed on retry
     context_builder.add_task_scheduled_event(name='Hello', id_=0) # Tokyo task
     context_builder.add_task_scheduled_event(name='Hello', id_=1) # Seattle task
 
