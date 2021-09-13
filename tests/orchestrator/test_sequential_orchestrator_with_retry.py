@@ -276,6 +276,7 @@ def test_concurrent_retriable_results_unordered_arrival():
     add_retry_timer_events(context_builder, 3)
     add_retry_timer_events(context_builder, 4)
     add_retry_timer_events(context_builder, 5)
+    # events arrive in non-sequential different order
     add_hello_completed_events(context_builder, 8, "\"Hello London!\"")
     add_hello_completed_events(context_builder, 6, "\"Hello Tokyo!\"")
     add_hello_completed_events(context_builder, 7, "\"Hello Seattle!\"")
@@ -296,8 +297,9 @@ def test_concurrent_retriable_results_mixed_arrival():
     failed_reason = 'Reasons'
     failed_details = 'Stuff and Things'
     context_builder = ContextBuilder('test_concurrent_retriable_unordered_results')
-    add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
-    add_hello_completed_events(context_builder, 1, "\"Hello Tokyo!\"")
+    # one task succeeds, the other two fail at first, and succeed on retry
+    add_hello_failed_events(context_builder, 1, failed_reason, failed_details)
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
     add_hello_failed_events(context_builder, 2, failed_reason, failed_details)
     add_retry_timer_events(context_builder, 3)
     add_retry_timer_events(context_builder, 4)
