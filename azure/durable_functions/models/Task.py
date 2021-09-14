@@ -241,7 +241,7 @@ class WhenAllTask(CompoundTask):
             # A WhenAll Task only completes when it has no pending tasks
             # i.e _when all_ of its children have completed
             if len(self.pending_tasks) == 0:
-                results = list(map(lambda x: x.result, self.completed_tasks))
+                results = list(map(lambda x: x.result, self.children))
                 self.set_value(is_error=False, value=results)
         else:  # child.state is TaskState.FAILED:
             # a single error is sufficient to fail this task
@@ -290,7 +290,6 @@ class RetryAbleTask(WhenAllTask):
     """
 
     def __init__(self, child: TaskBase, retry_options: RetryOptions, context):
-        self.id_ = str(child.id) + "_retryable_proxy"
         tasks = [child]
         super().__init__(tasks, context._replay_schema)
 
@@ -298,6 +297,21 @@ class RetryAbleTask(WhenAllTask):
         self.num_attempts = 1
         self.context = context
         self.actions = child.action_repr
+        self.is_waiting_on_timer = False
+
+    @property
+    def id_(self):
+        """Obtain the task's ID.
+
+        Since this is an internal-only abstraction, the task ID is represented
+        by the ID of its inner/wrapped task _plus_ a suffix: "_retryable_proxy"
+
+        Returns
+        -------
+        [type]
+            [description]
+        """
+        return str(list(map(lambda x: x.id, self.children))) + "_retryable_proxy"
 
     def try_set_value(self, child: TaskBase):
         """Transition a Retryable Task to a terminal state and set its value.
@@ -307,6 +321,14 @@ class RetryAbleTask(WhenAllTask):
         child : TaskBase
             A sub-task that just completed
         """
+        if self.is_waiting_on_timer:
+            # timer fired, re-scheduling original task
+            self.is_waiting_on_timer = False
+            rescheduled_task = self.context._generate_task(
+                action=NoOpAction("rescheduled task"), parent=self)
+            self.pending_tasks.add(rescheduled_task)
+            self.context._add_to_open_tasks(rescheduled_task)
+            return
         if child.state is TaskState.SUCCEEDED:
             if len(self.pending_tasks) == 0:
                 # if all pending tasks have completed,
@@ -321,11 +343,11 @@ class RetryAbleTask(WhenAllTask):
             else:
                 # still have some retries left.
                 # increase size of pending tasks by adding a timer task
-                # and then re-scheduling the current task after that
-                timer_task = self.context._generate_task(action=NoOpAction(), parent=self)
+                # when it completes, we'll retry the original task
+                timer_task = self.context._generate_task(
+                    action=NoOpAction("-WithRetry timer"), parent=self)
                 self.pending_tasks.add(timer_task)
                 self.context._add_to_open_tasks(timer_task)
-                rescheduled_task = self.context._generate_task(action=NoOpAction(), parent=self)
-                self.pending_tasks.add(rescheduled_task)
-                self.context._add_to_open_tasks(rescheduled_task)
+                self.is_waiting_on_timer = True
+
             self.num_attempts += 1
