@@ -125,21 +125,21 @@ def add_two_retriable_events_completing_out_of_order(context_builder: ContextBui
     # tasks fail "out of order"
     context_builder.add_task_failed_event(
         id_=1, reason=failed_reason, details=failed_details) # Seattle task
-    fire_at = context_builder.add_timer_created_event(2) # Seattle timer
+    fire_at_1 = context_builder.add_timer_created_event(2) # Seattle timer
 
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
 
     context_builder.add_task_failed_event(
         id_=0, reason=failed_reason, details=failed_details) # Tokyo task
-    fire_at = context_builder.add_timer_created_event(3) # Tokyo timer
+    fire_at_2 = context_builder.add_timer_created_event(3) # Tokyo timer
 
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
 
     ## fire timers
-    context_builder.add_timer_fired_event(id_=2, fire_at=fire_at) # Seattle timer
-    context_builder.add_timer_fired_event(id_=3, fire_at=fire_at) # Tokyo timer
+    context_builder.add_timer_fired_event(id_=2, fire_at=fire_at_1) # Seattle timer
+    context_builder.add_timer_fired_event(id_=3, fire_at=fire_at_2) # Tokyo timer
 
     ## Complete events
     context_builder.add_task_scheduled_event(name='Hello', id_=4) # Seattle task
