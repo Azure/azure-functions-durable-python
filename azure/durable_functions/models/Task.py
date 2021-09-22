@@ -59,7 +59,7 @@ class TaskBase:
 
     @property
     def is_completed(self) -> bool:
-        """Get indicator whether the task has completed.
+        """Get indicator of whether the task completed.
 
         Note that completion is not equivalent to success.
         """
@@ -67,9 +67,7 @@ class TaskBase:
 
     @property
     def is_faulted(self) -> bool:
-        """Get indicator whether the task has completed.
-
-        Note that completion is not equivalent to success.
+        """Get indicator of whether the task failed,
         """
         return self.state is TaskState.FAILED
 
