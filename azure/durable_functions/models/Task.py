@@ -241,7 +241,7 @@ class TimerTask(AtomicTask):
 
     @property
     def is_cancelled(self) -> bool:
-        """Check of a timer is cancelled.
+        """Check if the Timer is cancelled.
 
         Returns
         -------
