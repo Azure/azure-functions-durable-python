@@ -30,8 +30,9 @@ def assert_entity_state_equals(expected, result):
     assert_attribute_equal(expected, result, "signals")
 
 def assert_results_are_equal(expected: Dict[str, Any], result: Dict[str, Any]) -> bool:
-    assert_attribute_equal(expected, result, "result")
-    assert_attribute_equal(expected, result, "isError")
+    for (payload_expected, payload_result) in zip(expected, result):
+        assert_attribute_equal(payload_expected, payload_result, "result")
+        assert_attribute_equal(payload_expected, payload_result, "isError")
 
 def assert_attribute_equal(expected, result, attribute):
     if attribute in expected:
