@@ -5,6 +5,7 @@ from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from azure.durable_functions.models.actions.Action import Action
 from azure.durable_functions.models.actions.WhenAnyAction import WhenAnyAction
 from azure.durable_functions.models.actions.WhenAllAction import WhenAllAction
+from azure.durable_functions.models.actions.CreateTimerAction import CreateTimerAction
 
 import enum
 from typing import Any, List, Optional, Set, Type, Union
@@ -55,6 +56,22 @@ class TaskBase:
         self.result: Any = None
         self.action_repr: Union[List[Action], Action] = actions
         self.is_played = False
+
+    @property
+    def is_completed(self) -> bool:
+        """Get indicator whether the task has completed.
+
+        Note that completion is not equivalent to success.
+        """
+        return not(self.state is TaskState.RUNNING)
+
+    @property
+    def is_faulted(self) -> bool:
+        """Get indicator whether the task has completed.
+
+        Note that completion is not equivalent to success.
+        """
+        return self.state is TaskState.FAILED
 
     def set_is_played(self, is_played: bool):
         """Set the is_played flag for the Task.
@@ -208,7 +225,47 @@ class CompoundTask(TaskBase):
 class AtomicTask(TaskBase):
     """A Task with no subtasks."""
 
-    pass
+    def _get_action(self) -> Action:
+        action: Action
+        if isinstance(self.action_repr, list):
+            action = self.action_repr[0]
+        else:
+            action = self.action_repr
+        return action
+
+class TimerTask(AtomicTask):
+    """A Timer Task."""
+
+    def __init__(self, id_: Union[int, str], action: CreateTimerAction):
+        super().__init__(id_, action)
+        self.action_repr: Union[List[CreateTimerAction], CreateTimerAction]
+
+    @property
+    def is_cancelled(self) -> bool:
+        """Check of a timer is cancelled.
+
+        Returns
+        -------
+        bool
+            Returns whether a timer has been cancelled or not
+        """
+        action: CreateTimerAction = self._get_action()
+        return action.is_cancelled
+
+    def cancel(self):
+        """Cancel a timer.
+
+        Raises
+        ------
+        ValueError
+            Raises an error if the task is already completed and an attempt is made to cancel it
+        """
+
+        if not self.is_completed:
+            action: CreateTimerAction = self._get_action()
+            action.is_cancelled = True
+        else:
+            raise ValueError("Cannot cancel a completed task.")
 
 
 class WhenAllTask(CompoundTask):
