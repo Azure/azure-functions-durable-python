@@ -233,6 +233,7 @@ class AtomicTask(TaskBase):
             action = self.action_repr
         return action
 
+
 class TimerTask(AtomicTask):
     """A Timer Task."""
 
@@ -260,7 +261,6 @@ class TimerTask(AtomicTask):
         ValueError
             Raises an error if the task is already completed and an attempt is made to cancel it
         """
-
         if not self.is_completed:
             action: CreateTimerAction = self._get_action()
             action.is_cancelled = True
