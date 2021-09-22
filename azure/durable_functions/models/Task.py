@@ -67,7 +67,7 @@ class TaskBase:
 
     @property
     def is_faulted(self) -> bool:
-        """Get indicator of whether the task failed,
+        """Get indicator of whether the task failed.
         """
         return self.state is TaskState.FAILED
 
