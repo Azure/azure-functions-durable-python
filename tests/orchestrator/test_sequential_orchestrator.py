@@ -136,10 +136,14 @@ def generator_function_new_guid(context):
     outputs.append(str(output3))
     return outputs
 
-
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
     return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema)
 
+def add_timer_fired_events(context_builder: ContextBuilder, id_: int, timestamp: str):
+    fire_at: str = context_builder.add_timer_created_event(id_, timestamp)
+    context_builder.add_orchestrator_completed_event()
+    context_builder.add_orchestrator_started_event()
+    context_builder.add_timer_fired_event(id_=id_, fire_at=fire_at)
 
 def add_hello_action(state: OrchestratorState, input_: str):
     action = CallActivityAction(function_name='Hello', input_=input_)

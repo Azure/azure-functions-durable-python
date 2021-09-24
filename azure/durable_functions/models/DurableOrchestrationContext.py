@@ -1,7 +1,7 @@
 from collections import defaultdict
 from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
 from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
-from azure.durable_functions.models.Task import TaskBase
+from azure.durable_functions.models.Task import TaskBase, TimerTask
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
 from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import \
@@ -100,7 +100,8 @@ class DurableOrchestrationContext:
     def _generate_task(self, action: Action,
                        retry_options: Optional[RetryOptions] = None,
                        id_: Optional[Union[int, str]] = None,
-                       parent: Optional[TaskBase] = None) -> Union[AtomicTask, RetryAbleTask]:
+                       parent: Optional[TaskBase] = None,
+                       task_constructor=AtomicTask) -> Union[AtomicTask, RetryAbleTask, TimerTask]:
         """Generate an atomic or retryable Task based on an input.
 
         Parameters
@@ -124,7 +125,7 @@ class DurableOrchestrationContext:
             action_payload = [action]
         else:
             action_payload = action
-        task = AtomicTask(id_, action_payload)
+        task = task_constructor(id_, action_payload)
         task.parent = parent
 
         # if task is retryable, provide the retryable wrapper class
@@ -517,7 +518,7 @@ class DurableOrchestrationContext:
             A Durable Timer Task that schedules the timer to wake up the activity
         """
         action = CreateTimerAction(fire_at)
-        task = self._generate_task(action)
+        task = self._generate_task(action, task_constructor=TimerTask)
         return task
 
     def wait_for_external_event(self, name: str) -> TaskBase:
