@@ -180,8 +180,12 @@ class TaskOrchestrationExecutor:
             # retrieve result
             new_value = parse_history_event(event)
             if task._api_name == "CallEntityAction":
-                new_value = ResponseMessage.from_dict(new_value)
-                new_value = json.loads(new_value.result)
+                event_payload = ResponseMessage.from_dict(new_value)
+                new_value = json.loads(event_payload.result)
+
+                if event_payload.is_exception:
+                    new_value = Exception(new_value)
+                    is_success = False
         else:
             # generate exception
             new_value = Exception(f"{event.Reason} \n {event.Details}")

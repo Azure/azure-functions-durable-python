@@ -1,6 +1,6 @@
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from .orchestrator_test_utils \
-    import assert_orchestration_state_equals, get_orchestration_state_result, assert_valid_schema, \
+    import assert_orchestration_state_equals, assert_results_are_equal, get_orchestration_state_result, assert_valid_schema, \
             get_entity_state_result, assert_entity_state_equals
 from tests.test_utils.ContextBuilder import ContextBuilder
 from tests.test_utils.EntityContextBuilder import EntityContextBuilder
@@ -22,6 +22,14 @@ def generator_function_call_entity(context):
     
     outputs.append(x)
     return outputs
+
+def generator_function_catch_entity_exception(context):
+    entityId = df.EntityId("Counter", "myCounter")
+    try:
+        yield context.call_entity(entityId, "add", 3)
+        return "No exception thrown"
+    except:
+        return "Exception thrown"
 
 def generator_function_signal_entity(context):
     outputs = []
@@ -53,6 +61,29 @@ def counter_entity_function(context):
     context.set_state(current_value)
     context.set_result(result)
 
+def counter_entity_function_raises_exception(context):
+    raise Exception("boom!")
+
+def test_entity_raises_exception():
+    # Create input batch
+    batch = []
+    add_to_batch(batch, name="get")
+    context_builder = EntityContextBuilder(batch=batch)
+
+    # Run the entity, get observed result
+    result = get_entity_state_result(
+        context_builder,
+        counter_entity_function_raises_exception,
+        )
+
+    # Construct expected result
+    expected_state = entity_base_expected_state()
+    apply_operation(expected_state, result="boom!", state=None, is_error=True)
+    expected = expected_state.to_json()
+
+    # Ensure expectation matches observed behavior
+    #assert_valid_schema(result)
+    assert_entity_state_equals(expected, result)
 
 def test_entity_signal_then_call():
     """Tests that a simple counter entity outputs the correct value
@@ -161,11 +192,11 @@ def add_signal_entity_action(state: OrchestratorState, id_: df.EntityId, op: str
     state.actions.append([action])
 
 def add_call_entity_completed_events(
-        context_builder: ContextBuilder, op: str, instance_id=str, input_=None, event_id=0):
+        context_builder: ContextBuilder, op: str, instance_id=str, input_=None, event_id=0, is_error=False):
     context_builder.add_event_sent_event(instance_id, event_id)
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
-    context_builder.add_event_raised_event(name="0000", id_=0, input_=input_, is_entity=True)
+    context_builder.add_event_raised_event(name="0000", id_=0, input_=input_, is_entity=True, is_error=is_error)
 
 def test_call_entity_sent():
     context_builder = ContextBuilder('test_simple_function')
@@ -232,5 +263,30 @@ def test_call_entity_raised():
     expected = expected_state.to_json()
 
     #assert_valid_schema(result)
+
+    assert_orchestration_state_equals(expected, result)
+
+def test_call_entity_catch_exception():
+    entityId = df.EntityId("Counter", "myCounter")
+    context_builder = ContextBuilder('catch exceptions')
+    add_call_entity_completed_events(
+        context_builder,
+        "add",
+        df.EntityId.get_scheduler_id(entityId),
+        input_="I am an error!",
+        event_id=0,
+        is_error=True
+    )
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_catch_entity_exception)
+
+    expected_state = base_expected_state(
+        "Exception thrown"
+    )
+
+    add_call_entity_action(expected_state, entityId, "add", 3)
+    expected_state._is_done = True
+    expected = expected_state.to_json()
 
     assert_orchestration_state_equals(expected, result)
