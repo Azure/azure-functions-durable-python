@@ -7,7 +7,7 @@ class ResponseMessage:
     Specifies the response of an entity, as processed by the durable-extension.
     """
 
-    def __init__(self, result: str):
+    def __init__(self, result: str, is_exception: bool = False):
         """Instantiate a ResponseMessage.
 
         Specifies the response of an entity, as processed by the durable-extension.
@@ -18,6 +18,7 @@ class ResponseMessage:
             The result provided by the entity
         """
         self.result = result
+        self.is_exception = is_exception
         # TODO: JS has an additional exceptionType field, but does not use it
 
     @classmethod
@@ -34,5 +35,6 @@ class ResponseMessage:
         ResponseMessage:
             The ResponseMessage built from the provided dictionary
         """
-        result = cls(d["result"])
+        is_error = "exceptionType" in d.keys()
+        result = cls(d["result"], is_error)
         return result
