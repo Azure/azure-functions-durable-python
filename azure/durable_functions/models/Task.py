@@ -65,11 +65,6 @@ class TaskBase:
         """
         return not(self.state is TaskState.RUNNING)
 
-    @property
-    def is_faulted(self) -> bool:
-        """Get indicator of whether the task failed."""
-        return self.state is TaskState.FAILED
-
     def set_is_played(self, is_played: bool):
         """Set the is_played flag for the Task.
 
