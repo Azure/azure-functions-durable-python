@@ -27,9 +27,9 @@ def generator_function_catch_entity_exception(context):
     entityId = df.EntityId("Counter", "myCounter")
     try:
         yield context.call_entity(entityId, "add", 3)
-        return "Failure"
+        return "No exception thrown"
     except:
-        return "Success"
+        return "Exception thrown"
 
 def generator_function_signal_entity(context):
     outputs = []
@@ -282,7 +282,7 @@ def test_call_entity_catch_exception():
         context_builder, generator_function_catch_entity_exception)
 
     expected_state = base_expected_state(
-        "Success"
+        "No exception thrown"
     )
 
     add_call_entity_action(expected_state, entityId, "add", 3)
