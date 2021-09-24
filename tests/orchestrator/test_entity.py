@@ -282,7 +282,7 @@ def test_call_entity_catch_exception():
         context_builder, generator_function_catch_entity_exception)
 
     expected_state = base_expected_state(
-        "No exception thrown"
+        "Exception thrown"
     )
 
     add_call_entity_action(expected_state, entityId, "add", 3)
