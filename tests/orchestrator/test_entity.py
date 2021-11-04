@@ -298,7 +298,7 @@ def test_timeout_entity_catch_exception():
         context_builder,
         "add",
         df.EntityId.get_scheduler_id(entityId),
-        input_="Timeout value of ...",
+        input_="Timeout value of 00:02:00 was exceeded by function: Functions.SlowEntity.",
         event_id=0,
         is_error=False,
         literal_input=True
