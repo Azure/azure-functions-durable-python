@@ -125,14 +125,17 @@ class ContextBuilder:
         event.Input = input_
         self.history_events.append(event)
 
-    def add_event_raised_event(self, name:str, id_: int, input_=None, timestamp=None, is_entity=False, is_error = False):
+    def add_event_raised_event(self, name:str, id_: int, input_=None, timestamp=None, is_entity=False, is_error = False, literal_input=False):
         event = self.get_base_event(HistoryEventType.EVENT_RAISED, id_=id_, timestamp=timestamp)
         event.Name = name
         if is_entity:
             if is_error:
                 event.Input = json.dumps({ "result": json.dumps(input_), "exceptionType": "True" })
             else:
-                event.Input = json.dumps({ "result": json.dumps(input_) })
+                if literal_input:
+                    event.Input = json.dumps({ "result": input_ })
+                else:
+                    event.Input = json.dumps({ "result": json.dumps(input_) })
         else:
             event.Input = input_
         # event.timestamp = timestamp
