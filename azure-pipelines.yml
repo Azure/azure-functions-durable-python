@@ -57,6 +57,7 @@ stages:
     - task: ManifestGeneratorTask@0
       displayName: "SBOM Generation Task"
       inputs:
+          BuildComponentPath: '$(baseFolder)'
           BuildDropPath: "$(Build.ArtifactStagingDirectory)"
           Verbosity: "Information"
     - task: PublishBuildArtifacts@1
