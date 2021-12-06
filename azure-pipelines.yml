@@ -58,7 +58,7 @@ stages:
       displayName: "SBOM Generation Task"
       inputs:
           BuildComponentPath: '$(baseFolder)'
-          BuildDropPath: "$(Build.ArtifactStagingDirectory)"
+          BuildDropPath: dist
           Verbosity: "Information"
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: dist'
