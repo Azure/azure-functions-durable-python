@@ -19,4 +19,6 @@ jobs:
           - download: DurablePyCI
           - script: 'pip install twine'
             displayName: "Install twine"
-          - script: "twine check"
+          - script: "twine check ."
+            displayName: "Publish to PyPI"
+            workingDirectory: "$(Pipeline.Workspace)/DurablePyCI/azure_functions_durable"
