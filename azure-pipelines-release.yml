@@ -1,0 +1,22 @@
+trigger: none
+pr: none
+
+resources:
+    pipelines:
+        - pipeline: DurablePyCI
+          project: "Azure Functions"
+          source: azure-functions-durable-python
+          branch: dev
+
+jobs:
+    - job: Release
+      pool:
+          vmImage: "ubuntu-latest"
+      steps:
+          - task: UsePythonVersion@0
+            inputs:
+                versionSpec: '3.6'
+          - download: DurablePyCI
+          - script: 'pip install twine'
+            displayName: "Install twine"
+          - script: "twine check"
