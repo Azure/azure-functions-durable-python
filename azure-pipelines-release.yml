@@ -5,7 +5,7 @@ resources:
     pipelines:
         - pipeline: DurablePyCI
           project: "Azure Functions"
-          source: azure-functions-durable-python
+          source: Azure.azure-functions-durable-python
           branch: dev
 
 jobs:
