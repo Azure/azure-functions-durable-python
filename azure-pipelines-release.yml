@@ -17,7 +17,7 @@ jobs:
             inputs:
                 versionSpec: '3.6'
           - download: DurablePyCI
-          - script: rm -r ./_manifest"
+          - script: "rm -r ./_manifest"
             displayName: 'Remove _manifest folder'
             workingDirectory: "$(Pipeline.Workspace)/DurablePyCI/azure_functions_durable"
           - script: 'pip install twine'
