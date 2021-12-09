@@ -7,6 +7,13 @@ assignees: ''
 
 ---
 
+<!-- 
+Please read.
+
+Before posting, please be sure to review whether your issue matches the description of a known regression by using [this](https://github.com/Azure/azure-functions-durable-python/issues?q=is%3Aissue+is%3Aopen+label%3Aknown-regression) query.
+
+If your issue corresponds to a known regression, please try the suggested workarounds listed in the issue before filing an issue. Thanks!
+-->
 🐛 **Describe the bug**
 > A clear and concise description of what the bug is. 
 
