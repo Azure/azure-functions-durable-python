@@ -65,7 +65,6 @@ setup(
         'pytest-asyncio==0.10.0'
     ],
     include_package_data=True,
-    package_data={'_manifest': ['*']},
     cmdclass={
         'build': BuildModule
     },
