@@ -50,17 +50,16 @@ stages:
         pip install pytest pytest-azurepipelines
         pytest
       displayName: 'pytest'
-
-    - script: |
-        python setup.py sdist bdist_wheel
-      workingDirectory: $(baseFolder) 
-      displayName: 'Building'
     - task: ManifestGeneratorTask@0
       displayName: "SBOM Generation Task"
       inputs:
           BuildComponentPath: '$(baseFolder)'
-          BuildDropPath: dist
+          BuildDropPath: $(baseFolder)
           Verbosity: "Information"
+    - script: |
+        python setup.py sdist bdist_wheel
+      workingDirectory: $(baseFolder) 
+      displayName: 'Building'
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: dist'
       inputs:
