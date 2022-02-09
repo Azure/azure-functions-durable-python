@@ -66,7 +66,7 @@ setup(
     ],
     include_package_data=True,
     data_files= [
-        ('_manifest',glob('_manifest/**/*', recursive=True)),
+        ('_manifest',glob('_manifest/**/*.*', recursive=True)),
     ],
     cmdclass={
         'build': BuildModule
