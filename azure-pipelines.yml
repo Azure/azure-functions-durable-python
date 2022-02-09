@@ -56,16 +56,10 @@ stages:
           BuildComponentPath: '$(baseFolder)'
           BuildDropPath: $(baseFolder)
           Verbosity: "Information"
-    - script: ls
-      workingDirectory: $(baseFolder) 
-      displayName: 'ls 1'
     - script: |
         python setup.py sdist bdist_wheel
       workingDirectory: $(baseFolder) 
       displayName: 'Building'
-    - script: ls
-      workingDirectory: $(baseFolder) 
-      displayName: 'ls 2'
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: dist'
       inputs:
