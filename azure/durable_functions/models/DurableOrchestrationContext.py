@@ -33,7 +33,7 @@ from .actions import Action
 from ..models.TokenSource import TokenSource
 from .utils.entity_utils import EntityId
 from azure.functions._durable_functions import _deserialize_custom_object
-from azure.durable_functions.constants import DATETIME_STRING_FORMAT
+from azure.durable_functions.models.constants import DATETIME_STRING_FORMAT
 
 
 class DurableOrchestrationContext:

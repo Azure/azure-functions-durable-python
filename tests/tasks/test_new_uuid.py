@@ -1,7 +1,7 @@
 from uuid import uuid1
 from typing import List, Any, Dict
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
-from azure.durable_functions.constants import DATETIME_STRING_FORMAT
+from azure.durable_functions.models.constants import DATETIME_STRING_FORMAT
 
 
 def history_list() -> List[Dict[Any, Any]]:

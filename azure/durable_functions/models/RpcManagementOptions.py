@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, List, Optional
 
-from azure.durable_functions.constants import DATETIME_STRING_FORMAT
+from azure.durable_functions.models.constants import DATETIME_STRING_FORMAT
 from azure.durable_functions.models.OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 
 from .utils.entity_utils import EntityId
