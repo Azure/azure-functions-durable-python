@@ -1,14 +1,14 @@
-from azure.durable_functions.models.Task import TaskBase, TaskState, AtomicTask
-from azure.durable_functions.models.OrchestratorState import OrchestratorState
-from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
+from .Task import TaskBase, TaskState, AtomicTask
+from .OrchestratorState import OrchestratorState
+from .DurableOrchestrationContext import DurableOrchestrationContext
 from typing import Any, List, Optional, Union
-from azure.durable_functions.models.history.HistoryEventType import HistoryEventType
-from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
+from .history.HistoryEventType import HistoryEventType
+from .history.HistoryEvent import HistoryEvent
 from types import GeneratorType
 import warnings
 from collections import namedtuple
 import json
-from ..models.entities.ResponseMessage import ResponseMessage
+from .entities.ResponseMessage import ResponseMessage
 from azure.functions._durable_functions import _deserialize_custom_object
 
 

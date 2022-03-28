@@ -1,11 +1,11 @@
-from azure.durable_functions.models.actions.NoOpAction import NoOpAction
-from azure.durable_functions.models.actions.CompoundAction import CompoundAction
-from azure.durable_functions.models.RetryOptions import RetryOptions
-from azure.durable_functions.models.ReplaySchema import ReplaySchema
-from azure.durable_functions.models.actions.Action import Action
-from azure.durable_functions.models.actions.WhenAnyAction import WhenAnyAction
-from azure.durable_functions.models.actions.WhenAllAction import WhenAllAction
-from azure.durable_functions.models.actions.CreateTimerAction import CreateTimerAction
+from .actions.NoOpAction import NoOpAction
+from .actions.CompoundAction import CompoundAction
+from .RetryOptions import RetryOptions
+from .ReplaySchema import ReplaySchema
+from .actions.Action import Action
+from .actions.WhenAnyAction import WhenAnyAction
+from .actions.WhenAllAction import WhenAllAction
+from .actions.CreateTimerAction import CreateTimerAction
 
 import enum
 from typing import Any, List, Optional, Set, Type, Union

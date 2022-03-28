@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Dict, Union
 
-from azure.durable_functions.models.utils.json_utils import add_attrib
+from .utils.json_utils import add_attrib
 
 
 class TokenSource(ABC):
