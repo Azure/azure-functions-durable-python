@@ -3,7 +3,7 @@
 Responsible for orchestrating the execution of the user defined generator
 function.
 """
-from azure.durable_functions.models.TaskOrchestrationExecutor import TaskOrchestrationExecutor
+from .models.TaskOrchestrationExecutor import TaskOrchestrationExecutor
 from typing import Callable, Any, Generator
 
 from .models import DurableOrchestrationContext
