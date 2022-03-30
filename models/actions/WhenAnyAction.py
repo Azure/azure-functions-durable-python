@@ -1,4 +1,4 @@
-from azure.durable_functions.models.actions.CompoundAction import CompoundAction
+from .CompoundAction import CompoundAction
 from .ActionType import ActionType
 
 

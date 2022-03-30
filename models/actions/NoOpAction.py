@@ -1,4 +1,4 @@
-from azure.durable_functions.models.actions.Action import Action
+from .Action import Action
 from typing import Any, Dict, Optional
 
 
