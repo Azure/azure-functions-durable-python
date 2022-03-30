@@ -1,10 +1,10 @@
 import json
 from typing import List, Any, Dict, Optional, Union
 
-from azure.durable_functions.models.ReplaySchema import ReplaySchema
+from .ReplaySchema import ReplaySchema
 
 from .utils.json_utils import add_attrib
-from azure.durable_functions.models.actions.Action import Action
+from .actions.Action import Action
 
 
 class OrchestratorState:
