@@ -14,10 +14,12 @@ jobs:
           ref: wangbill/add-submodule
       - id: GoToSubmodule
         run: |
+          git checkout -b submodule-sync
           cd azure/functions/durable
           ls -la
           git submodule update --remote --merge
           git add .
+          git commit -m "submodule-sync"
       - name: Create Pull Request
         id: createPullRequest
         uses: peter-evans/create-pull-request@v4
