@@ -16,9 +16,9 @@ jobs:
         run: |
           git config --global user.email "azfuncgh@github.com"
           git config --global user.name "Azure Functions"
-          # git pull --recurse-submodules
-          git submodule sync
-          git submodule update --init
+          git pull --recurse-submodules
+          # git submodule sync
+          # git submodule update --init
           git submodule update --remote --merge
           # cd azure/functions/durable
           git add .
