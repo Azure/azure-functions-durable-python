@@ -20,7 +20,8 @@ jobs:
           git submodule status
           rm -rf azure/functions/durable
           git submodule update --init --recursive
-          git submodule update --remote --merge
+          # git submodule update --remote --merge
+          git submodule foreach git pull
           git add .
           git commit -m "submodule-sync"
       - name: Create Pull Request
