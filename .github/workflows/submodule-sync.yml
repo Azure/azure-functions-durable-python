@@ -14,9 +14,8 @@ jobs:
           ref: wangbill/add-submodule
       - id: GoToSubmodule
         run: |
-          cd azure/functions
+          cd azure/functions/durable
           ls -la
-          durable
           git submodule update --remote --merge
           git add .
       - name: Create Pull Request
