@@ -17,6 +17,7 @@ jobs:
           git config --global user.email "azfuncgh@github.com"
           git config --global user.name "Azure Functions"
           ls azure/functions/durable -ltr
+          git submodule status
           git submodule update --remote --merge
           git add .
           git commit -m "submodule-sync"
