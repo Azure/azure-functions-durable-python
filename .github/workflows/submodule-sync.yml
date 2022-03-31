@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: azure-functions-python-library
+          repository: azure/azure-functions-python-library
           submodules: true
       - id: GoToSubmodule
         run: |
