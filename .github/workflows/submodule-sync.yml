@@ -16,7 +16,6 @@ jobs:
         run: |
           git config --global user.email "azfuncgh@github.com"
           git config --global user.name "Azure Functions"
-          # ls azure/functions/durable -ltr
           git submodule status
           # rm -rf azure/functions/durable
           # git submodule update --init --recursive
