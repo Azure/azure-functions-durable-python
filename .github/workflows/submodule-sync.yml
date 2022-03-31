@@ -18,6 +18,8 @@ jobs:
           git config --global user.name "Azure Functions"
           ls azure/functions/durable -ltr
           git submodule status
+          rm -rf azure/functions/durable
+          git submodule update --init --recursive
           git submodule update --remote --merge
           git add .
           git commit -m "submodule-sync"
