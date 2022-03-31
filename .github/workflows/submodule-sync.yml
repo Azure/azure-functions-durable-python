@@ -16,16 +16,14 @@ jobs:
         run: |
           git config --global user.email "azfuncgh@github.com"
           git config --global user.name "Azure Functions"
-          cd azure/functions/durable
           git submodule update --remote --merge
+          # cd azure/functions/durable
           git add .
           git commit -m "submodule-sync"
       - name: Create Pull Request
         id: createPullRequest
         uses: peter-evans/create-pull-request@v4
         with:
-          commit-message: Update durable submodule
-          committer: GitHub <noreply@github.com>
           branch: submodule-sync
           delete-branch: true
           title: 'Update durable submodule'
