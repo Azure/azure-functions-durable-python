@@ -13,6 +13,7 @@ jobs:
           submodules: true
       - id: GoToSubmodule
         run: |
+          ls -la
           cd azure-functions-python-library/azure/functions/durable
           git submodule update --remote --merge
           git add .
