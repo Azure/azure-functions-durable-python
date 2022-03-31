@@ -11,7 +11,7 @@ jobs:
         with:
           repository: azure-functions-python-library
           submodules: true
-      - id: Go to submodule
+      - id: GoToSubmodule
         run: |
           cd azure/functions/durable
           git submodule update --remote --merge
