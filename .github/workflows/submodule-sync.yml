@@ -13,7 +13,7 @@ jobs:
           submodules: true
       - id: GoToSubmodule
         run: |
-          cd azure/functions/durable
+          cd azure-functions-python-library/azure/functions/durable
           git submodule update --remote --merge
           git add .
       - name: Create Pull Request
