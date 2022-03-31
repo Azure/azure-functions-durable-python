@@ -1,0 +1,39 @@
+name: Sync submodule pipeline
+
+on:
+  push:
+    branches: [ submodule ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: azure-functions-python-library
+          submodules: true
+      - id: Go to submodule
+        run: |
+          cd azure/functions/durable
+          git submodule update --remote --merge
+          git add .
+      - name: Create Pull Request
+        id: createPullRequest
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: Update durable submodule
+          committer: GitHub <noreply@github.com>
+          branch: submodule-sync
+          delete-branch: true
+          title: 'Update durable submodule'
+          body: |
+            Updated submodule
+
+            [1]: https://github.com/peter-evans/create-pull-request
+          labels: |
+            required submodule update
+            automated pr
+          reviewers: vameru
+      - name: Check outputs
+        run: |
+            echo "Pull Request Number - ${{ steps.createPullRequest.outputs.pull-request-number }}"
+            echo "Pull Request URL - ${{ steps.createPullRequest.outputs.pull-request-url }}"
