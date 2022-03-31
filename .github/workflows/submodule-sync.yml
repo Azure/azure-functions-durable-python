@@ -11,7 +11,7 @@ jobs:
         with:
           repository: azure/azure-functions-python-library
           submodules: true
-          ref: add-submodule
+          ref: wangbill/add-submodule
       - id: GoToSubmodule
         run: |
           cd azure/functions
