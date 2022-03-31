@@ -10,15 +10,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: azure/azure-functions-python-library
-          submodules: false
+          submodules: true
           ref: wangbill/add-submodule
       - id: GoToSubmodule
         run: |
           git config --global user.email "azfuncgh@github.com"
           git config --global user.name "Azure Functions"
-          git submodule update --init
+          ls azure/functions/durable -ltr
           git submodule update --remote --merge
-          # cd azure/functions/durable
           git add .
           git commit -m "submodule-sync"
       - name: Create Pull Request
