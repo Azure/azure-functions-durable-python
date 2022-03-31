@@ -5,7 +5,7 @@ from typing import Callable, Any, List, Dict
 
 
 class InternalEntityException(Exception):
-    """Framework-internal Exception class (for internal use only)."""
+    """Framework-internal Exception class (for internal use only). """
 
     pass
 
