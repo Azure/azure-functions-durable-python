@@ -1,7 +1,7 @@
 from collections import defaultdict
 from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
 from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
-from azure.durable_functions.models.Task import TaskBase, TimerTask
+from azure.durable_functions.models.Task import TaskBase
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
 from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import \
@@ -46,7 +46,7 @@ class DurableOrchestrationContext:
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     def __init__(self,
                  history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
-                 parentInstanceId: str, input: Any = None, upperSchemaVersion: int = 0, **kwargs):
+                 parentInstanceId: str, input: Any = None, upperSchemaVersion: int = 0, tasks = [], **kwargs):
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
@@ -77,6 +77,11 @@ class DurableOrchestrationContext:
         self.open_tasks: DefaultDict[Union[int, str], Union[List[TaskBase], TaskBase]]
         self.open_tasks = defaultdict(list)
         self.deferred_tasks: Dict[Union[int, str], Tuple[HistoryEvent, bool, str]] = {}
+
+        # we do a list comprehension to unpack the data in a proper Python tuple.
+        # this is a hack, and shouldn't be necessary once I figure out C#'s serialization options :)
+        tasks = [(data["Item1"], (data["Item2"]["Item1"], data["Item2"]["Item2"])) for data in tasks]
+        self.tasks = dict(tasks)
 
     @classmethod
     def from_json(cls, json_string: str):
