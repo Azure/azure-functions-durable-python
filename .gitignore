@@ -105,7 +105,6 @@ venv.bak/
 
 # Visual Studio
 .vs/
-.vscode/
 
 # CSharp
 [Oo]bj/
@@ -132,3 +131,5 @@ appsettings.*.json
 /samples/python_durable_bindings/bin/
 /samples/python_durable_bindings/.vs/
 /samples/python_durable_bindings/obj/
+
+.python_packages
