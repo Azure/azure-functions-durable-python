@@ -1,7 +1,7 @@
 import json
 from typing import Dict, Optional
 
-from azure.durable_functions.models.FunctionContext import FunctionContext
+from .FunctionContext import FunctionContext
 
 
 class DurableOrchestrationBindings:

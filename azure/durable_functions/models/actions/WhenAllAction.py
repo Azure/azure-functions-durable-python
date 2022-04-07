@@ -1,5 +1,5 @@
 from .ActionType import ActionType
-from azure.durable_functions.models.actions.CompoundAction import CompoundAction
+from .CompoundAction import CompoundAction
 
 
 class WhenAllAction(CompoundAction):

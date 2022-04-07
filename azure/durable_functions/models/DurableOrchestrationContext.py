@@ -1,24 +1,24 @@
 from collections import defaultdict
-from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
-from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
-from azure.durable_functions.models.Task import TaskBase
-from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
-from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
-from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import \
+from .actions.SignalEntityAction import SignalEntityAction
+from .actions.CallEntityAction import CallEntityAction
+from .Task import TaskBase, TimerTask
+from .actions.CallHttpAction import CallHttpAction
+from .DurableHttpRequest import DurableHttpRequest
+from .actions.CallSubOrchestratorWithRetryAction import \
     CallSubOrchestratorWithRetryAction
-from azure.durable_functions.models.actions.CallActivityWithRetryAction import \
+from .actions.CallActivityWithRetryAction import \
     CallActivityWithRetryAction
-from azure.durable_functions.models.actions.ContinueAsNewAction import \
+from .actions.ContinueAsNewAction import \
     ContinueAsNewAction
-from azure.durable_functions.models.actions.WaitForExternalEventAction import \
+from .actions.WaitForExternalEventAction import \
     WaitForExternalEventAction
-from azure.durable_functions.models.actions.CallSubOrchestratorAction import \
+from .actions.CallSubOrchestratorAction import \
     CallSubOrchestratorAction
-from azure.durable_functions.models.actions.CreateTimerAction import CreateTimerAction
-from azure.durable_functions.models.Task import WhenAllTask, WhenAnyTask, AtomicTask, \
+from .actions.CreateTimerAction import CreateTimerAction
+from .Task import WhenAllTask, WhenAnyTask, AtomicTask, \
     RetryAbleTask
-from azure.durable_functions.models.actions.CallActivityAction import CallActivityAction
-from azure.durable_functions.models.ReplaySchema import ReplaySchema
+from .actions.CallActivityAction import CallActivityAction
+from .ReplaySchema import ReplaySchema
 import json
 import datetime
 import inspect
@@ -33,7 +33,7 @@ from .actions import Action
 from ..models.TokenSource import TokenSource
 from .utils.entity_utils import EntityId
 from azure.functions._durable_functions import _deserialize_custom_object
-from azure.durable_functions.constants import DATETIME_STRING_FORMAT
+from .constants import DATETIME_STRING_FORMAT
 
 
 class DurableOrchestrationContext:
@@ -46,7 +46,7 @@ class DurableOrchestrationContext:
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     def __init__(self,
                  history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
-                 parentInstanceId: str, input: Any = None, upperSchemaVersion: int = 0, tasks = [], **kwargs):
+                 parentInstanceId: str, input: Any = None, upperSchemaVersion: int = 0, **kwargs):
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
@@ -77,11 +77,6 @@ class DurableOrchestrationContext:
         self.open_tasks: DefaultDict[Union[int, str], Union[List[TaskBase], TaskBase]]
         self.open_tasks = defaultdict(list)
         self.deferred_tasks: Dict[Union[int, str], Tuple[HistoryEvent, bool, str]] = {}
-
-        # we do a list comprehension to unpack the data in a proper Python tuple.
-        # this is a hack, and shouldn't be necessary once I figure out C#'s serialization options :)
-        tasks = [(data["Item1"], (data["Item2"]["Item1"], data["Item2"]["Item2"])) for data in tasks]
-        self.tasks = dict(tasks)
 
     @classmethod
     def from_json(cls, json_string: str):
