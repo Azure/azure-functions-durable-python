@@ -20,7 +20,25 @@ With you connection string, your `local.settings.json` file should look as follo
 }
 ```
 
+### Set up your Python virtual environment
+
+```bash
+# ensure you're in the function app folder
+cd counter_entity
+
+# create a virtual environment
+python -m venv .venv
+
+# activate virtual environment
+# (for Linux/macOS, Windows might use a different command)
+source .venv/bin/activate
+
+# install packages
+python -m pip install -r requirements.txt
+```
+
 ### Run the Sample
+
 To try this sample, run  `func host start` in this directory. If all the system requirements have been met, and
 after some initialization logs, you should see something like the following:
 
