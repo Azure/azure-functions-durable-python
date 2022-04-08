@@ -9,19 +9,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: azure-functions-python-library
+          repository: azure/azure-functions-python-library
           submodules: true
-      - id: Go to submodule
+          ref: wangbill/add-submodule
+      - id: GoToSubmodule
         run: |
-          cd azure/functions/durable
-          git submodule update --remote --merge
+          git config --global user.email "azfuncgh@github.com"
+          git config --global user.name "Azure Functions"
+          git submodule status
+          # rm -rf azure/functions/durable
+          # git submodule update --init --recursive
+          # git submodule update --remote --merge
+          git submodule foreach git pull --rebase
           git add .
+          git commit -m "submodule-sync"
       - name: Create Pull Request
         id: createPullRequest
         uses: peter-evans/create-pull-request@v4
         with:
-          commit-message: Update durable submodule
-          committer: GitHub <noreply@github.com>
+          token: ${{ secrets.PAT }}
           branch: submodule-sync
           delete-branch: true
           title: 'Update durable submodule'
