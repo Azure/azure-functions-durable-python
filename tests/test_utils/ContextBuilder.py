@@ -6,8 +6,7 @@ from typing import List, Dict, Any, Optional
 
 from .json_utils import add_attrib, convert_history_event_to_json_dict
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
-from tests.orchestrator.models.OrchestrationInstance \
-    import OrchestrationInstance
+from .OrchestrationInstance import OrchestrationInstance
 from azure.durable_functions.models.history.HistoryEvent import HistoryEvent
 from azure.durable_functions.models.history.HistoryEventType \
     import HistoryEventType
@@ -71,10 +70,9 @@ class ContextBuilder:
         event.TaskScheduledId = id_
         self.history_events.append(event)
 
-    def add_event_sent_event(self, instance_id, event_id):
+    def add_event_sent_event(self, instance_id):
         event = self.get_base_event(HistoryEventType.EVENT_SENT)
         event.InstanceId = instance_id
-        event._event_id = event_id
         event.Name = "op"
         event.Input = json.dumps({ "id": "0000" }) # usually provided by the extension
         self.history_events.append(event)
@@ -125,17 +123,11 @@ class ContextBuilder:
         event.Input = input_
         self.history_events.append(event)
 
-    def add_event_raised_event(self, name:str, id_: int, input_=None, timestamp=None, is_entity=False, is_error = False, literal_input=False):
+    def add_event_raised_event(self, name:str, id_: int, input_=None, timestamp=None, is_entity=False):
         event = self.get_base_event(HistoryEventType.EVENT_RAISED, id_=id_, timestamp=timestamp)
         event.Name = name
         if is_entity:
-            if is_error:
-                event.Input = json.dumps({ "result": json.dumps(input_), "exceptionType": "True" })
-            else:
-                if literal_input:
-                    event.Input = json.dumps({ "result": input_ })
-                else:
-                    event.Input = json.dumps({ "result": json.dumps(input_) })
+            event.Input = json.dumps({ "result": json.dumps(input_) })
         else:
             event.Input = input_
         # event.timestamp = timestamp

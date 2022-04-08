@@ -130,3 +130,6 @@ appsettings.json
 
 # pycharm
 .idea
+
+!.vscode
+local.settings.json

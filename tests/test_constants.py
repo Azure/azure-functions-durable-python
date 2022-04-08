@@ -1,6 +1,6 @@
 """ Validates the constants are set correctly."""
 import unittest
-from azure.durable_functions.constants import (
+from azure.durable_functions.models.constants import (
     DEFAULT_LOCAL_HOST,
     DEFAULT_LOCAL_ORIGIN)
 

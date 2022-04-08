@@ -3,7 +3,7 @@ import json
 
 from azure.durable_functions.models import OrchestratorState
 from azure.durable_functions.models.actions import CallActivityAction
-from .orchestrator_test_utils import get_orchestration_state_result, \
+from tests.test_utils.orchestrator_test_utils import get_orchestration_state_result, \
     assert_orchestration_state_equals, assert_valid_schema
 from tests.test_utils.ContextBuilder import ContextBuilder
 

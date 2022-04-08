@@ -1,10 +1,10 @@
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from tests.test_utils.ContextBuilder import ContextBuilder
-from .orchestrator_test_utils \
+from tests.test_utils.orchestrator_test_utils \
     import get_orchestration_property, assert_orchestration_state_equals, assert_valid_schema
 from azure.durable_functions.models.actions.CreateTimerAction import CreateTimerAction
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
-from azure.durable_functions.constants import DATETIME_STRING_FORMAT
+from azure.durable_functions.models.constants import DATETIME_STRING_FORMAT
 from datetime import datetime, timedelta, timezone
 
 def generator_function(context):

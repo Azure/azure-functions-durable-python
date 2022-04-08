@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 from dateutil.parser import parse as dt_parse
 
-from azure.durable_functions.constants import DATETIME_STRING_FORMAT
+from azure.durable_functions.models.constants import DATETIME_STRING_FORMAT
 from azure.durable_functions.models.DurableOrchestrationStatus import DurableOrchestrationStatus
 from azure.durable_functions.models.OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from azure.durable_functions.models.history import HistoryEventType

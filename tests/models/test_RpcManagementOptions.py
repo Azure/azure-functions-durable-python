@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from azure.durable_functions.models import OrchestrationRuntimeStatus
 from azure.durable_functions.models.RpcManagementOptions import RpcManagementOptions
-from azure.durable_functions.constants import DATETIME_STRING_FORMAT
+from azure.durable_functions.models.constants import DATETIME_STRING_FORMAT
 from tests.test_utils.constants import RPC_BASE_URL
 
 
