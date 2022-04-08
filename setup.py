@@ -4,12 +4,12 @@ import os
 import shutil
 import subprocess
 import sys
-import glob
 
+from glob import glob
 from setuptools import setup, find_packages
 from distutils.command import build
 
-with open("README.md", "r") as fh:
+with open("README.md", "r",  encoding="utf8") as fh:
     long_description = fh.read()
 
 class BuildModule(build.build):
@@ -40,7 +40,7 @@ setup(
         'Operating System :: POSIX',
         'Operating System :: MacOS :: MacOS X',
         'Environment :: Web Environment',
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
     ],
     license='MIT',
     python_requires='>=3.6,<4',
@@ -65,6 +65,9 @@ setup(
         'pytest-asyncio==0.10.0'
     ],
     include_package_data=True,
+    data_files= [
+        ('_manifest', list(filter(os.path.isfile, glob('_manifest/**/*', recursive=True)))),
+    ],
     cmdclass={
         'build': BuildModule
     },

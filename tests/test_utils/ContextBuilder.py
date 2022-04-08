@@ -1,7 +1,8 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import uuid
 import json
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from .json_utils import add_attrib, convert_history_event_to_json_dict
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
@@ -13,20 +14,27 @@ from azure.durable_functions.models.history.HistoryEventType \
 
 
 class ContextBuilder:
-    def __init__(self, name: str=""):
+    def __init__(self, name: str="", increase_time: bool = True, starting_time: Optional[datetime] = None, replay_schema: ReplaySchema = ReplaySchema.V1):
+        self.increase_time = increase_time
         self.instance_id = uuid.uuid4()
         self.is_replaying: bool = False
         self.input_ = None
         self.parent_instance_id = None
         self.history_events: List[HistoryEvent] = []
-        self.current_datetime: datetime = datetime.now()
+
+        if starting_time is None:
+            starting_time = datetime.now()
+        self.current_datetime: datetime = starting_time
+        self.upperSchemaVersion = replay_schema.value
+
         self.add_orchestrator_started_event()
         self.add_execution_started_event(name)
 
     def get_base_event(
             self, event_type: HistoryEventType, id_: int = -1,
             is_played: bool = False, timestamp=None) -> HistoryEvent:
-        self.current_datetime = self.current_datetime + timedelta(seconds=1)
+        if self.increase_time:
+            self.current_datetime = self.current_datetime + timedelta(seconds=1)
         if not timestamp:
             timestamp = self.current_datetime
         event = HistoryEvent(EventType=event_type, EventId=id_,
@@ -63,9 +71,10 @@ class ContextBuilder:
         event.TaskScheduledId = id_
         self.history_events.append(event)
 
-    def add_event_sent_event(self, instance_id):
+    def add_event_sent_event(self, instance_id, event_id):
         event = self.get_base_event(HistoryEventType.EVENT_SENT)
         event.InstanceId = instance_id
+        event._event_id = event_id
         event.Name = "op"
         event.Input = json.dumps({ "id": "0000" }) # usually provided by the extension
         self.history_events.append(event)
@@ -116,11 +125,17 @@ class ContextBuilder:
         event.Input = input_
         self.history_events.append(event)
 
-    def add_event_raised_event(self, name:str, id_: int, input_=None, timestamp=None, is_entity=False):
+    def add_event_raised_event(self, name:str, id_: int, input_=None, timestamp=None, is_entity=False, is_error = False, literal_input=False):
         event = self.get_base_event(HistoryEventType.EVENT_RAISED, id_=id_, timestamp=timestamp)
         event.Name = name
         if is_entity:
-            event.Input = json.dumps({ "result": json.dumps(input_) })
+            if is_error:
+                event.Input = json.dumps({ "result": json.dumps(input_), "exceptionType": "True" })
+            else:
+                if literal_input:
+                    event.Input = json.dumps({ "result": input_ })
+                else:
+                    event.Input = json.dumps({ "result": json.dumps(input_) })
         else:
             event.Input = input_
         # event.timestamp = timestamp
@@ -133,6 +148,7 @@ class ContextBuilder:
         add_attrib(json_dict, self, 'parent_instance_id', 'parentInstanceId')
         add_attrib(json_dict, self, 'is_replaying', 'isReplaying')
         add_attrib(json_dict, self, 'input_', "input")
+        add_attrib(json_dict, self, 'upperSchemaVersion', "upperSchemaVersion")
 
         history_list_as_dict = self.get_history_list_as_dict()
         json_dict['history'] = history_list_as_dict

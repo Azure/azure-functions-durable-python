@@ -1,3 +1,4 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from tests.test_utils.ContextBuilder import ContextBuilder
 from .orchestrator_test_utils \
     import get_orchestration_state_result, assert_orchestration_state_equals, assert_valid_schema
@@ -7,8 +8,8 @@ from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 from datetime import datetime, timedelta, timezone
 
 
-def base_expected_state(output=None) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output)
+def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
 
 def add_timer_fired_events(context_builder: ContextBuilder, id_: int, timestamp: str):
     fire_at: str = context_builder.add_timer_created_event(id_, timestamp)
@@ -26,6 +27,20 @@ def generator_function(context):
 
     yield context.create_timer(fire_at)
     return "Done!"
+
+def generator_function_timer_can_be_cancelled(context):
+    time_limit1 = context.current_utc_datetime + timedelta(minutes=5)
+    timer_task1 = context.create_timer(time_limit1)
+
+    time_limit2 = context.current_utc_datetime + timedelta(minutes=10)
+    timer_task2 = context.create_timer(time_limit2)
+
+    winner = yield context.task_any([timer_task1, timer_task2])
+    if winner == timer_task1:
+        timer_task2.cancel()
+        return "Done!"
+    else:
+        raise Exception("timer task 1 should complete before timer task 2")
 
 def add_timer_action(state: OrchestratorState, fire_at: datetime):
     action = CreateTimerAction(fire_at=fire_at)
@@ -64,3 +79,24 @@ def test_timers_comparison_with_relaxed_precision():
     # TODO: getting the following error when validating the schema
     # "Additional properties are not allowed ('fireAt', 'isCanceled' were unexpected)">
     assert_orchestration_state_equals(expected, result)
+
+def test_timers_can_be_cancelled():
+
+    context_builder = ContextBuilder("test_timers_can_be_cancelled")
+    fire_at1 = context_builder.current_datetime + timedelta(minutes=5)
+    fire_at2 = context_builder.current_datetime + timedelta(minutes=10)
+    add_timer_fired_events(context_builder, 0, str(fire_at1))
+    add_timer_fired_events(context_builder, 1, str(fire_at2))
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_timer_can_be_cancelled)
+
+    expected_state = base_expected_state(output='Done!')
+    expected_state._actions.append(
+        [CreateTimerAction(fire_at=fire_at1), CreateTimerAction(fire_at=fire_at2, is_cancelled=True)])
+
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_orchestration_state_equals(expected, result)
+    assert result["actions"][0][1]["isCanceled"]

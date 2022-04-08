@@ -1,3 +1,4 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from tests.test_utils.ContextBuilder import ContextBuilder
 from .orchestrator_test_utils \
     import get_orchestration_property, assert_orchestration_state_equals, assert_valid_schema
@@ -17,8 +18,21 @@ def generator_function(context):
         deadline = deadline + timedelta(seconds=30)
         yield context.create_timer(deadline)
 
-def base_expected_state(output=None) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output)
+def generator_function_compound_task(context):
+    # Create a timezone aware datetime object, just like a normal
+    # call to `context.current_utc_datetime` would create
+    timestamp = "2020-07-23T21:56:54.936700Z"
+    deadline = datetime.strptime(timestamp, DATETIME_STRING_FORMAT)
+    deadline = deadline.replace(tzinfo=timezone.utc)
+
+    tasks = []
+    for _ in range(0, 3):
+        deadline = deadline + timedelta(seconds=30)
+        tasks.append(context.create_timer(deadline))
+    yield context.task_any(tasks)
+
+def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
 
 def add_timer_fired_events(context_builder: ContextBuilder, id_: int, timestamp: str,
         is_played: bool = True):
@@ -70,3 +84,18 @@ def test_is_replaying_one_replayed_one_not():
         context_builder, generator_function, "durable_context")
 
     assert result.is_replaying == False
+
+def test_is_replaying_propagates_in_compound_task():
+
+    timestamp = "2020-07-23T21:56:54.9367Z"
+    fire_at = datetime.strptime(timestamp, DATETIME_STRING_FORMAT) + timedelta(seconds=30)
+    fire_at_str = fire_at.strftime(DATETIME_STRING_FORMAT)
+
+    context_builder = ContextBuilder("")
+    add_timer_fired_events(context_builder, 0, fire_at_str, is_played=True)
+
+    result = get_orchestration_property(
+        context_builder, generator_function_compound_task, "durable_context")
+
+    assert result.is_replaying == True
+

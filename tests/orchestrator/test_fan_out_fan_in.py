@@ -1,3 +1,4 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import json
 
 from azure.durable_functions.models import OrchestratorState
@@ -18,8 +19,8 @@ def generator_function(context):
     return results
 
 
-def base_expected_state(output=None, error=None) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output, error=error)
+def base_expected_state(output=None, error=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema)
 
 
 def add_completed_event(

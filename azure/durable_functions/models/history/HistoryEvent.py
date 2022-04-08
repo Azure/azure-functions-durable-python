@@ -14,6 +14,13 @@ class HistoryEvent:
         self._is_played: bool = IsPlayed
         self._timestamp: datetime.datetime = dt_parse(Timestamp)
         self._is_processed: bool = False
+
+        self.Name = None
+        self.InstanceId = None
+        self.TaskScheduledId = None
+        self.Reason = None
+        self.Details = None
+        self.Input = None
         if kwargs is not None:
             for key, value in kwargs.items():
                 self.__setattr__(key, value)

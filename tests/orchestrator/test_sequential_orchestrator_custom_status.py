@@ -1,3 +1,4 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from .orchestrator_test_utils \
     import assert_orchestration_state_equals, get_orchestration_state_result, assert_valid_schema
 from tests.test_utils.ContextBuilder import ContextBuilder
@@ -22,8 +23,8 @@ def generator_function_with_object_status(context):
     obj_status["tokyo"] = "completed"
     context.set_custom_status(obj_status)
 
-def base_expected_state(output=None) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output)
+def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
 
 def add_custom_status(state:OrchestratorState, status:Any):
     state._custom_status = status
@@ -81,7 +82,7 @@ def test_custom_status_tokyo_seattle():
 
    # Complete the two event so that it sets the custom status accordingly
    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
-   add_hello_completed_events(context_builder, 0, "\"Hello Seattle!\"")
+   add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
 
    result = get_orchestration_state_result(
         context_builder, generator_function)

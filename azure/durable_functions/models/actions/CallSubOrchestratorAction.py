@@ -36,5 +36,5 @@ class CallSubOrchestratorAction(Action):
         add_attrib(json_dict, self, 'action_type', 'actionType')
         add_attrib(json_dict, self, 'function_name', 'functionName')
         add_attrib(json_dict, self, '_input', 'input')
-        add_attrib(json_dict, self, 'instance_id', 'instance_id')
+        add_attrib(json_dict, self, 'instance_id', 'instanceId')
         return json_dict

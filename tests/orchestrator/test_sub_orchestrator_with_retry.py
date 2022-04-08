@@ -1,3 +1,4 @@
+from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from .orchestrator_test_utils \
     import assert_orchestration_state_equals, get_orchestration_state_result, assert_valid_schema
 from tests.test_utils.ContextBuilder import ContextBuilder
@@ -22,8 +23,8 @@ def generator_function(context):
 
     return outputs
 
-def base_expected_state(output=None) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output)
+def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
 
 
 def add_hello_suborch_action(state: OrchestratorState, input_: str):
@@ -80,9 +81,9 @@ def test_tokyo_and_seattle_and_london_state_partial_failure():
     context_builder = ContextBuilder('test_simple_function')
     add_hello_suborch_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
     add_hello_suborch_failed_events(context_builder, 1, failed_reason, failed_details)
-    add_retry_timer_events(context_builder, 3)
-    add_hello_suborch_completed_events(context_builder, 4, "\"Hello Seattle!\"")
-    add_hello_suborch_completed_events(context_builder, 5, "\"Hello London!\"")
+    add_retry_timer_events(context_builder, 2)
+    add_hello_suborch_completed_events(context_builder, 3, "\"Hello Seattle!\"")
+    add_hello_suborch_completed_events(context_builder, 4, "\"Hello London!\"")
 
     result = get_orchestration_state_result(
         context_builder, generator_function)
