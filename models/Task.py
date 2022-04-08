@@ -347,6 +347,7 @@ class RetryAbleTask(WhenAllTask):
         self.context = context
         self.actions = child.action_repr
         self.is_waiting_on_timer = False
+        self.error = None
 
     @property
     def id_(self):
@@ -373,10 +374,18 @@ class RetryAbleTask(WhenAllTask):
         if self.is_waiting_on_timer:
             # timer fired, re-scheduling original task
             self.is_waiting_on_timer = False
-            rescheduled_task = self.context._generate_task(
-                action=NoOpAction("rescheduled task"), parent=self)
-            self.pending_tasks.add(rescheduled_task)
-            self.context._add_to_open_tasks(rescheduled_task)
+
+            if self.num_attempts >= self.retry_options.max_number_of_attempts:
+                self.is_waiting_on_timer = True
+                # we have reached the maximum number of attempts, set error
+                self.set_value(is_error=True, value=self.error)
+            else:
+                rescheduled_task = self.context._generate_task(
+                    action=NoOpAction("rescheduled task"), parent=self)
+                self.pending_tasks.add(rescheduled_task)
+                self.context._add_to_open_tasks(rescheduled_task)
+                self.num_attempts += 1
+
             return
         if child.state is TaskState.SUCCEEDED:
             if len(self.pending_tasks) == 0:
@@ -386,17 +395,11 @@ class RetryAbleTask(WhenAllTask):
                 self.set_value(is_error=False, value=child.result)
 
         else:  # child.state is TaskState.FAILED:
-            if self.num_attempts >= self.retry_options.max_number_of_attempts:
-                # we have reached the maximum number of attempts, set error
-                self.set_value(is_error=True, value=child.result)
-            else:
-                # still have some retries left.
-                # increase size of pending tasks by adding a timer task
-                # when it completes, we'll retry the original task
-                timer_task = self.context._generate_task(
-                    action=NoOpAction("-WithRetry timer"), parent=self)
-                self.pending_tasks.add(timer_task)
-                self.context._add_to_open_tasks(timer_task)
-                self.is_waiting_on_timer = True
-
-            self.num_attempts += 1
+            # increase size of pending tasks by adding a timer task
+            # when it completes, we'll retry the original task
+            timer_task = self.context._generate_task(
+                action=NoOpAction("-WithRetry timer"), parent=self)
+            self.pending_tasks.add(timer_task)
+            self.context._add_to_open_tasks(timer_task)
+            self.is_waiting_on_timer = True
+            self.error = child.result
