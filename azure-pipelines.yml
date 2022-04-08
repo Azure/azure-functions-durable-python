@@ -13,7 +13,6 @@ trigger:
     - v*
 
 variables:     
-  agentPool: 'ubuntu-latest' # 'Ubuntu-16.04'
   python.version: '3.6'
   baseFolder: .
   componentArtifactName: 'azure_functions_durable'
@@ -28,7 +27,9 @@ stages:
   - job: Build_Durable_Functions
     displayName: Build Python Package
     pool: 
-      vmImage: $(agentPool)
+      name: "1ES-Hosted-AzFunc"
+      demands:
+          - ImageOverride -equals MMSUbuntu20.04TLS
     steps:
     - task: UsePythonVersion@0
       inputs:
@@ -49,7 +50,12 @@ stages:
         pip install pytest pytest-azurepipelines
         pytest
       displayName: 'pytest'
-
+    - task: ManifestGeneratorTask@0
+      displayName: "SBOM Generation Task"
+      inputs:
+          BuildComponentPath: '$(baseFolder)'
+          BuildDropPath: $(baseFolder)
+          Verbosity: "Information"
     - script: |
         python setup.py sdist bdist_wheel
       workingDirectory: $(baseFolder) 

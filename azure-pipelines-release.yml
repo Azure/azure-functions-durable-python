@@ -1,0 +1,29 @@
+trigger: none
+pr: none
+
+resources:
+    pipelines:
+        - pipeline: DurablePyCI
+          project: "Azure Functions"
+          source: Azure.azure-functions-durable-python
+          branch: main
+
+jobs:
+    - job: Release
+      pool:
+        name: "1ES-Hosted-AzFunc"
+        demands:
+            - ImageOverride -equals MMSUbuntu20.04TLS
+      steps:
+          - task: UsePythonVersion@0
+            inputs:
+                versionSpec: '3.6'
+          - download: DurablePyCI
+          - script: "rm -r ./azure_functions_durable/_manifest"
+            displayName: 'Remove _manifest folder'
+            workingDirectory: "$(Pipeline.Workspace)/DurablePyCI"
+          - script: 'pip install twine'
+            displayName: "Install twine"
+          - script: "twine upload azure_functions_durable/*"
+            displayName: "Publish to PyPI"
+            workingDirectory: "$(Pipeline.Workspace)/DurablePyCI"
