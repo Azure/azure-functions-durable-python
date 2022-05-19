@@ -14,6 +14,7 @@ class CompoundAction(Action):
 
     def __init__(self, compoundTasks: List[Action]):
         self.compoundTasks = compoundTasks
+
     @property
     @abstractmethod
     def action_type(self) -> int:
