@@ -4,8 +4,8 @@ import os
 import shutil
 import subprocess
 import sys
-import glob
 
+from glob import glob
 from setuptools import setup, find_packages
 from distutils.command import build
 
@@ -65,6 +65,9 @@ setup(
         'pytest-asyncio==0.10.0'
     ],
     include_package_data=True,
+    data_files= [
+        ('_manifest', list(filter(os.path.isfile, glob('_manifest/**/*', recursive=True)))),
+    ],
     cmdclass={
         'build': BuildModule
     },
