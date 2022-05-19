@@ -13,8 +13,7 @@ class CompoundAction(Action):
     """
 
     def __init__(self, compoundTasks: List[Action]):
-        self.compound_actions = list(map(lambda x: x.to_json(), compoundTasks))
-
+        self.compoundTasks = compoundTasks
     @property
     @abstractmethod
     def action_type(self) -> int:
@@ -31,5 +30,5 @@ class CompoundAction(Action):
         """
         json_dict: Dict[str, Union[str, int]] = {}
         add_attrib(json_dict, self, 'action_type', 'actionType')
-        add_attrib(json_dict, self, 'compound_actions', 'compoundActions')
+        json_dict['compoundActions'] = list(map(lambda x: x.to_json(), self.compoundTasks))
         return json_dict
