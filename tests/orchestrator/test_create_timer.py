@@ -1,4 +1,5 @@
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
+from azure.durable_functions.models.actions.WhenAnyAction import WhenAnyAction
 from tests.test_utils.ContextBuilder import ContextBuilder
 from .orchestrator_test_utils \
     import get_orchestration_state_result, assert_orchestration_state_equals, assert_valid_schema
@@ -9,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
-    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema.value)
+    return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema)
 
 def add_timer_fired_events(context_builder: ContextBuilder, id_: int, timestamp: str):
     fire_at: str = context_builder.add_timer_created_event(id_, timestamp)
@@ -100,3 +101,27 @@ def test_timers_can_be_cancelled():
 
     assert_orchestration_state_equals(expected, result)
     assert result["actions"][0][1]["isCanceled"]
+
+def test_timers_can_be_cancelled_replayV2():
+
+    context_builder = ContextBuilder("test_timers_can_be_cancelled", replay_schema=ReplaySchema.V2)
+    fire_at1 = context_builder.current_datetime + timedelta(minutes=5)
+    fire_at2 = context_builder.current_datetime + timedelta(minutes=10)
+    add_timer_fired_events(context_builder, 0, str(fire_at1))
+    add_timer_fired_events(context_builder, 1, str(fire_at2))
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_timer_can_be_cancelled)
+
+    expected_state = base_expected_state(output='Done!', replay_schema=ReplaySchema.V2)
+    expected_state._actions = [
+        [WhenAnyAction(
+            [CreateTimerAction(fire_at=fire_at1), CreateTimerAction(fire_at=fire_at2, is_cancelled=True)]
+        )]
+    ]
+
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_orchestration_state_equals(expected, result)
+    assert result["actions"][0][0]['compoundActions'][1]["isCanceled"]
