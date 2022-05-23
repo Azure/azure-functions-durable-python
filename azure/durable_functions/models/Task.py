@@ -374,7 +374,10 @@ class RetryAbleTask(WhenAllTask):
         if self.is_waiting_on_timer:
             # timer fired, re-scheduling original task
             self.is_waiting_on_timer = False
-
+            # As per DTFx semantics: we need to check the number of retires only after the final
+            # timer has fired. This means we essentially have to wait for one "extra" timer after
+            # the maximum number of attempts has been reached. Removing this extra timer will cause
+            # stuck orchestrators as we need to be "in sync" with the replay logic of DTFx.
             if self.num_attempts >= self.retry_options.max_number_of_attempts:
                 self.is_waiting_on_timer = True
                 # we have reached the maximum number of attempts, set error

@@ -330,6 +330,7 @@ def test_failed_tokyo_hit_max_attempts_in_try_catch():
     add_hello_failed_events(context_builder, 2, failed_reason, failed_details)
     add_retry_timer_events(context_builder, 3)
     add_hello_failed_events(context_builder, 4, failed_reason, failed_details)
+    # we have an "extra" timer to wait for, due to legacy behavior in DTFx.
     add_retry_timer_events(context_builder, 5)
 
     # events to task in except block
