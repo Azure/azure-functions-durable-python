@@ -12,8 +12,8 @@ class CompoundAction(Action):
     Provides the information needed by the durable extension to be able to invoke WhenAll tasks.
     """
 
-    def __init__(self, compoundTasks: List[Action]):
-        self.compound_actions = list(map(lambda x: x.to_json(), compoundTasks))
+    def __init__(self, compound_tasks: List[Action]):
+        self.compound_tasks = compound_tasks
 
     @property
     @abstractmethod
@@ -31,5 +31,5 @@ class CompoundAction(Action):
         """
         json_dict: Dict[str, Union[str, int]] = {}
         add_attrib(json_dict, self, 'action_type', 'actionType')
-        add_attrib(json_dict, self, 'compound_actions', 'compoundActions')
+        json_dict['compoundActions'] = list(map(lambda x: x.to_json(), self.compound_tasks))
         return json_dict
