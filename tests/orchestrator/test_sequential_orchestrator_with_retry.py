@@ -29,6 +29,19 @@ def generator_function(context):
 
     return outputs
 
+def generator_function_try_catch(context):
+    outputs = []
+
+    retry_options = RETRY_OPTIONS
+    result = None
+    try:
+        result = yield context.call_activity_with_retry(
+        "Hello", retry_options, "Tokyo")
+    except:
+        result = yield context.call_activity_with_retry(
+        "Hello",  retry_options, "Seattle")
+    return result
+
 def generator_function_concurrent_retries(context):
     outputs = []
 
@@ -304,6 +317,37 @@ def test_failed_tokyo_hit_max_attempts():
         
         expected_error_str = f"{error_msg}{error_label}{state_str}"
         assert expected_error_str == error_str
+
+def test_failed_tokyo_hit_max_attempts_in_try_catch():
+    # This test ensures that APIs can still be invoked after a failed CallActivityWithRetry invocation
+    failed_reason = 'Reasons'
+    failed_details = 'Stuff and Things'
+    context_builder = ContextBuilder('test_simple_function')
+    
+    # events for first task: "Hello Tokyo"
+    add_hello_failed_events(context_builder, 0, failed_reason, failed_details)
+    add_retry_timer_events(context_builder, 1)
+    add_hello_failed_events(context_builder, 2, failed_reason, failed_details)
+    add_retry_timer_events(context_builder, 3)
+    add_hello_failed_events(context_builder, 4, failed_reason, failed_details)
+    # we have an "extra" timer to wait for, due to legacy behavior in DTFx.
+    add_retry_timer_events(context_builder, 5)
+
+    # events to task in except block
+    add_hello_completed_events(context_builder, 6, "\"Hello Seattle!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_try_catch)
+
+    expected_state = base_expected_state()
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    expected_state._output = "Hello Seattle!"
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
 
 def test_concurrent_retriable_results():
     failed_reason = 'Reasons'
