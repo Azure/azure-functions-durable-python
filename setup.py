@@ -25,7 +25,7 @@ class BuildModule(build.build):
 
 
 setup(
-    name='azure-functions-durable',
+    name='azure-functions-durable-test',
     packages=find_packages(exclude=[
         "tests",
         "samples",
