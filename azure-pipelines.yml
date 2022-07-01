@@ -13,7 +13,7 @@ trigger:
     - v*
 
 variables:     
-  python.version: '3.6'
+  python.version: '3.7'
   baseFolder: .
   componentArtifactName: 'azure_functions_durable'
   #componentArtifactName: 'dist'
