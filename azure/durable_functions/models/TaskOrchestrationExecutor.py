@@ -69,13 +69,16 @@ class TaskOrchestrationExecutor:
         evaluated_user_code = fn(context)
 
         # The minimum History size is 2, in the shape: [OrchestratorStarted, ExecutionStarted].
-        # At the start of replay, the `is_replaying` flag is determined from the ExecutionStarted event.
+        # At the start of replay, the `is_replaying` flag is determined from the
+        # ExecutionStarted event.
         # For some reason, OrchestratorStarted does not update its `isPlayed` field.
         if len(history) < 2:
-            err_message = f"Internal Durable Functions error: received History array of size {len(history)} "\
-                + "when a minimum size of 2 is expected. Please report this issue in our GitHub repo."
+            err_message = "Internal Durable Functions error: "\
+                + f"received History array of size {len(history)} "\
+                + "when a minimum size of 2 is expected. "\
+                + "Please report this issue in our GitHub repo."
             raise Exception(err_message)
-        
+
         # Set initial is_replaing state.
         execution_started_event = history[1]
         self.current_task.is_played = execution_started_event.is_played
