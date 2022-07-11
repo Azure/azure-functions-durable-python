@@ -28,11 +28,11 @@ def generator_function_is_replaying(context):
     outputs = []
 
     outputs.append(context.is_replaying)
-    task1 = yield context.call_activity("Hello", "Tokyo")
+    yield context.call_activity("Hello", "Tokyo")
     outputs.append(context.is_replaying)
-    task2 = yield context.call_activity("Hello", "Seattle")
+    yield context.call_activity("Hello", "Seattle")
     outputs.append(context.is_replaying)
-    task3 = yield context.call_activity("Hello", "London")
+    yield context.call_activity("Hello", "London")
     return outputs
 
 def generator_function_no_yield(context):
