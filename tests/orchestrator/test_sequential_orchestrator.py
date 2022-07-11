@@ -24,6 +24,17 @@ def generator_function(context):
 
     return outputs
 
+def generator_function_is_replaying(context):
+    outputs = []
+
+    outputs.append(context.is_replaying)
+    task1 = yield context.call_activity("Hello", "Tokyo")
+    outputs.append(context.is_replaying)
+    task2 = yield context.call_activity("Hello", "Seattle")
+    outputs.append(context.is_replaying)
+    task3 = yield context.call_activity("Hello", "London")
+    return outputs
+
 def generator_function_no_yield(context):
     outputs = []
 
@@ -150,11 +161,11 @@ def add_hello_action(state: OrchestratorState, input_: str):
     state.actions.append([action])
 
 def add_hello_completed_events(
-        context_builder: ContextBuilder, id_: int, result: str):
+        context_builder: ContextBuilder, id_: int, result: str, is_played=False):
     context_builder.add_task_scheduled_event(name='Hello', id_=id_)
     context_builder.add_orchestrator_completed_event()
     context_builder.add_orchestrator_started_event()
-    context_builder.add_task_completed_event(id_=id_, result=result)
+    context_builder.add_task_completed_event(id_=id_, result=result, is_played=is_played)
 
 
 def add_hello_failed_events(
@@ -277,6 +288,26 @@ def test_tokyo_and_seattle_and_london_state():
 
     expected_state = base_expected_state(
         ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    add_hello_action(expected_state, 'London')
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_sequential_is_replaying():
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"", True)
+    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"", True)
+    add_hello_completed_events(context_builder, 2, "\"Hello London!\"", True)
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_is_replaying)
+
+    expected_state = base_expected_state(
+        [True, True, True])
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
     add_hello_action(expected_state, 'London')

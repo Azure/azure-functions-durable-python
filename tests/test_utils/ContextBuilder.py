@@ -87,8 +87,8 @@ class ContextBuilder:
         event.Input_ = input_
         self.history_events.append(event)
 
-    def add_task_completed_event(self, id_: int, result):
-        event = self.get_base_event(HistoryEventType.TASK_COMPLETED)
+    def add_task_completed_event(self, id_: int, result, is_played=False):
+        event = self.get_base_event(HistoryEventType.TASK_COMPLETED, is_played=is_played)
         event.Result = result
         event.TaskScheduledId = id_
         self.history_events.append(event)
