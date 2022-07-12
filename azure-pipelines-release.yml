@@ -17,7 +17,7 @@ jobs:
       steps:
           - task: UsePythonVersion@0
             inputs:
-                versionSpec: '3.6'
+                versionSpec: '3.7'
           - download: DurablePyCI
           - script: "rm -r ./azure_functions_durable/_manifest"
             displayName: 'Remove _manifest folder'
