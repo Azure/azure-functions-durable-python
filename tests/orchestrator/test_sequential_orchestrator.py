@@ -24,6 +24,15 @@ def generator_function(context):
 
     return outputs
 
+def generator_function_multi_yield_when_all(context):
+    outputs = []
+
+    task1 = context.call_activity("Hello", "Tokyo")
+    yield context.task_all([task1])
+    result = yield context.task_all([task1])
+
+    return result
+
 def generator_function_no_yield(context):
     outputs = []
 
@@ -280,6 +289,23 @@ def test_tokyo_and_seattle_and_london_state():
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
     add_hello_action(expected_state, 'London')
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+
+def test_multi_when_all_yield():
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_multi_yield_when_all)
+
+    expected_state = base_expected_state(
+        ['Hello Tokyo!'])
+    add_hello_action(expected_state, 'Tokyo')
     expected_state._is_done = True
     expected = expected_state.to_json()
 
