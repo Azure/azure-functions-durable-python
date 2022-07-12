@@ -47,7 +47,7 @@ def add_timer_action(state: OrchestratorState, fire_at: datetime):
 
 def test_is_replaying_initial_value():
 
-    context_builder = ContextBuilder("")
+    context_builder = ContextBuilder("", is_replaying=False)
     result = get_orchestration_property(
         context_builder, generator_function, "durable_context")
 
