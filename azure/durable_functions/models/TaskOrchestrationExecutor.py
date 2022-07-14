@@ -76,7 +76,8 @@ class TaskOrchestrationExecutor:
             err_message = "Internal Durable Functions error: "\
                 + f"received History array of size {len(history)} "\
                 + "when a minimum size of 2 is expected. "\
-                + "Please report this issue at https://github.com/Azure/azure-functions-durable-python/issues."
+                + "Please report this issue at "\
+                + "https://github.com/Azure/azure-functions-durable-python/issues."
             raise Exception(err_message)
 
         # Set initial is_replaing state.
