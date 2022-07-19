@@ -298,7 +298,7 @@ def test_tokyo_and_seattle_and_london_state():
     assert_orchestration_state_equals(expected, result)
 
 def test_sequential_is_replaying():
-    context_builder = ContextBuilder('test_simple_function')
+    context_builder = ContextBuilder('test_simple_function', is_replaying=True)
     add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"", True)
     add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"", True)
     add_hello_completed_events(context_builder, 2, "\"Hello London!\"", True)
