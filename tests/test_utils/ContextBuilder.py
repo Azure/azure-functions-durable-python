@@ -14,7 +14,7 @@ from azure.durable_functions.models.history.HistoryEventType \
 
 
 class ContextBuilder:
-    def __init__(self, name: str="", increase_time: bool = True, starting_time: Optional[datetime] = None, replay_schema: ReplaySchema = ReplaySchema.V1):
+    def __init__(self, name: str="", increase_time: bool = True, starting_time: Optional[datetime] = None, is_replaying=False, replay_schema: ReplaySchema = ReplaySchema.V1):
         self.increase_time = increase_time
         self.instance_id = uuid.uuid4()
         self.is_replaying: bool = False
@@ -28,7 +28,7 @@ class ContextBuilder:
         self.upperSchemaVersion = replay_schema.value
 
         self.add_orchestrator_started_event()
-        self.add_execution_started_event(name)
+        self.add_execution_started_event(name, is_played=is_replaying)
 
     def get_base_event(
             self, event_type: HistoryEventType, id_: int = -1,
@@ -87,8 +87,8 @@ class ContextBuilder:
         event.Input_ = input_
         self.history_events.append(event)
 
-    def add_task_completed_event(self, id_: int, result):
-        event = self.get_base_event(HistoryEventType.TASK_COMPLETED)
+    def add_task_completed_event(self, id_: int, result, is_played=False):
+        event = self.get_base_event(HistoryEventType.TASK_COMPLETED, is_played=is_played)
         event.Result = result
         event.TaskScheduledId = id_
         self.history_events.append(event)
@@ -116,8 +116,8 @@ class ContextBuilder:
         self.history_events.append(event)
 
     def add_execution_started_event(
-            self, name: str, version: str = '', input_=None):
-        event = self.get_base_event(HistoryEventType.EXECUTION_STARTED, is_played=True)
+            self, name: str, version: str = '', input_=None, is_played=True):
+        event = self.get_base_event(HistoryEventType.EXECUTION_STARTED, is_played=is_played)
         event.orchestration_instance = OrchestrationInstance()
         self.instance_id = event.orchestration_instance.instance_id
         event.Name = name
