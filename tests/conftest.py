@@ -37,7 +37,13 @@ def get_binding_string():
                              "{text}&taskHub="
                              f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}",
             "purgeHistoryDeleteUri": f"{BASE_URL}/instances/INSTANCEID?taskHub="
-                                     f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}"
+                                     f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}",
+            "suspendPostUri": f"{BASE_URL}/instances/INSTANCEID/suspend?reason="
+                                "{text}&taskHub="
+                                f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}",
+            "resumePostUri": f"{BASE_URL}/instances/INSTANCEID/resume?reason="
+                                "{text}&taskHub="
+                                f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}",
         },
         "rpcBaseUrl": RPC_BASE_URL
     }
