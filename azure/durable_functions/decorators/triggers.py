@@ -2,7 +2,7 @@
 #  Licensed under the MIT License.
 from typing import Optional
 
-from azure.functions.decorators.constants import ORCHESTRATION_TRIGGER, \
+from azure.durable_functions.constants import ORCHESTRATION_TRIGGER, \
     ACTIVITY_TRIGGER, ORCHESTRATION_CLIENT, ENTITY_TRIGGER, ENTITY_CLIENT, \
     DURABLE_CLIENT
 from azure.functions.decorators.core import Trigger

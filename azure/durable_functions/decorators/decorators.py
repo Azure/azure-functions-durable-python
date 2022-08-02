@@ -1,7 +1,7 @@
 from triggers import OrchestrationTrigger, ActivityTrigger, EntityTrigger, EntityClient, OrchestrationClient, DurableClient
 from typing import Callable, Dict, List, Optional
-from entity import Entity
-from orchestrator import Orchestrator
+from azure.durable_functions.entity import Entity
+from azure.durable_functions.orchestrator import Orchestrator
 
 class FunctionApp: # TODO: this doesn't seem right
 
