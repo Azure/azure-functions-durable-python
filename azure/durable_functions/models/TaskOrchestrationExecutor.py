@@ -68,6 +68,22 @@ class TaskOrchestrationExecutor:
         self.context = context
         evaluated_user_code = fn(context)
 
+        # The minimum History size is 2, in the shape: [OrchestratorStarted, ExecutionStarted].
+        # At the start of replay, the `is_replaying` flag is determined from the
+        # ExecutionStarted event.
+        # For some reason, OrchestratorStarted does not update its `isPlayed` field.
+        if len(history) < 2:
+            err_message = "Internal Durable Functions error: "\
+                + f"received History array of size {len(history)} "\
+                + "when a minimum size of 2 is expected. "\
+                + "Please report this issue at "\
+                + "https://github.com/Azure/azure-functions-durable-python/issues."
+            raise Exception(err_message)
+
+        # Set initial is_replaing state.
+        execution_started_event = history[1]
+        self.current_task.is_played = execution_started_event.is_played
+
         # If user code is a generator, then it uses `yield` statements (the DF API)
         # and so we iterate through the DF history, generating tasks and populating
         # them with values when the history provides them
