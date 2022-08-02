@@ -171,6 +171,11 @@ class CompoundTask(TaskBase):
         if len(self.children) == 0:
             self.state = TaskState.SUCCEEDED
 
+        # Sub-tasks may have already completed, so we process them
+        for child in self.children:
+            if not(child.state is TaskState.RUNNING):
+                self.handle_completion(child)
+
     def handle_completion(self, child: TaskBase):
         """Manage sub-task completion events.
 
