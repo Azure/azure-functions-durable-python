@@ -2,8 +2,9 @@ from triggers import OrchestrationTrigger, ActivityTrigger, EntityTrigger, Entit
 from typing import Callable, Dict, List, Optional
 from azure.durable_functions.entity import Entity
 from azure.durable_functions.orchestrator import Orchestrator
+from azure.functions import FunctionRegister, TriggerApi
 
-class FunctionApp: # TODO: this doesn't seem right
+class DurableFunctionApp(FunctionRegister, TriggerApi):
 
     def _configure_entity_callable(self, wrap) -> Callable:
         """Decorator function on user defined function to create and return
