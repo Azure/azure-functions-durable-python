@@ -1,10 +1,20 @@
-from triggers import OrchestrationTrigger, ActivityTrigger, EntityTrigger, EntityClient, OrchestrationClient, DurableClient
+from .triggers import OrchestrationTrigger, ActivityTrigger, EntityTrigger, EntityClient, OrchestrationClient, DurableClient
 from typing import Callable, Dict, List, Optional
 from azure.durable_functions.entity import Entity
 from azure.durable_functions.orchestrator import Orchestrator
-from azure.functions import FunctionRegister, TriggerApi
+from typing import Union
+from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel
 
-class DurableFunctionApp(FunctionRegister, TriggerApi):
+class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
+
+    def __init__(self,
+                http_auth_level: Union[AuthLevel, str] = AuthLevel.FUNCTION):
+        """Constructor of :class:`FunctionApp` object.
+        :param http_auth_level: Determines what keys, if any, need to be
+        present
+        on the request in order to invoke the function.
+        """
+        super().__init__(auth_level=http_auth_level)
 
     def _configure_entity_callable(self, wrap) -> Callable:
         """Decorator function on user defined function to create and return
