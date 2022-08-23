@@ -60,7 +60,7 @@ def validate_extension_bundles():
 
 # Validate that users are not in extension bundles V1
 validate_extension_bundles()
-# TODO: what exactly do we want to re-export from PyStein
+
 __all__ = [
     'Orchestrator',
     'Entity',
