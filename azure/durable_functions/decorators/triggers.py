@@ -7,9 +7,22 @@ from azure.durable_functions.constants import ORCHESTRATION_TRIGGER, \
     DURABLE_CLIENT
 from azure.functions.decorators.core import Trigger
 
+
 class OrchestrationTrigger(Trigger):
+    """OrchestrationTrigger.
+
+    Trigger representing an Orchestration Function.
+    """
+
     @staticmethod
     def get_binding_name() -> str:
+        """Get the name of this Trigger, as a string.
+
+        Returns
+        -------
+        str
+            The string representation of this trigger.
+        """
         return ORCHESTRATION_TRIGGER
 
     def __init__(self,
@@ -21,8 +34,20 @@ class OrchestrationTrigger(Trigger):
 
 
 class ActivityTrigger(Trigger):
+    """ActivityTrigger.
+
+    Trigger representing a Durable Functions Activity.
+    """
+
     @staticmethod
     def get_binding_name() -> str:
+        """Get the name of this Trigger, as a string.
+
+        Returns
+        -------
+        str
+            The string representation of this trigger.
+        """
         return ACTIVITY_TRIGGER
 
     def __init__(self,
@@ -34,8 +59,20 @@ class ActivityTrigger(Trigger):
 
 
 class EntityTrigger(Trigger):
+    """EntityTrigger.
+
+    Trigger representing an Entity Function.
+    """
+
     @staticmethod
     def get_binding_name() -> str:
+        """Get the name of this Trigger, as a string.
+
+        Returns
+        -------
+        str
+            The string representation of this trigger.
+        """
         return ENTITY_TRIGGER
 
     def __init__(self,
@@ -47,8 +84,20 @@ class EntityTrigger(Trigger):
 
 
 class EntityClient(Trigger):
+    """EntityClient.
+
+    Trigger representing an Entity-client Function.
+    """
+
     @staticmethod
     def get_binding_name() -> str:
+        """Get the name of this Trigger, as a string.
+
+        Returns
+        -------
+        str
+            The string representation of this trigger.
+        """
         return ENTITY_CLIENT
 
     def __init__(self,
@@ -62,8 +111,20 @@ class EntityClient(Trigger):
 
 
 class OrchestrationClient(Trigger):
+    """OrchestrationClient.
+
+    Trigger representing an Orchestration-client Function.
+    """
+
     @staticmethod
     def get_binding_name() -> str:
+        """Get the name of this Trigger, as a string.
+
+        Returns
+        -------
+        str
+            The string representation of this trigger.
+        """
         return ORCHESTRATION_CLIENT
 
     def __init__(self,
@@ -77,8 +138,20 @@ class OrchestrationClient(Trigger):
 
 
 class DurableClient(Trigger):
+    """DurableClient.
+
+    Trigger representing a Durable-client Function.
+    """
+
     @staticmethod
     def get_binding_name() -> str:
+        """Get the name of this Trigger, as a string.
+
+        Returns
+        -------
+        str
+            The string representation of this trigger.
+        """
         return DURABLE_CLIENT
 
     def __init__(self,

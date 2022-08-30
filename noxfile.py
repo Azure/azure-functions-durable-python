@@ -8,7 +8,7 @@ def tests(session):
     session.run("pytest", "-v", "tests")
 
 
-@nox.session(python=["3.7", "3.8"])
+@nox.session(python=["3.7", "3.8", "3.9"])
 def lint(session):
     session.install("flake8")
     session.install("flake8-docstrings")
