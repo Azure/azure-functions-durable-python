@@ -84,13 +84,13 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         return decorator
 
-    def on_orchestration_change(self, name: str,
-                                orchestration: Optional[str] = None):
+    def orchestration_trigger(self, context_param: str,
+                              orchestration: Optional[str] = None):
         """Register an Orchestrator Function.
 
         Parameters
         ----------
-        name: str
+        context_param: str
             Parameter name of the DurableOrchestrationContext object.
         orchestration: Optional[str]
             Name of Orchestrator Function.
@@ -101,7 +101,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
         def wrap(fb):
             def decorator():
                 fb.add_trigger(
-                    trigger=OrchestrationTrigger(name=name,
+                    trigger=OrchestrationTrigger(name=context_param,
                                                  orchestration=orchestration))
                 return fb
 
@@ -109,13 +109,13 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         return wrap
 
-    def on_activity_change(self, name: str,
-                           activity: Optional[str] = None):
+    def activity_trigger(self, param_name: str,
+                         activity: Optional[str] = None):
         """Register an Activity Function.
 
         Parameters
         ----------
-        name: str
+        param_name: str
             Parameter name of the Activity input.
         activity: Optional[str]
             Name of Activity Function.
@@ -125,7 +125,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
         def wrap(fb):
             def decorator():
                 fb.add_trigger(
-                    trigger=ActivityTrigger(name=name,
+                    trigger=ActivityTrigger(name=param_name,
                                             activity=activity))
                 return fb
 
@@ -133,13 +133,13 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         return wrap
 
-    def on_entity_change(self, name: str,
-                         entity_name: Optional[str] = None):
+    def entity_trigger(self, param_name: str,
+                       entity_name: Optional[str] = None):
         """Register an Entity Function.
 
         Parameters
         ----------
-        name: str
+        param_name: str
             Parameter name of the Entity input.
         entity_name: Optional[str]
             Name of Entity Function.
@@ -150,7 +150,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
         def wrap(fb):
             def decorator():
                 fb.add_trigger(
-                    trigger=EntityTrigger(name=name,
+                    trigger=EntityTrigger(name=param_name,
                                           entity_name=entity_name))
                 return fb
 
