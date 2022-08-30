@@ -1,5 +1,5 @@
 """Decorator definitions for Durable Functions."""
-from .decorators import DurableFunctionApp
+from .durable_app import DurableFunctionApp
 
 __all__ = [
     "DurableFunctionApp"
