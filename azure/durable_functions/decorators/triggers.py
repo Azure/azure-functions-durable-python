@@ -5,7 +5,7 @@ from typing import Optional
 from azure.durable_functions.constants import ORCHESTRATION_TRIGGER, \
     ACTIVITY_TRIGGER, ORCHESTRATION_CLIENT, ENTITY_TRIGGER, ENTITY_CLIENT, \
     DURABLE_CLIENT
-from azure.functions.decorators.core import Trigger
+from azure.functions.decorators.core import Trigger, Binding
 
 
 class OrchestrationTrigger(Trigger):
@@ -83,10 +83,10 @@ class EntityTrigger(Trigger):
         super().__init__(name=name, data_type=None)
 
 
-class EntityClient(Trigger):
+class EntityClient(Binding):
     """EntityClient.
 
-    Trigger representing an Entity-client Function.
+    Binding representing an Entity-client object.
     """
 
     @staticmethod
@@ -110,10 +110,10 @@ class EntityClient(Trigger):
         super().__init__(name=name, data_type=None)
 
 
-class OrchestrationClient(Trigger):
+class OrchestrationClient(Binding):
     """OrchestrationClient.
 
-    Trigger representing an Orchestration-client Function.
+    Binding representing an Orchestration-client object.
     """
 
     @staticmethod
@@ -137,10 +137,10 @@ class OrchestrationClient(Trigger):
         super().__init__(name=name, data_type=None)
 
 
-class DurableClient(Trigger):
+class DurableClient(Binding):
     """DurableClient.
 
-    Trigger representing a Durable-client Function.
+    Binding representing a Durable-client object.
     """
 
     @staticmethod

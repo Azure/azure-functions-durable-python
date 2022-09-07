@@ -158,8 +158,8 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         return wrap
 
-    def entity_client(self, name: str, task_hub: Optional[str] = None,
-                      connection_name: Optional[str] = None):
+    def entity_client_input(self, name: str, task_hub: Optional[str] = None,
+                            connection_name: Optional[str] = None):
         """Register an Entity-client Function.
 
         Parameters
@@ -190,11 +190,11 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         return wrap
 
-    def orchestration_client(self,
-                             name: str,
-                             task_hub: Optional[str] = None,
-                             connection_name: Optional[str] = None
-                             ):
+    def orchestration_client_input(self,
+                                   name: str,
+                                   task_hub: Optional[str] = None,
+                                   connection_name: Optional[str] = None
+                                   ):
         """Register an Orchestration-client Function.
 
         Parameters
@@ -226,11 +226,11 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         return wrap
 
-    def durable_client(self,
-                       name: str,
-                       task_hub: Optional[str] = None,
-                       connection_name: Optional[str] = None
-                       ):
+    def durable_client_input(self,
+                             name: str,
+                             task_hub: Optional[str] = None,
+                             connection_name: Optional[str] = None
+                             ):
         """Register a Durable-client Function.
 
         Parameters
