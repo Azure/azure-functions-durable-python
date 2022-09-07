@@ -30,7 +30,7 @@ class OrchestrationTrigger(Trigger):
                  orchestration: Optional[str] = None,
                  ) -> None:
         self.orchestration = orchestration
-        super().__init__(name=name, data_type=None)
+        super().__init__(name=name)
 
 
 class ActivityTrigger(Trigger):
@@ -55,7 +55,7 @@ class ActivityTrigger(Trigger):
                  activity: Optional[str] = None,
                  ) -> None:
         self.activity = activity
-        super().__init__(name=name, data_type=None)
+        super().__init__(name=name)
 
 
 class EntityTrigger(Trigger):
@@ -80,7 +80,7 @@ class EntityTrigger(Trigger):
                  entity_name: Optional[str] = None,
                  ) -> None:
         self.entity_name = entity_name
-        super().__init__(name=name, data_type=None)
+        super().__init__(name=name)
 
 
 class EntityClient(Binding):
@@ -107,7 +107,7 @@ class EntityClient(Binding):
                  ) -> None:
         self.task_hub = task_hub
         self.connection_name = connection_name
-        super().__init__(name=name, data_type=None)
+        super().__init__(name=name)
 
 
 class OrchestrationClient(Binding):
@@ -134,7 +134,7 @@ class OrchestrationClient(Binding):
                  ) -> None:
         self.task_hub = task_hub
         self.connection_name = connection_name
-        super().__init__(name=name, data_type=None)
+        super().__init__(name=name)
 
 
 class DurableClient(Binding):
@@ -161,4 +161,4 @@ class DurableClient(Binding):
                  ) -> None:
         self.task_hub = task_hub
         self.connection_name = connection_name
-        super().__init__(name=name, data_type=None)
+        super().__init__(name=name)
