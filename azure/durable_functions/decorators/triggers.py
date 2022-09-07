@@ -107,7 +107,7 @@ class EntityClient(Binding):
                  ) -> None:
         self.task_hub = task_hub
         self.connection_name = connection_name
-        super().__init__(name=name)
+        super().__init__(name=name, direction="in")
 
 
 class OrchestrationClient(Binding):
@@ -134,7 +134,7 @@ class OrchestrationClient(Binding):
                  ) -> None:
         self.task_hub = task_hub
         self.connection_name = connection_name
-        super().__init__(name=name)
+        super().__init__(name=name, direction="in")
 
 
 class DurableClient(Binding):
@@ -161,4 +161,4 @@ class DurableClient(Binding):
                  ) -> None:
         self.task_hub = task_hub
         self.connection_name = connection_name
-        super().__init__(name=name)
+        super().__init__(name=name, direction="in")
