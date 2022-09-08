@@ -5,7 +5,7 @@ from typing import Optional
 from azure.durable_functions.constants import ORCHESTRATION_TRIGGER, \
     ACTIVITY_TRIGGER, ORCHESTRATION_CLIENT, ENTITY_TRIGGER, ENTITY_CLIENT, \
     DURABLE_CLIENT
-from azure.functions.decorators.core import Trigger, Binding
+from azure.functions.decorators.core import Trigger, InputBinding
 
 
 class OrchestrationTrigger(Trigger):
@@ -16,7 +16,7 @@ class OrchestrationTrigger(Trigger):
 
     @staticmethod
     def get_binding_name() -> str:
-        """Get the name of this Trigger, as a string.
+        """Get the name of this trigger, as a string.
 
         Returns
         -------
@@ -41,7 +41,7 @@ class ActivityTrigger(Trigger):
 
     @staticmethod
     def get_binding_name() -> str:
-        """Get the name of this Trigger, as a string.
+        """Get the name of this trigger, as a string.
 
         Returns
         -------
@@ -66,7 +66,7 @@ class EntityTrigger(Trigger):
 
     @staticmethod
     def get_binding_name() -> str:
-        """Get the name of this Trigger, as a string.
+        """Get the name of this trigger, as a string.
 
         Returns
         -------
@@ -83,7 +83,7 @@ class EntityTrigger(Trigger):
         super().__init__(name=name)
 
 
-class EntityClient(Binding):
+class EntityClient(InputBinding):
     """EntityClient.
 
     Binding representing an Entity-client object.
@@ -91,12 +91,12 @@ class EntityClient(Binding):
 
     @staticmethod
     def get_binding_name() -> str:
-        """Get the name of this Trigger, as a string.
+        """Get the name of this binding, as a string.
 
         Returns
         -------
         str
-            The string representation of this trigger.
+            The string representation of this binding.
         """
         return ENTITY_CLIENT
 
@@ -107,10 +107,10 @@ class EntityClient(Binding):
                  ) -> None:
         self.task_hub = task_hub
         self.connection_name = connection_name
-        super().__init__(name=name, direction="in")
+        super().__init__(name=name)
 
 
-class OrchestrationClient(Binding):
+class OrchestrationClient(InputBinding):
     """OrchestrationClient.
 
     Binding representing an Orchestration-client object.
@@ -118,12 +118,12 @@ class OrchestrationClient(Binding):
 
     @staticmethod
     def get_binding_name() -> str:
-        """Get the name of this Trigger, as a string.
+        """Get the name of this binding, as a string.
 
         Returns
         -------
         str
-            The string representation of this trigger.
+            The string representation of this binding.
         """
         return ORCHESTRATION_CLIENT
 
@@ -134,10 +134,10 @@ class OrchestrationClient(Binding):
                  ) -> None:
         self.task_hub = task_hub
         self.connection_name = connection_name
-        super().__init__(name=name, direction="in")
+        super().__init__(name=name)
 
 
-class DurableClient(Binding):
+class DurableClient(InputBinding):
     """DurableClient.
 
     Binding representing a Durable-client object.
@@ -145,12 +145,12 @@ class DurableClient(Binding):
 
     @staticmethod
     def get_binding_name() -> str:
-        """Get the name of this Trigger, as a string.
+        """Get the name of this Binding, as a string.
 
         Returns
         -------
         str
-            The string representation of this trigger.
+            The string representation of this binding.
         """
         return DURABLE_CLIENT
 
@@ -161,4 +161,4 @@ class DurableClient(Binding):
                  ) -> None:
         self.task_hub = task_hub
         self.connection_name = connection_name
-        super().__init__(name=name, direction="in")
+        super().__init__(name=name)
