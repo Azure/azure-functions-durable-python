@@ -14,6 +14,10 @@ from tests.test_utils.testClasses import SerializableClass
 import azure.durable_functions as df
 from typing import Any, Dict, List
 import json
+import azure.functions as func
+
+app = df.DurableFunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+
 
 def generator_function_call_entity(context):
     outputs = []
@@ -61,7 +65,33 @@ def counter_entity_function(context):
     context.set_state(current_value)
     context.set_result(result)
 
+@app.entity_trigger(context_name="context")
+def counter_entity_function_with_pystein(context):
+    """A Counter Durable Entity.
+
+    A simple example of a Durable Entity that implements
+    a simple counter.
+    """
+
+    current_value = context.get_state(lambda: 0)
+    operation = context.operation_name
+    if operation == "add":
+        amount = context.get_input()
+        current_value += amount
+    elif operation == "reset":
+        current_value = 0
+    elif operation == "get":
+        pass
+
+    result = f"The state is now: {current_value}"
+    context.set_state(current_value)
+    context.set_result(result)
+
 def counter_entity_function_raises_exception(context):
+    raise Exception("boom!")
+
+@app.entity_trigger(context_name="context")
+def counter_entity_function_raises_exception_with_pystein(context):
     raise Exception("boom!")
 
 def test_entity_raises_exception():
@@ -74,6 +104,28 @@ def test_entity_raises_exception():
     result = get_entity_state_result(
         context_builder,
         counter_entity_function_raises_exception,
+        )
+
+    # Construct expected result
+    expected_state = entity_base_expected_state()
+    apply_operation(expected_state, result="boom!", state=None, is_error=True)
+    expected = expected_state.to_json()
+
+    # Ensure expectation matches observed behavior
+    #assert_valid_schema(result)
+    assert_entity_state_equals(expected, result)
+
+def test_entity_raises_exception_with_pystein():
+    # Create input batch
+    batch = []
+    add_to_batch(batch, name="get")
+    context_builder = EntityContextBuilder(batch=batch)
+
+    # Run the entity, get observed result
+    result = get_entity_state_result(
+        context_builder,
+        counter_entity_function_raises_exception_with_pystein,
+        uses_pystein=True
         )
 
     # Construct expected result
@@ -111,6 +163,32 @@ def test_entity_signal_then_call():
     #assert_valid_schema(result)
     assert_entity_state_equals(expected, result)
 
+def test_entity_signal_then_call_with_pystein():
+    """Tests that a simple counter entity outputs the correct value
+    after a sequence of operations. Mostly just a sanity check.
+    """
+
+    # Create input batch
+    batch = []
+    add_to_batch(batch, name="add", input_=3)
+    add_to_batch(batch, name="get")
+    context_builder = EntityContextBuilder(batch=batch)
+
+    # Run the entity, get observed result
+    result = get_entity_state_result(
+        context_builder,
+        counter_entity_function_with_pystein,
+        uses_pystein=True
+        )
+
+    # Construct expected result
+    expected_state = entity_base_expected_state()
+    apply_operation(expected_state, result="The state is now: 3", state=3)
+    expected = expected_state.to_json()
+
+    # Ensure expectation matches observed behavior
+    #assert_valid_schema(result)
+    assert_entity_state_equals(expected, result)
 
 def apply_operation(entity_state: EntityState, result: Any, state: Any, is_error: bool = False):
     """Apply the effects of an operation to the expected entity state object
