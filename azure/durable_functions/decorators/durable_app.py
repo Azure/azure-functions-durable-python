@@ -84,13 +84,13 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         return decorator
 
-    def orchestration_trigger(self, context_param: str,
+    def orchestration_trigger(self, context_name: str,
                               orchestration: Optional[str] = None):
         """Register an Orchestrator Function.
 
         Parameters
         ----------
-        context_param: str
+        context_name: str
             Parameter name of the DurableOrchestrationContext object.
         orchestration: Optional[str]
             Name of Orchestrator Function.
@@ -101,7 +101,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
         def wrap(fb):
             def decorator():
                 fb.add_trigger(
-                    trigger=OrchestrationTrigger(name=context_param,
+                    trigger=OrchestrationTrigger(name=context_name,
                                                  orchestration=orchestration))
                 return fb
 
@@ -109,13 +109,13 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         return wrap
 
-    def activity_trigger(self, param_name: str,
+    def activity_trigger(self, input_name: str,
                          activity: Optional[str] = None):
         """Register an Activity Function.
 
         Parameters
         ----------
-        param_name: str
+        input_name: str
             Parameter name of the Activity input.
         activity: Optional[str]
             Name of Activity Function.
@@ -125,7 +125,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
         def wrap(fb):
             def decorator():
                 fb.add_trigger(
-                    trigger=ActivityTrigger(name=param_name,
+                    trigger=ActivityTrigger(name=input_name,
                                             activity=activity))
                 return fb
 
@@ -133,13 +133,13 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         return wrap
 
-    def entity_trigger(self, param_name: str,
+    def entity_trigger(self, context_name: str,
                        entity_name: Optional[str] = None):
         """Register an Entity Function.
 
         Parameters
         ----------
-        param_name: str
+        context_name: str
             Parameter name of the Entity input.
         entity_name: Optional[str]
             Name of Entity Function.
@@ -150,7 +150,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
         def wrap(fb):
             def decorator():
                 fb.add_trigger(
-                    trigger=EntityTrigger(name=param_name,
+                    trigger=EntityTrigger(name=context_name,
                                           entity_name=entity_name))
                 return fb
 
@@ -158,14 +158,14 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         return wrap
 
-    def entity_client_input(self, name: str, task_hub: Optional[str] = None,
+    def entity_client_input(self, client_name: str, task_hub: Optional[str] = None,
                             connection_name: Optional[str] = None):
         """Register an Entity-client Function.
 
         Parameters
         ----------
-        name: str
-            <TODO>- this shouldn't be needed.
+        client_name: str
+            Parameter name of Entity client.
         task_hub: Optional[str]
             Used in scenarios where multiple function apps share the same storage account
             but need to be isolated from each other. If not specified, the default value
@@ -181,7 +181,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
         def wrap(fb):
             def decorator():
                 fb.add_binding(
-                    binding=EntityClient(name=name,
+                    binding=EntityClient(name=client_name,
                                          task_hub=task_hub,
                                          connection_name=connection_name))
                 return fb
@@ -191,7 +191,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
         return wrap
 
     def orchestration_client_input(self,
-                                   name: str,
+                                   client_name: str,
                                    task_hub: Optional[str] = None,
                                    connection_name: Optional[str] = None
                                    ):
@@ -199,8 +199,8 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         Parameters
         ----------
-        name: str
-            <TODO>- this shouldn't be needed.
+        client_name: str
+            Parameter name of Orchestration client.
         task_hub: Optional[str]
             Used in scenarios where multiple function apps share the same storage account
             but need to be isolated from each other. If not specified, the default value
@@ -217,7 +217,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
             def decorator():
                 fb.add_binding(
                     binding=OrchestrationClient(
-                        name=name,
+                        name=client_name,
                         task_hub=task_hub,
                         connection_name=connection_name))
                 return fb
@@ -227,7 +227,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
         return wrap
 
     def durable_client_input(self,
-                             name: str,
+                             client_name: str,
                              task_hub: Optional[str] = None,
                              connection_name: Optional[str] = None
                              ):
@@ -235,8 +235,8 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         Parameters
         ----------
-        name: str
-            <TODO>- this shouldn't be needed.
+        client_name: str
+            Parameter name of durable client.
         task_hub: Optional[str]
             Used in scenarios where multiple function apps share the same storage account
             but need to be isolated from each other. If not specified, the default value
@@ -252,7 +252,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
         def wrap(fb):
             def decorator():
                 fb.add_binding(
-                    binding=DurableClient(name=name,
+                    binding=DurableClient(name=client_name,
                                           task_hub=task_hub,
                                           connection_name=connection_name))
                 return fb
