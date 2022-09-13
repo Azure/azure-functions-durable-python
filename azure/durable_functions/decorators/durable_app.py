@@ -1,3 +1,5 @@
+#  Copyright (c) Microsoft Corporation. All rights reserved.
+#  Licensed under the MIT License.
 from .triggers import OrchestrationTrigger, ActivityTrigger, EntityTrigger,\
     EntityClient, OrchestrationClient, DurableClient
 from typing import Callable, Optional
