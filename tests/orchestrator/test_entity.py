@@ -16,7 +16,7 @@ from typing import Any, Dict, List
 import json
 import azure.functions as func
 
-app = df.DurableFunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+app = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
 def generator_function_call_entity(context):

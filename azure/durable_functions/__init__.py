@@ -11,7 +11,7 @@ from .models.DurableOrchestrationContext import DurableOrchestrationContext
 from .models.DurableEntityContext import DurableEntityContext
 from .models.RetryOptions import RetryOptions
 from .models.TokenSource import ManagedIdentityTokenSource
-from .decorators import DurableFunctionApp
+from .decorators import DFApp
 import json
 from pathlib import Path
 import sys
@@ -71,5 +71,5 @@ __all__ = [
     'ManagedIdentityTokenSource',
     'OrchestrationRuntimeStatus',
     'RetryOptions',
-    'DurableFunctionApp'
+    'DFApp'
 ]

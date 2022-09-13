@@ -12,7 +12,7 @@ from tests.test_utils.testClasses import SerializableClass
 import azure.durable_functions as df
 import azure.functions as func
 
-app = df.DurableFunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+app = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 def generator_function(context):
     outputs = []

@@ -9,7 +9,7 @@ from typing import Union
 from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel
 
 
-class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
+class DFApp(FunctionRegister, TriggerApi, BindingApi):
     """Durable Functions (DF) app.
 
     Exports the decorators required to register DF Function-types.
@@ -27,7 +27,7 @@ class DurableFunctionApp(FunctionRegister, TriggerApi, BindingApi):
 
         Returns
         -------
-        DurableFunctionApp
+        DFApp
             New instance of a Durable Functions app
         """
         super().__init__(auth_level=http_auth_level)
