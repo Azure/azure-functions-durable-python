@@ -21,7 +21,7 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
 
         Parameters
         ----------
-        http_auth_level: strUnion[AuthLevel, str]
+        http_auth_level: Union[AuthLevel, str]
             Authorization level required for Function invocation.
             Defaults to AuthLevel.Function.
 
