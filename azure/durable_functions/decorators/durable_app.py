@@ -5,9 +5,10 @@ from .metadata import OrchestrationTrigger, ActivityTrigger, EntityTrigger,\
 from typing import Callable, Optional
 from azure.durable_functions.entity import Entity
 from azure.durable_functions.orchestrator import Orchestrator
+from azure.durable_functions import DurableOrchestrationClient#, DurableClient
 from typing import Union
 from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel
-
+from functools import wraps
 
 class DFApp(FunctionRegister, TriggerApi, BindingApi):
     """Durable Functions (DF) app.
@@ -101,6 +102,7 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
         @self._configure_orchestrator_callable
         @self._configure_function_builder
         def wrap(fb):
+
             def decorator():
                 fb.add_trigger(
                     trigger=OrchestrationTrigger(name=context_name,
@@ -160,6 +162,19 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
 
         return wrap
 
+    def _add_rich_client(self, fb, parameter_name, client_constructor):
+        user_code = fb._function._func
+
+        @wraps(user_code)
+        async def inner(*args, **kwargs):
+            starter = kwargs[parameter_name]
+            client = client_constructor(starter)
+            kwargs[parameter_name] = client
+            return await user_code(*args, **kwargs)
+
+        user_code_with_rich_client = inner
+        fb._function._func = user_code_with_rich_client
+
     def entity_client_input(self, client_name: str, task_hub: Optional[str] = None,
                             connection_name: Optional[str] = None):
         """Register an Entity-client Function.
@@ -182,6 +197,8 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
         @self._configure_function_builder
         def wrap(fb):
             def decorator():
+                #add_rich_client(fb, client_name, EntityClient)
+
                 fb.add_binding(
                     binding=EntityClient(name=client_name,
                                          task_hub=task_hub,
@@ -214,9 +231,12 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
             used by the target orchestrator functions. If not specified, the default storage
             account connection string for the function app is used.
         """
+
         @self._configure_function_builder
         def wrap(fb):
             def decorator():
+                self._add_rich_client(fb, client_name, DurableOrchestrationClient)
+
                 fb.add_binding(
                     binding=OrchestrationClient(
                         name=client_name,
@@ -225,7 +245,6 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
                 return fb
 
             return decorator()
-
         return wrap
 
     def durable_client_input(self,
@@ -250,9 +269,12 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
             used by the target orchestrator functions. If not specified, the default storage
             account connection string for the function app is used.
         """
+
         @self._configure_function_builder
         def wrap(fb):
             def decorator():
+                self._add_rich_client(fb, client_name, DurableClient)
+
                 fb.add_binding(
                     binding=DurableClient(name=client_name,
                                           task_hub=task_hub,
