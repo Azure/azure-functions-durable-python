@@ -1,7 +1,7 @@
 #  Copyright (c) Microsoft Corporation. All rights reserved.
 #  Licensed under the MIT License.
 from .metadata import OrchestrationTrigger, ActivityTrigger, EntityTrigger,\
-    EntityClient, OrchestrationClient, DurableClient
+    DurableClient
 from typing import Callable, Optional
 from azure.durable_functions.entity import Entity
 from azure.durable_functions.orchestrator import Orchestrator
