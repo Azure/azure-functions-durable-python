@@ -163,16 +163,27 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
         return wrap
 
     def _add_rich_client(self, fb, parameter_name, client_constructor):
+        # Obtain user-code and force the type annotation on the client-binding parameter to be `str`.
+        # This ensures a passing type-check of that specific parameter,
+        # circumventing a limitation of the worker in type-checking rich DF Client objects.
+        # TODO: Once the worker implements rich-binding type checking, remove this annotation change.
         user_code = fb._function._func
+        user_code.__annotations__[parameter_name] = str
 
-        @wraps(user_code)
-        async def inner(*args, **kwargs):
+        @wraps(user_code) # This ensures we re-export the same method-signature as the decorated method
+        async def df_client_middleware(*args, **kwargs):
+
+            # Obtain JSON-string currently passed as DF Client,
+            # construct rich object from it,
+            # and assign parameter to that rich object
             starter = kwargs[parameter_name]
             client = client_constructor(starter)
             kwargs[parameter_name] = client
+
+            # Invoke user code with rich DF Client binding
             return await user_code(*args, **kwargs)
 
-        user_code_with_rich_client = inner
+        user_code_with_rich_client = df_client_middleware
         fb._function._func = user_code_with_rich_client
 
     def entity_client_input(self, client_name: str, task_hub: Optional[str] = None,
