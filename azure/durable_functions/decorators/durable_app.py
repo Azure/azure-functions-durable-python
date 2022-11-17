@@ -5,10 +5,11 @@ from .metadata import OrchestrationTrigger, ActivityTrigger, EntityTrigger,\
 from typing import Callable, Optional
 from azure.durable_functions.entity import Entity
 from azure.durable_functions.orchestrator import Orchestrator
-from azure.durable_functions import DurableOrchestrationClient#, DurableClient
+from azure.durable_functions import DurableOrchestrationClient
 from typing import Union
 from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel
 from functools import wraps
+
 
 class DFApp(FunctionRegister, TriggerApi, BindingApi):
     """Durable Functions (DF) app.
@@ -162,15 +163,17 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
 
         return wrap
 
-    def _add_rich_client(self, fb, parameter_name, client_constructor):
-        # Obtain user-code and force the type annotation on the client-binding parameter to be `str`.
+    def _add_rich_client(self, fb, parameter_name,
+                         client_constructor):
+        # Obtain user-code and force type annotation on the client-binding parameter to be `str`.
         # This ensures a passing type-check of that specific parameter,
         # circumventing a limitation of the worker in type-checking rich DF Client objects.
-        # TODO: Once the worker implements rich-binding type checking, remove this annotation change.
+        # TODO: Once rich-binding type checking is possible, remove the annotation change.
         user_code = fb._function._func
         user_code.__annotations__[parameter_name] = str
 
-        @wraps(user_code) # This ensures we re-export the same method-signature as the decorated method
+        # `wraps` This ensures we re-export the same method-signature as the decorated method
+        @wraps(user_code)
         async def df_client_middleware(*args, **kwargs):
 
             # Obtain JSON-string currently passed as DF Client,

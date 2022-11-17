@@ -7,6 +7,7 @@ from azure.durable_functions.constants import ORCHESTRATION_TRIGGER, \
     DURABLE_CLIENT
 from azure.functions.decorators.core import Trigger, InputBinding
 
+
 class OrchestrationTrigger(Trigger):
     """OrchestrationTrigger.
 
@@ -107,6 +108,7 @@ class EntityClient(InputBinding):
         self.task_hub = task_hub
         self.connection_name = connection_name
         super().__init__(name=name)
+
 
 class OrchestrationClient(InputBinding):
     """OrchestrationClient.
