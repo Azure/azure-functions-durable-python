@@ -3,8 +3,7 @@
 from typing import Optional
 
 from azure.durable_functions.constants import ORCHESTRATION_TRIGGER, \
-    ACTIVITY_TRIGGER, ORCHESTRATION_CLIENT, ENTITY_TRIGGER, ENTITY_CLIENT, \
-    DURABLE_CLIENT
+    ACTIVITY_TRIGGER, ENTITY_TRIGGER, DURABLE_CLIENT
 from azure.functions.decorators.core import Trigger, InputBinding
 
 
@@ -80,60 +79,6 @@ class EntityTrigger(Trigger):
                  entity_name: Optional[str] = None,
                  ) -> None:
         self.entity_name = entity_name
-        super().__init__(name=name)
-
-
-class EntityClient(InputBinding):
-    """EntityClient.
-
-    Binding representing an Entity-client object.
-    """
-
-    @staticmethod
-    def get_binding_name() -> str:
-        """Get the name of this binding, as a string.
-
-        Returns
-        -------
-        str
-            The string representation of this binding.
-        """
-        return ENTITY_CLIENT
-
-    def __init__(self,
-                 name: str,
-                 task_hub: Optional[str] = None,
-                 connection_name: Optional[str] = None,
-                 ) -> None:
-        self.task_hub = task_hub
-        self.connection_name = connection_name
-        super().__init__(name=name)
-
-
-class OrchestrationClient(InputBinding):
-    """OrchestrationClient.
-
-    Binding representing an Orchestration-client object.
-    """
-
-    @staticmethod
-    def get_binding_name() -> str:
-        """Get the name of this binding, as a string.
-
-        Returns
-        -------
-        str
-            The string representation of this binding.
-        """
-        return ORCHESTRATION_CLIENT
-
-    def __init__(self,
-                 name: str,
-                 task_hub: Optional[str] = None,
-                 connection_name: Optional[str] = None
-                 ) -> None:
-        self.task_hub = task_hub
-        self.connection_name = connection_name
         super().__init__(name=name)
 
 

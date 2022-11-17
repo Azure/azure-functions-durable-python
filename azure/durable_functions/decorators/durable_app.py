@@ -189,78 +189,6 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
         user_code_with_rich_client = df_client_middleware
         fb._function._func = user_code_with_rich_client
 
-    def entity_client_input(self, client_name: str, task_hub: Optional[str] = None,
-                            connection_name: Optional[str] = None):
-        """Register an Entity-client Function.
-
-        Parameters
-        ----------
-        client_name: str
-            Parameter name of Entity client.
-        task_hub: Optional[str]
-            Used in scenarios where multiple function apps share the same storage account
-            but need to be isolated from each other. If not specified, the default value
-            from host.json is used.
-            This value must match the value used by the target orchestrator functions.
-        connection_name: Optional[str]
-            The name of an app setting that contains a storage account connection string.
-            The storage account represented by this connection string must be the same one
-            used by the target orchestrator functions. If not specified, the default storage
-            account connection string for the function app is used.
-        """
-        @self._configure_function_builder
-        def wrap(fb):
-            def decorator():
-                self.add_rich_client(fb, client_name, EntityClient)
-
-                fb.add_binding(
-                    binding=EntityClient(name=client_name,
-                                         task_hub=task_hub,
-                                         connection_name=connection_name))
-                return fb
-
-            return decorator()
-
-        return wrap
-
-    def orchestration_client_input(self,
-                                   client_name: str,
-                                   task_hub: Optional[str] = None,
-                                   connection_name: Optional[str] = None
-                                   ):
-        """Register an Orchestration-client Function.
-
-        Parameters
-        ----------
-        client_name: str
-            Parameter name of Orchestration client.
-        task_hub: Optional[str]
-            Used in scenarios where multiple function apps share the same storage account
-            but need to be isolated from each other. If not specified, the default value
-            from host.json is used.
-            This value must match the value used by the target orchestrator functions.
-        connection_name: Optional[str]
-            The name of an app setting that contains a storage account connection string.
-            The storage account represented by this connection string must be the same one
-            used by the target orchestrator functions. If not specified, the default storage
-            account connection string for the function app is used.
-        """
-
-        @self._configure_function_builder
-        def wrap(fb):
-            def decorator():
-                self._add_rich_client(fb, client_name, DurableOrchestrationClient)
-
-                fb.add_binding(
-                    binding=OrchestrationClient(
-                        name=client_name,
-                        task_hub=task_hub,
-                        connection_name=connection_name))
-                return fb
-
-            return decorator()
-        return wrap
-
     def durable_client_input(self,
                              client_name: str,
                              task_hub: Optional[str] = None,
@@ -287,7 +215,7 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
         @self._configure_function_builder
         def wrap(fb):
             def decorator():
-                self._add_rich_client(fb, client_name, DurableClient)
+                self._add_rich_client(fb, client_name, DurableOrchestrationClient)
 
                 fb.add_binding(
                     binding=DurableClient(name=client_name,
