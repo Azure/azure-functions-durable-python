@@ -208,7 +208,7 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
         @self._configure_function_builder
         def wrap(fb):
             def decorator():
-                #add_rich_client(fb, client_name, EntityClient)
+                self.add_rich_client(fb, client_name, EntityClient)
 
                 fb.add_binding(
                     binding=EntityClient(name=client_name,
