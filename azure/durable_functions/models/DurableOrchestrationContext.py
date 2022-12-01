@@ -129,7 +129,7 @@ class DurableOrchestrationContext:
         task.parent = parent
 
         # if task is retryable, provide the retryable wrapper class
-        if not(retry_options is None):
+        if not (retry_options is None):
             task = RetryAbleTask(task, retry_options, self)
         return task
 
@@ -505,7 +505,7 @@ class DurableOrchestrationContext:
         return self._continue_as_new_flag
 
     def create_timer(self, fire_at: datetime.datetime) -> TaskBase:
-        """Create a Durable Timer Task to implement a deadline at which to wake-up the orchestrator.
+        """Create a Timer Task to fire after at the specified deadline.
 
         Parameters
         ----------

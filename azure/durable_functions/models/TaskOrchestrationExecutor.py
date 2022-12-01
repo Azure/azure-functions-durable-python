@@ -49,7 +49,7 @@ class TaskOrchestrationExecutor:
 
     def execute(self, context: DurableOrchestrationContext,
                 history: List[HistoryEvent], fn) -> str:
-        """Execute an orchestration using the orchestration history to evaluate Tasks and replay events.
+        """Execute an orchestration via its history to evaluate Tasks and replay events.
 
         Parameters
         ----------
@@ -208,7 +208,7 @@ class TaskOrchestrationExecutor:
 
         # with a yielded task now evaluated, we can try to resume the user code
         task.set_is_played(event._is_played)
-        task.set_value(is_error=not(is_success), value=new_value)
+        task.set_value(is_error=not is_success, value=new_value)
 
     def resume_user_code(self):
         """Attempt to continue executing user code.
@@ -310,7 +310,7 @@ class TaskOrchestrationExecutor:
         bool
             Whether the orchestration invocation is completed.
         """
-        return self.orchestration_invocation_succeeded or not(self.exception is None)
+        return self.orchestration_invocation_succeeded or not (self.exception is None)
 
     @property
     def orchestration_invocation_succeeded(self) -> bool:

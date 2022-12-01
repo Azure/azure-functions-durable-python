@@ -30,6 +30,24 @@ EXCEPTION_ORCHESTRATOR_NOT_FOUND_MESSAGE = "One or more of the arguments submitt
 EXCEPTION_TYPE_ORCHESTRATOR_NOT_FOUND = "System.ArgumentException"
 STACK_TRACE = "'   at Microsoft.Azure.WebJobs.Extensions.DurableTask..."
 
+import azure.durable_functions as df
+import azure.functions as func
+
+app = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+
+@app.route(route="orchestrators/{functionName}", binding_arg_name="message")
+@app.durable_client_input(client_name="my_client")
+async def durable_trigger_with_pystein(req, my_client, message):
+    return isinstance(my_client, DurableOrchestrationClient)
+
+@pytest.mark.asyncio
+async def test_pystein_provides_rich_client(binding_string):
+    user_code = durable_trigger_with_pystein # returns True if DFClient is a rich binding
+    args = []
+    kwargs = {"req": None, "my_client": binding_string, "message": None }
+    received_rich_client = await user_code._function._func(*args, **kwargs)
+    assert received_rich_client
+
 class MockRequest:
     def __init__(self, expected_url: str, response: [int, any]):
         self._expected_url = expected_url
