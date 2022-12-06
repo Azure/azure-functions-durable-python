@@ -9,9 +9,26 @@ from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.actions.CallActivityAction \
     import CallActivityAction
 from tests.test_utils.testClasses import SerializableClass
+import azure.durable_functions as df
+import azure.functions as func
 
+app = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 def generator_function(context):
+    outputs = []
+
+    task1 = yield context.call_activity("Hello", "Tokyo")
+    task2 = yield context.call_activity("Hello", "Seattle")
+    task3 = yield context.call_activity("Hello", "London")
+
+    outputs.append(task1)
+    outputs.append(task2)
+    outputs.append(task3)
+
+    return outputs
+
+@app.orchestration_trigger(context_name="context")
+def generator_function_with_pystein(context):
     outputs = []
 
     task1 = yield context.call_activity("Hello", "Tokyo")
@@ -117,6 +134,20 @@ def generator_function_time_gather(context):
     return outputs
 
 def generator_function_rasing_ex(context):
+    outputs = []
+
+    task1 = yield context.call_activity("Hello", "Tokyo")
+    task2 = yield context.call_activity("Hello", "Seattle")
+    task3 = yield context.call_activity("Hello", "London")
+
+    outputs.append(task1)
+    outputs.append(task2)
+    outputs.append(task3)
+
+    raise ValueError("Oops!")
+
+@app.orchestration_trigger(context_name="context")
+def generator_function_rasing_ex_with_pystein(context):
     outputs = []
 
     task1 = yield context.call_activity("Hello", "Tokyo")
@@ -268,6 +299,33 @@ def test_user_code_raises_exception():
         expected_error_str = f"{error_msg}{error_label}{state_str}"
         assert expected_error_str == error_str
 
+def test_user_code_raises_exception_with_pystein():
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
+    add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
+
+    try:
+        result = get_orchestration_state_result(
+            context_builder, generator_function_rasing_ex_with_pystein,
+            uses_pystein=True)
+        # expected an exception
+        assert False
+    except Exception as e:
+        error_label = "\n\n$OutOfProcData$:"
+        error_str = str(e)
+
+        expected_state = base_expected_state()
+        add_hello_action(expected_state, 'Tokyo')
+        add_hello_action(expected_state, 'Seattle')
+        add_hello_action(expected_state, 'London')
+        error_msg = 'Oops!'
+        expected_state._error = error_msg
+        state_str = expected_state.to_json_string()
+
+        expected_error_str = f"{error_msg}{error_label}{state_str}"
+        assert expected_error_str == error_str
+
 def test_tokyo_and_seattle_state():
     context_builder = ContextBuilder('test_simple_function')
     add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
@@ -294,6 +352,27 @@ def test_tokyo_and_seattle_and_london_state():
 
     result = get_orchestration_state_result(
         context_builder, generator_function)
+
+    expected_state = base_expected_state(
+        ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    add_hello_action(expected_state, 'London')
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_tokyo_and_seattle_and_london_state_pystein():
+    context_builder = ContextBuilder('test_simple_function')
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
+    add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_with_pystein,
+        uses_pystein=True)
 
     expected_state = base_expected_state(
         ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])

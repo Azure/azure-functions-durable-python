@@ -63,7 +63,7 @@ class TaskBase:
 
         Note that completion is not equivalent to success.
         """
-        return not(self.state is TaskState.RUNNING)
+        return not (self.state is TaskState.RUNNING)
 
     def set_is_played(self, is_played: bool):
         """Set the is_played flag for the Task.
@@ -173,7 +173,7 @@ class CompoundTask(TaskBase):
 
         # Sub-tasks may have already completed, so we process them
         for child in self.children:
-            if not(child.state is TaskState.RUNNING):
+            if not (child.state is TaskState.RUNNING):
                 self.handle_completion(child)
 
     def handle_completion(self, child: TaskBase):

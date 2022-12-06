@@ -1,6 +1,8 @@
 import pytest
 import json
 
+import azure.durable_functions as df
+import azure.functions as func
 from tests.test_utils.constants import RPC_BASE_URL
 from azure.durable_functions.models.DurableOrchestrationBindings import \
     DurableOrchestrationBindings
@@ -63,3 +65,8 @@ def replace_stand_in_bits(binding_string):
     binding_string = binding_string.replace("BASE_URL", BASE_URL)
     binding_string = binding_string.replace("AUTH_CODE", AUTH_CODE)
     return binding_string
+
+@pytest.fixture()
+def app():
+    app = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+    return app

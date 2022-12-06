@@ -203,7 +203,7 @@ class DurableOrchestrationClient:
         payload = self._orchestration_bindings.management_urls.copy()
 
         for key, _ in payload.items():
-            if not(request is None) and request.url:
+            if not (request is None) and request.url:
                 payload[key] = self._replace_url_origin(request.url, payload[key])
             payload[key] = payload[key].replace(
                 self._orchestration_bindings.management_urls["id"], instance_id)
