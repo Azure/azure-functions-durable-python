@@ -11,12 +11,16 @@ from .models.DurableOrchestrationContext import DurableOrchestrationContext
 from .models.DurableEntityContext import DurableEntityContext
 from .models.RetryOptions import RetryOptions
 from .models.TokenSource import ManagedIdentityTokenSource
-from .decorators import DFApp
 import json
 from pathlib import Path
 import sys
 import warnings
 
+decorators_enabled = True
+try:
+    from .decorators import DFApp
+except ModuleNotFoundError:
+    decorators_enabled = False
 
 def validate_extension_bundles():
     """Raise a warning if host.json contains bundle-range V1.
@@ -70,6 +74,8 @@ __all__ = [
     'DurableOrchestrationContext',
     'ManagedIdentityTokenSource',
     'OrchestrationRuntimeStatus',
-    'RetryOptions',
-    'DFApp'
+    'RetryOptions'
 ]
+
+if decorators_enabled:
+    __all__.append('DFApp')
