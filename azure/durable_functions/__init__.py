@@ -16,11 +16,6 @@ from pathlib import Path
 import sys
 import warnings
 
-decorators_enabled = True
-try:
-    from .decorators import DFApp
-except ModuleNotFoundError:
-    decorators_enabled = False
 
 def validate_extension_bundles():
     """Raise a warning if host.json contains bundle-range V1.
@@ -77,5 +72,9 @@ __all__ = [
     'RetryOptions'
 ]
 
-if decorators_enabled:
+try:
+    # disabling linter on this line because it fails to recognize the conditional export
+    from .decorators import DFApp # noqa
     __all__.append('DFApp')
+except ModuleNotFoundError:
+    pass
