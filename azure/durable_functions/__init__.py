@@ -11,7 +11,6 @@ from .models.DurableOrchestrationContext import DurableOrchestrationContext
 from .models.DurableEntityContext import DurableEntityContext
 from .models.RetryOptions import RetryOptions
 from .models.TokenSource import ManagedIdentityTokenSource
-from .decorators import DFApp
 import json
 from pathlib import Path
 import sys
@@ -70,6 +69,12 @@ __all__ = [
     'DurableOrchestrationContext',
     'ManagedIdentityTokenSource',
     'OrchestrationRuntimeStatus',
-    'RetryOptions',
-    'DFApp'
+    'RetryOptions'
 ]
+
+try:
+    # disabling linter on this line because it fails to recognize the conditional export
+    from .decorators import DFApp # noqa
+    __all__.append('DFApp')
+except ModuleNotFoundError:
+    pass
