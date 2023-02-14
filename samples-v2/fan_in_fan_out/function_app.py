@@ -17,7 +17,7 @@ myApp = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 @myApp.route(route="orchestrators/{functionName}")
 @myApp.durable_client_input(client_name="client")
-async def durable_trigger(req: func.HttpRequest, client):
+async def HttpStart(req: func.HttpRequest, client):
     payload: str = json.loads(req.get_body().decode()) # Load JSON post request data
     instance_id = await client.start_new(req.route_params["functionName"], client_input=payload)
 

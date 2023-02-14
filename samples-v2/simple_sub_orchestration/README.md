@@ -27,9 +27,9 @@ after some initialization logs, you should see something like the following:
 ```bash
 Http Functions:
 
-        durable_trigger: [POST,GET] http://localhost:7071/api/orchestrators/{functionName}
+        durable_trigger: [POST,GET] http://localhost:7071/api/start_sub
 ```
 
-This indicates that your `DurableTrigger` function can be reached via a `GET` or `POST` request to that URL. `DurableTrigger` starts the function-chaning orchestrator whose name is passed as a parameter to the URL. So, to start the orchestrator, which is named `orchestrator`, make a GET request to `http://127.0.0.1:7071/api/orchestrators/orchestrator`.
+This indicates that your `durable_trigger` function can be reached via a `GET` or `POST` request to that URL. `durable_trigger` starts the function-chaning orchestrator whose name is passed as a parameter to the URL. So, to start the orchestrator, which is named `orchestrator`, make a GET request to `http://127.0.0.1:7071/api/orchestrators/orchestrator`.
 
 And that's it! You should see a JSON response with five URLs to monitor the status of the orchestration. To learn more about this, please read [here](TODO)!

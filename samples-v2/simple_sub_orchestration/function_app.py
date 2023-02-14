@@ -3,7 +3,7 @@ import azure.durable_functions as df
 
 myApp = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
-@myApp.route(route="orchestrators/{functionName}")
+@myApp.route(route="start_sub_orchestrator_sample")
 @myApp.durable_client_input(client_name="client")
 async def durable_trigger(req: func.HttpRequest, client):
     function_name = req.route_params.get('functionName')
