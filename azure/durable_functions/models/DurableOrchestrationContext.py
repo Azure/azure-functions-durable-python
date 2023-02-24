@@ -158,7 +158,7 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called activity function completes or fails.
         """
-        if(isinstance(name,Callable)):
+        if(isinstance(name, Callable)):
             name = name._function._name
         
         action = CallActivityAction(name, input_)
@@ -185,7 +185,7 @@ class DurableOrchestrationContext:
             A Durable Task that completes when the called activity function completes or
             fails completely.
         """
-        if(isinstance(name,Callable)):
+        if(isinstance(name, Callable)):
             name = name._function._name
         
         action = CallActivityWithRetryAction(name, retry_options, input_)
