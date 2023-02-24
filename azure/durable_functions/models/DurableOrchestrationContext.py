@@ -22,7 +22,7 @@ from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import json
 import datetime
 import inspect
-from typing import DefaultDict, List, Any, Dict, Optional, Tuple, Union
+from typing import DefaultDict, List, Any, Dict, Optional, Tuple, Union, Callable
 from uuid import UUID, uuid5, NAMESPACE_URL, NAMESPACE_OID
 from datetime import timezone
 
@@ -143,7 +143,7 @@ class DurableOrchestrationContext:
         """
         self._is_replaying = is_replaying
 
-    def call_activity(self, name: str, input_: Optional[Any] = None) -> TaskBase:
+    def call_activity(self, name: str | Callable, input_: Optional[Any] = None) -> TaskBase:
         """Schedule an activity for execution.
 
         Parameters
@@ -158,12 +158,15 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called activity function completes or fails.
         """
+        if(isinstance(name,Callable)):
+            name = name._function._name
+        
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
         return task
 
     def call_activity_with_retry(self,
-                                 name: str, retry_options: RetryOptions,
+                                 name: str | Callable, retry_options: RetryOptions,
                                  input_: Optional[Any] = None) -> TaskBase:
         """Schedule an activity for execution with retry options.
 
@@ -182,6 +185,9 @@ class DurableOrchestrationContext:
             A Durable Task that completes when the called activity function completes or
             fails completely.
         """
+        if(isinstance(name,Callable)):
+            name = name._function._name
+        
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
         return task
