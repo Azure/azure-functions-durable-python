@@ -145,7 +145,7 @@ class DurableOrchestrationContext:
         """
         self._is_replaying = is_replaying
 
-    def call_activity(self, name: str | Callable, input_: Optional[Any] = None) -> TaskBase:
+    def call_activity(self, name: Union[str, Callable], input_: Optional[Any] = None) -> TaskBase:
         """Schedule an activity for execution.
 
         Parameters
@@ -174,7 +174,7 @@ class DurableOrchestrationContext:
         return task
 
     def call_activity_with_retry(self,
-                                 name: str | Callable, retry_options: RetryOptions,
+                                 name: Union[str, Callable], retry_options: RetryOptions,
                                  input_: Optional[Any] = None) -> TaskBase:
         """Schedule an activity for execution with retry options.
 
