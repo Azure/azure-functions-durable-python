@@ -164,10 +164,10 @@ class DurableOrchestrationContext:
                 if (isinstance(name._function._trigger, ActivityTrigger)):
                     name = name._function._name
                 else:
-                    raise Exception( "The input is not ActivityTrigger. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+                    raise Exception("The input is not ActivityTrigger. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
             else:
-                raise Exception( "The input is not Function Builder. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
-            
+                raise Exception("The input is not Function Builder. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+      
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
         return task
@@ -197,10 +197,10 @@ class DurableOrchestrationContext:
                 if(isinstance(name, ActivityTrigger)):
                     name = name._function._name
                 else:
-                    raise Exception( "The input is in wrong type. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+                    raise Exception("The input is in wrong type. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
             else:
-                raise Exception( "The input is in wrong type. Only string or methods annotated with the Activity Trigger decorator are allowed.")
-        
+                raise Exception("The input is in wrong type. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
         return task
