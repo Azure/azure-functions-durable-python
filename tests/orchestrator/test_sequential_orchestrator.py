@@ -295,7 +295,6 @@ def test_call_activity_with_name():
     context_builder = ContextBuilder('test_call_activity_with_function_name')
     add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
     add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
-    add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
     result = get_orchestration_state_result(
         context_builder, generator_function_call_avtivity_with_name)
 
