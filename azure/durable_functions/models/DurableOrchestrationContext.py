@@ -37,6 +37,7 @@ from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 from azure.durable_functions.decorators.metadata import ActivityTrigger
 from azure.functions.decorators.function_app import FunctionBuilder
 
+
 class DurableOrchestrationContext:
     """Context of the durable orchestration execution.
 
@@ -164,9 +165,9 @@ class DurableOrchestrationContext:
                 if (isinstance(name._function._trigger, ActivityTrigger)):
                     name = name._function._name
                 else:
-                    raise Exception("Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+                    raise Exception("Only Activity Trigger is allowed.")
             else:
-                raise Exception("Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+                raise Exception("Only Activity Trigger is allowed.")
 
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
@@ -197,9 +198,9 @@ class DurableOrchestrationContext:
                 if(isinstance(name, ActivityTrigger)):
                     name = name._function._name
                 else:
-                    raise Exception("Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+                    raise Exception("Only Activity Trigger is allowed.")
             else:
-                raise Exception("Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+                raise Exception("Only Activity Trigger is allowed.")
 
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
