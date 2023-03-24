@@ -160,10 +160,6 @@ class DurableOrchestrationContext:
             A Durable Task that completes when the called activity function completes or fails.
         """
         if(isinstance(name, Callable)):
-<<<<<<< Updated upstream
-            name = name._function._name
-        
-=======
             if (isinstance(name, FunctionBuilder)):
                 if (isinstance(name._function._trigger, ActivityTrigger)):
                     name = name._function._name
@@ -172,7 +168,6 @@ class DurableOrchestrationContext:
             else:
                 raise Exception( "The input is not Function Builder. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
             
->>>>>>> Stashed changes
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
         return task
@@ -198,17 +193,13 @@ class DurableOrchestrationContext:
             fails completely.
         """
         if(isinstance(name, Callable)):
-<<<<<<< Updated upstream
-            name = name._function._name
-=======
             if(isinstance(name, FunctionBuilder)):
                 if(isinstance(name, ActivityTrigger)):
                     name = name._function._name
                 else:
                     raise Exception( "The input is in wrong type. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
             else:
-                raise Exception( "The input is in wrong type. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
->>>>>>> Stashed changes
+                raise Exception( "The input is in wrong type. Only string or methods annotated with the Activity Trigger decorator are allowed.")
         
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
