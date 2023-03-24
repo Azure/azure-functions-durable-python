@@ -202,7 +202,7 @@ def generator_function_call_avtivity_with_name(context):
 
     return outputs
 
-@app.activity_trigger(arg = "myArg")
+@app.activity_trigger(input_name = "myArg")
 def hello(myArg: str):
     return "Hello" + myArg
 
