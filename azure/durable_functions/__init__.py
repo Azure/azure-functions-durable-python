@@ -74,7 +74,7 @@ __all__ = [
 
 try:
     # disabling linter on this line because it fails to recognize the conditional export
-    from .decorators import DFApp # noqa
+    from .decorators.durable_app import DFApp # noqa
     __all__.append('DFApp')
 except ModuleNotFoundError:
     pass

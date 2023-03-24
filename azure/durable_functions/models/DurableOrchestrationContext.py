@@ -34,7 +34,8 @@ from ..models.TokenSource import TokenSource
 from .utils.entity_utils import EntityId
 from azure.functions._durable_functions import _deserialize_custom_object
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
-
+from azure.durable_functions.decorators.metadata import ActivityTrigger
+from azure.functions.decorators.function_app import FunctionBuilder
 
 class DurableOrchestrationContext:
     """Context of the durable orchestration execution.
@@ -148,7 +149,7 @@ class DurableOrchestrationContext:
 
         Parameters
         ----------
-        name: str
+        name: str | Callable
             The name of the activity function to call.
         input_: Optional[Any]
             The JSON-serializable input to pass to the activity function.
@@ -159,8 +160,19 @@ class DurableOrchestrationContext:
             A Durable Task that completes when the called activity function completes or fails.
         """
         if(isinstance(name, Callable)):
+<<<<<<< Updated upstream
             name = name._function._name
         
+=======
+            if (isinstance(name, FunctionBuilder)):
+                if (isinstance(name._function._trigger, ActivityTrigger)):
+                    name = name._function._name
+                else:
+                    raise Exception( "The input is not ActivityTrigger. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+            else:
+                raise Exception( "The input is not Function Builder. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+            
+>>>>>>> Stashed changes
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
         return task
@@ -172,7 +184,7 @@ class DurableOrchestrationContext:
 
         Parameters
         ----------
-        name: str
+        name: str | Callable
             The name of the activity function to call.
         retry_options: RetryOptions
             The retry options for the activity function.
@@ -186,7 +198,17 @@ class DurableOrchestrationContext:
             fails completely.
         """
         if(isinstance(name, Callable)):
+<<<<<<< Updated upstream
             name = name._function._name
+=======
+            if(isinstance(name, FunctionBuilder)):
+                if(isinstance(name, ActivityTrigger)):
+                    name = name._function._name
+                else:
+                    raise Exception( "The input is in wrong type. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+            else:
+                raise Exception( "The input is in wrong type. Only string or methods annotated with the Activity Trigger decorator are allowed. ")
+>>>>>>> Stashed changes
         
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)

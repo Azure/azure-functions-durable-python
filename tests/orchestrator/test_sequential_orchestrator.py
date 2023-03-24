@@ -187,6 +187,25 @@ def generator_function_new_guid(context):
     outputs.append(str(output3))
     return outputs
 
+@app.orchestration_trigger(context_name="context")
+def generator_function_call_avtivity_with_name(context):
+    """Simple orchestrator that call activity function with function name"""
+    outputs = []
+
+    task1 = yield context.call_activity(hello, "Tokyo")
+    task2 = yield context.call_activity(hello, "Seattle")
+    task3 = yield context.call_activity(hello, "London")
+
+    outputs.append(task1)
+    outputs.append(task2)
+    outputs.append(task3)
+
+    return outputs
+
+@app.activity_trigger(arg = "myArg")
+def hello(myArg: str):
+    return "Hello" + myArg
+
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
     return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema)
 
@@ -271,6 +290,23 @@ def test_failed_tokyo_state():
         
         expected_error_str = f"{error_msg}{error_label}{state_str}"
         assert expected_error_str == error_str
+
+def test_call_activity_with_name():
+    context_builder = ContextBuilder('test_call_activity_with_function_name')
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
+    add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
+    result = get_orchestration_state_result(
+        context_builder, generator_function_call_avtivity_with_name)
+
+    expected_state = base_expected_state()
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    add_hello_action(expected_state, 'London')
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
 
 
 def test_user_code_raises_exception():
