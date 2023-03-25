@@ -187,7 +187,6 @@ def generator_function_new_guid(context):
     outputs.append(str(output3))
     return outputs
 
-@app.orchestration_trigger(context_name="context")
 def generator_function_call_avtivity_with_name(context):
     """Simple orchestrator that call activity function with function name"""
     outputs = []
