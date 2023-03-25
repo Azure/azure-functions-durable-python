@@ -192,9 +192,9 @@ def generator_function_call_avtivity_with_name(context):
     """Simple orchestrator that call activity function with function name"""
     outputs = []
 
-    task1 = yield context.call_activity(hello, "Tokyo")
-    task2 = yield context.call_activity(hello, "Seattle")
-    task3 = yield context.call_activity(hello, "London")
+    task1 = yield context.call_activity(Hello, "Tokyo")
+    task2 = yield context.call_activity(Hello, "Seattle")
+    task3 = yield context.call_activity(Hello, "London")
 
     outputs.append(task1)
     outputs.append(task2)
@@ -203,7 +203,7 @@ def generator_function_call_avtivity_with_name(context):
     return outputs
 
 @app.activity_trigger(input_name = "myArg")
-def hello(myArg: str):
+def Hello(myArg: str):
     return "Hello" + myArg
 
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
@@ -292,16 +292,19 @@ def test_failed_tokyo_state():
         assert expected_error_str == error_str
 
 def test_call_activity_with_name():
-    context_builder = ContextBuilder('test_call_activity_with_function_name')
-    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"", True)
-    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"", True)
+    context_builder = ContextBuilder('test_call_activity_with_name')
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
+    add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
     result = get_orchestration_state_result(
         context_builder, generator_function_call_avtivity_with_name)
 
-    expected_state = base_expected_state()
+    expected_state = base_expected_state(
+        ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
     add_hello_action(expected_state, 'London')
+    expected_state._is_done = True
     expected = expected_state.to_json()
 
     assert_valid_schema(result)
