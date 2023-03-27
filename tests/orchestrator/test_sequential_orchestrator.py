@@ -199,7 +199,16 @@ def generator_function_call_avtivity_with_name(context):
     outputs.append(task2)
     outputs.append(task3)
 
-    return outputs
+    return 
+
+def generator_function_call_activity_wrong_type(context):
+    outputs = []
+
+    task1 = yield context.call_activity(generator_function, "Tokyo")
+
+    outputs.append(task1)
+
+    return
 
 @app.activity_trigger(input_name = "myArg")
 def Hello(myArg: str):
@@ -308,6 +317,26 @@ def test_call_activity_with_name():
 
     assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
+
+def test_call_activity_function_exception():
+    context_builder = ContextBuilder('test_call_activity_by_name_exception')
+
+    try:
+        result = get_orchestration_state_result(
+            context_builder, generator_function_call_activity_wrong_type)
+        # expected an exception
+        assert False
+    except Exception as e:
+        error_label = "\n\n$OutOfProcData$:"
+        error_str = str(e)
+
+        expected_state = base_expected_state()
+        error_msg = 'Only Activity Trigger is allowed.'
+        expected_state._error = error_msg
+        state_str = expected_state.to_json_string()
+        
+        expected_error_str = f"{error_msg}{error_label}{state_str}"
+        assert expected_error_str == error_str
 
 
 def test_user_code_raises_exception():
