@@ -340,7 +340,9 @@ def test_call_activity_function_callable_exception():
         error_str = str(e)
 
         expected_state = base_expected_state()
-        error_msg = "Received a callable function without an associated trigger-type. Please ensure you 're using the Python programming model V2 and that your function is annotated with the `activity_trigger` decorator. Otherwise, directly pass in the name of the activity as a string."
+        error_msg = "Received a callable function without an associated trigger-type."\
+                    "Please ensure you're using the Python programming model V2 and that your function is annotated with the `activity_trigger` decorator."\
+                    "Otherwise, directly pass in the name of the activity as a string."
         expected_state._error = error_msg
         state_str = expected_state.to_json_string()
         
@@ -360,7 +362,9 @@ def test_call_activity_function_with_orchestrator_exception():
         error_str = str(e)
 
         expected_state = base_expected_state()
-        error_msg = 'Received function with Trigger-type `" + generator_function_call_activity_with_orchestrator._function._trigger + "` but expected `ActivityTrigger`. Ensure your function is annotated with the `activity_trigger` decorator or directly pass in the name of the activity as a string.'
+        error_msg = "Received function with Trigger-type `" + generator_function_call_activity_with_orchestrator._function._trigger + "` but expected `ActivityTrigger`."\
+                        "Ensure your function is annotated with the `activity_trigger` decorator or"\
+                            "directly pass in the name of the activity as a string."
         expected_state._error = error_msg
         state_str = expected_state.to_json_string()
         
