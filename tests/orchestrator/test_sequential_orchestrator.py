@@ -199,7 +199,7 @@ def generator_function_call_avtivity_with_name(context):
     outputs.append(task2)
     outputs.append(task3)
 
-    return 
+    return outputs
 
 def generator_function_call_activity_wrong_type(context):
     outputs = []
@@ -208,7 +208,7 @@ def generator_function_call_activity_wrong_type(context):
 
     outputs.append(task1)
 
-    return
+    return outputs
 
 @app.activity_trigger(input_name = "myArg")
 def Hello(myArg: str):
