@@ -151,7 +151,7 @@ class DurableOrchestrationContext:
         Parameters
         ----------
         name: str | Callable
-            The name of the activity function to call.
+            Either the name of the activity function to call, as a string or, in the Python V2 programming model, the activity function itself.
         input_: Optional[Any]
             The JSON-serializable input to pass to the activity function.
 
@@ -165,9 +165,11 @@ class DurableOrchestrationContext:
                 if (isinstance(name._function._trigger, ActivityTrigger)):
                     name = name._function._name
                 else:
-                    raise Exception("Only Activity Trigger is allowed.")
+                    error_message = "Received function with Trigger-type `" + name._function._trigger + "` but expected `ActivityTrigger`. Ensure your function is annotated with the `activity_trigger` decorator or directly pass in the name of the activity as a string."
+                    raise Exception(error_message)
             else:
-                raise Exception("Only Activity Trigger is allowed.")
+                error_message = "Received a callable function without an associated trigger-type. Please ensure you're using the Python programming model V2 and that your function is annotated with the `activity_trigger` decorator. Otherwise, directly pass in the name of the activity as a string."
+                raise Exception(error_message)
 
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
@@ -181,7 +183,7 @@ class DurableOrchestrationContext:
         Parameters
         ----------
         name: str | Callable
-            The name of the activity function to call.
+            Either the name of the activity function to call, as a string or, in the Python V2 programming model, the activity function itself.
         retry_options: RetryOptions
             The retry options for the activity function.
         input_: Optional[Any]
@@ -198,9 +200,11 @@ class DurableOrchestrationContext:
                 if(isinstance(name, ActivityTrigger)):
                     name = name._function._name
                 else:
-                    raise Exception("Only Activity Trigger is allowed.")
+                    error_message = "Received function with Trigger-type `" + name._function._trigger + "` but expected `ActivityTrigger`. Ensure your function is annotated with the `activity_trigger` decorator or directly pass in the name of the activity as a string."
+                    raise Exception(error_message)
             else:
-                raise Exception("Only Activity Trigger is allowed.")
+                error_message = "Received a callable function without an associated trigger-type. Please ensure you're using the Python programming model V2 and that your function is annotated with the `activity_trigger` decorator. Otherwise, directly pass in the name of the activity as a string."
+                raise Exception(error_message)
 
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
