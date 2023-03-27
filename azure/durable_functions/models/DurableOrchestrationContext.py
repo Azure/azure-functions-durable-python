@@ -151,7 +151,8 @@ class DurableOrchestrationContext:
         Parameters
         ----------
         name: str | Callable
-            Either the name of the activity function to call, as a string or, in the Python V2 programming model, the activity function itself.
+            Either the name of the activity function to call, as a string or,\
+            in the Python V2 programming model, the activity function itself.
         input_: Optional[Any]
             The JSON-serializable input to pass to the activity function.
 
@@ -189,7 +190,8 @@ class DurableOrchestrationContext:
         Parameters
         ----------
         name: str | Callable
-            Either the name of the activity function to call, as a string or, in the Python V2 programming model, the activity function itself.
+            Either the name of the activity function to call, as a string or,\
+            in the Python V2 programming model, the activity function itself.
         retry_options: RetryOptions
             The retry options for the activity function.
         input_: Optional[Any]
