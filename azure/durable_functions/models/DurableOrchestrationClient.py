@@ -437,7 +437,7 @@ class DurableOrchestrationClient:
         switch_statement = {
             202: lambda: None,  # instance in progress
             410: lambda: None,  # instance failed or terminated
-            404: lambda: lambda: f"No instance with ID '{instance_id}' found.",
+            404: lambda: f"No instance with ID '{instance_id}' found.",
         }
 
         has_error_message = switch_statement.get(
