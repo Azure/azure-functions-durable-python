@@ -363,11 +363,9 @@ def test_call_activity_function_with_orchestrator_exception():
         error_str = str(e)
 
         expected_state = base_expected_state()
-        error_msg = "Received function with Trigger-type `"\
+        error_msg = 'can only concatenate str (not  "'\
                         + generator_function_call_activity_with_orchestrator._function._trigger +\
-                        "` but expected `ActivityTrigger`."\
-                        "Ensure your function is annotated with the `activity_trigger` decorator"\
-                        "or directly pass in the name of the activity as a string."
+                        '") to str.'
         expected_state._error = error_msg
         state_str = expected_state.to_json_string()
         
