@@ -187,7 +187,7 @@ def generator_function_new_guid(context):
     outputs.append(str(output3))
     return outputs
 
-def generator_function_call_avtivity_with_name(context):
+def generator_function_call_activity_with_name(context):
     """Simple orchestrator that call activity function with function name"""
     outputs = []
 
@@ -314,7 +314,7 @@ def test_call_activity_with_name():
     add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
     add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
     result = get_orchestration_state_result(
-        context_builder, generator_function_call_avtivity_with_name)
+        context_builder, generator_function_call_activity_with_name)
 
     expected_state = base_expected_state(
         ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
