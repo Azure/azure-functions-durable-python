@@ -210,10 +210,10 @@ class DurableOrchestrationContext:
                     name = name._function._name
                 else:
                     error_message = "Received function with Trigger-type `"\
-                        + name._function._trigger + "` but expected `ActivityTrigger`."\
+                        + name._function._trigger.type\
+                        + "` but expected `ActivityTrigger`."\
                         "Ensure your function is annotated with the `activity_trigger` decorator"\
                         "or directly pass in the name of the activity as a string."
-                    raise Exception(error_message)
             else:
                 error_message = "Received a callable function without an associated trigger-type."\
                     "Please ensure you're using the Python programming model V2"\
