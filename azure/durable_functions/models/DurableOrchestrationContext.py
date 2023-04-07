@@ -35,6 +35,7 @@ from .utils.entity_utils import EntityId
 from azure.functions._durable_functions import _deserialize_custom_object
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 
+#from azure.durable_functions.decorators.metadata import ActivityTrigger
 
 class DurableOrchestrationContext:
     """Context of the durable orchestration execution.

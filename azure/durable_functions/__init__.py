@@ -58,7 +58,7 @@ def validate_extension_bundles():
 
 
 # Validate that users are not in extension bundles V1
-validate_extension_bundles()
+#validate_extension_bundles()
 
 __all__ = [
     'Orchestrator',
@@ -74,7 +74,8 @@ __all__ = [
 
 try:
     # disabling linter on this line because it fails to recognize the conditional export
-    from .decorators import DFApp # noqa
+    from .decorators import DFApp, BluePrint # noqa
     __all__.append('DFApp')
+    __all__.append('BluePrint')
 except ModuleNotFoundError:
     pass
