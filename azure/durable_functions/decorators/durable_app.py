@@ -10,19 +10,13 @@ from typing import Union
 from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel
 from functools import wraps
 
-class DFApp(BluePrint, FunctionRegister):
-    """Durable Functions (DF) app.
-
-    Exports the decorators required to declare and index DF Function-types.
-    """
-    pass
 
 class BluePrint(TriggerApi, BindingApi):
     """Durable Functions (DF) blueprint container.
 
     It allows functions to be declared via trigger and binding decorators,
     but does not automatically index/register these functions.
-    
+
     To register these functions, utilize the `register_functions` method from any
     :class:`FunctionRegister` subclass, such as `DFApp`.
     """
@@ -236,3 +230,12 @@ class BluePrint(TriggerApi, BindingApi):
             return decorator()
 
         return wrap
+
+
+class DFApp(BluePrint, FunctionRegister):
+    """Durable Functions (DF) app.
+
+    Exports the decorators required to declare and index DF Function-types.
+    """
+
+    pass
