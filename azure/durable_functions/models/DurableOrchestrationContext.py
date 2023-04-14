@@ -163,15 +163,22 @@ class DurableOrchestrationContext:
         """
         if(isinstance(name, Callable)):
             if (isinstance(name, FunctionBuilder)):
-                if (isinstance(name._function._trigger, ActivityTrigger)):
-                    name = name._function._name
-                else:
-                    error_message = "Received function with Trigger-type `"\
-                        + name._function._trigger.type\
-                        + "` but expected `ActivityTrigger`."\
-                        "Ensure your function is annotated with the `activity_trigger` decorator"\
-                        "or directly pass in the name of the activity as a string."
-                    raise Exception(error_message)
+                try:
+                    if (isinstance(name._function._trigger, ActivityTrigger)):
+                        name = name._function._name
+                    else:
+                        error_message = "Received function with Trigger-type `"\
+                            + name._function._trigger.type\
+                            + "` but expected `ActivityTrigger`."\
+                            "Ensure your function is annotated with the `activity_trigger` decorator"\
+                            "or directly pass in the name of the activity as a string."
+                        raise Exception(error_message)
+                except AttributeError as e:
+                    e.message =  e.message + "Attribute couldn't be found or missing. "\
+                        "Please check if your code acts in error, "\
+                        "or file a bug in Durable Python repository: "\
+                        "https://github.com/Azure/azure-functions-durable-python.git."
+                    raise e
             else:
                 error_message = "Received a callable function without an associated trigger-type."\
                     "Please ensure you're using the Python programming model V2 "\
@@ -205,15 +212,23 @@ class DurableOrchestrationContext:
             fails completely.
         """
         if(isinstance(name, Callable)):
-            if(isinstance(name, FunctionBuilder)):
-                if(isinstance(name, ActivityTrigger)):
-                    name = name._function._name
-                else:
-                    error_message = "Received function with Trigger-type `"\
-                        + name._function._trigger.type\
-                        + "` but expected `ActivityTrigger`."\
-                        "Ensure your function is annotated with the `activity_trigger` decorator"\
-                        "or directly pass in the name of the activity as a string."
+            if (isinstance(name, FunctionBuilder)):
+                try:
+                    if (isinstance(name._function._trigger, ActivityTrigger)):
+                        name = name._function._name
+                    else:
+                        error_message = "Received function with Trigger-type `"\
+                            + name._function._trigger.type\
+                            + "` but expected `ActivityTrigger`."\
+                            "Ensure your function is annotated with the `activity_trigger` decorator"\
+                            "or directly pass in the name of the activity as a string."
+                        raise Exception(error_message)
+                except AttributeError as e:
+                    e.message =  e.message + "Attribute couldn't be found or missing. "\
+                        "Please check if your code acts in error, "\
+                        "or file a bug in Durable Python repository: "\
+                        "https://github.com/Azure/azure-functions-durable-python.git."
+                    raise e
             else:
                 error_message = "Received a callable function without an associated trigger-type."\
                     "Please ensure you're using the Python programming model V2"\
