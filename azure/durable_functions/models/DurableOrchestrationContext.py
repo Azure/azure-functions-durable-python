@@ -170,11 +170,12 @@ class DurableOrchestrationContext:
                         error_message = "Received function with Trigger-type `"\
                             + name._function._trigger.type\
                             + "` but expected `ActivityTrigger`."\
-                            "Ensure your function is annotated with the `activity_trigger` decorator"\
-                            "or directly pass in the name of the activity as a string."
+                            "Ensure your function is annotated with the `activity_trigger` "\
+                            "decorator or directly pass in the name of\
+                            "the activity as a string."
                         raise Exception(error_message)
                 except AttributeError as e:
-                    e.message =  e.message + "Attribute couldn't be found or missing. "\
+                    e.message = e.message + "Attribute couldn't be found or missing. "\
                         "Please check if your code acts in error, "\
                         "or file a bug in Durable Python repository: "\
                         "https://github.com/Azure/azure-functions-durable-python.git."
@@ -220,11 +221,12 @@ class DurableOrchestrationContext:
                         error_message = "Received function with Trigger-type `"\
                             + name._function._trigger.type\
                             + "` but expected `ActivityTrigger`."\
-                            "Ensure your function is annotated with the `activity_trigger` decorator"\
-                            "or directly pass in the name of the activity as a string."
+                            "Ensure your function is annotated with the `activity_trigger` "\
+                            "decorator or directly pass in the name of "\
+                            "the activity as a string."
                         raise Exception(error_message)
                 except AttributeError as e:
-                    e.message =  e.message + "Attribute couldn't be found or missing. "\
+                    e.message = e.message + "Attribute couldn't be found or missing. "\
                         "Please check if your code acts in error, "\
                         "or file a bug in Durable Python repository: "\
                         "https://github.com/Azure/azure-functions-durable-python.git."
