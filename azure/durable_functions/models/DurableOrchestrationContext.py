@@ -171,7 +171,7 @@ class DurableOrchestrationContext:
                             + name._function._trigger.type\
                             + "` but expected `ActivityTrigger`."\
                             "Ensure your function is annotated with the `activity_trigger` "\
-                            "decorator or directly pass in the name of\
+                            "decorator or directly pass in the name of "\
                             "the activity as a string."
                         raise Exception(error_message)
                 except AttributeError as e:
