@@ -11,10 +11,14 @@ from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel
 from functools import wraps
 
 
-class DFApp(FunctionRegister, TriggerApi, BindingApi):
-    """Durable Functions (DF) app.
+class BluePrint(TriggerApi, BindingApi):
+    """Durable Functions (DF) blueprint container.
 
-    Exports the decorators required to register DF Function-types.
+    It allows functions to be declared via trigger and binding decorators,
+    but does not automatically index/register these functions.
+
+    To register these functions, utilize the `register_functions` method from any
+    :class:`FunctionRegister` subclass, such as `DFApp`.
     """
 
     def __init__(self,
@@ -226,3 +230,12 @@ class DFApp(FunctionRegister, TriggerApi, BindingApi):
             return decorator()
 
         return wrap
+
+
+class DFApp(BluePrint, FunctionRegister):
+    """Durable Functions (DF) app.
+
+    Exports the decorators required to declare and index DF Function-types.
+    """
+
+    pass

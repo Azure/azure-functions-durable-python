@@ -187,7 +187,7 @@ def generator_function_new_guid(context):
     outputs.append(str(output3))
     return outputs
 
-def generator_function_call_avtivity_with_name(context):
+def generator_function_call_activity_with_name(context):
     """Simple orchestrator that call activity function with function name"""
     outputs = []
 
@@ -314,7 +314,7 @@ def test_call_activity_with_name():
     add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
     add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
     result = get_orchestration_state_result(
-        context_builder, generator_function_call_avtivity_with_name)
+        context_builder, generator_function_call_activity_with_name)
 
     expected_state = base_expected_state(
         ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
@@ -365,8 +365,8 @@ def test_call_activity_function_with_orchestrator_exception():
         expected_state = base_expected_state()
         error_msg = "Received function with Trigger-type `"\
                         + generator_function_rasing_ex_with_pystein._function._trigger.type\
-                        + "` but expected `ActivityTrigger`."\
-                        "Ensure your function is annotated with the `activity_trigger` decorator"\
+                        + "` but expected `ActivityTrigger`. Ensure your "\
+                        "function is annotated with the `activity_trigger` decorator "\
                         "or directly pass in the name of the activity as a string."
         expected_state._error = error_msg
         state_str = expected_state.to_json_string()
