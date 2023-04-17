@@ -76,5 +76,6 @@ try:
     # disabling linter on this line because it fails to recognize the conditional export
     from .decorators.durable_app import DFApp # noqa
     __all__.append('DFApp')
+    __all__.append('BluePrint')
 except ModuleNotFoundError:
     pass
