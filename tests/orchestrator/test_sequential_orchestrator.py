@@ -335,7 +335,7 @@ def test_call_activity_function_callable_exception():
             context_builder, generator_function_call_activity_with_callable)
         # expected an exception
         assert False
-    except Exception as e:
+    except ValueError as e:
         error_label = "\n\n$OutOfProcData$:"
         error_str = str(e)
 
@@ -359,7 +359,7 @@ def test_call_activity_function_with_orchestrator_exception():
             context_builder, generator_function_call_activity_with_orchestrator)
         # expected an exception
         assert False
-    except Exception as e:
+    except ValueError as e:
         error_label = "\n\n$OutOfProcData$:"
         error_str = str(e)
 

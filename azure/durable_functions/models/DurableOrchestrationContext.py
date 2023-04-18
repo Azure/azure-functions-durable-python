@@ -151,7 +151,7 @@ class DurableOrchestrationContext:
         Parameters
         ----------
         name: str | Callable
-            Either the name of the activity function to call, as a string or,\
+            Either the name of the activity function to call, as a string or,
             in the Python V2 programming model, the activity function itself.
         input_: Optional[Any]
             The JSON-serializable input to pass to the activity function.
@@ -172,7 +172,7 @@ class DurableOrchestrationContext:
                             + "` but expected `ActivityTrigger`. Ensure your "\
                             "function is annotated with the `activity_trigger` decorator "\
                             "or directly pass in the name of the activity as a string."
-                        raise Exception(error_message)
+                        raise ValueError(error_message)
                 except AttributeError as e:
                     e.message = "Durable Functions SDK internal error: an "\
                         "expected attribute is missing from the `FunctionBuilder` "\
@@ -187,7 +187,7 @@ class DurableOrchestrationContext:
                     "Please ensure you're using the Python programming model V2 "\
                     "and that your activity function is annotated with the `activity_trigger`"\
                     "decorator. Otherwise, provide in the name of the activity as a string."
-                raise Exception(error_message)
+                raise ValueError(error_message)
 
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
@@ -201,7 +201,7 @@ class DurableOrchestrationContext:
         Parameters
         ----------
         name: str | Callable
-            Either the name of the activity function to call, as a string or,\
+            Either the name of the activity function to call, as a string or,
             in the Python V2 programming model, the activity function itself.
         retry_options: RetryOptions
             The retry options for the activity function.
@@ -225,7 +225,7 @@ class DurableOrchestrationContext:
                             + "` but expected `ActivityTrigger`. Ensure your "\
                             "function is annotated with the `activity_trigger` decorator "\
                             "or directly pass in the name of the activity as a string."
-                        raise Exception(error_message)
+                        raise ValueError(error_message)
                 except AttributeError as e:
                     e.message = "Durable Functions SDK internal error: an "\
                         "expected attribute is missing from the `FunctionBuilder` "\
@@ -240,7 +240,7 @@ class DurableOrchestrationContext:
                     "Please ensure you're using the Python programming model V2 "\
                     "and that your activity function is annotated with the `activity_trigger`"\
                     "decorator. Otherwise, provide in the name of the activity as a string."
-                raise Exception(error_message)
+                raise ValueError(error_message)
 
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
