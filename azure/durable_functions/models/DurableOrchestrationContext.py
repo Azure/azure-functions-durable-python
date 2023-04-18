@@ -174,16 +174,19 @@ class DurableOrchestrationContext:
                             "or directly pass in the name of the activity as a string."
                         raise Exception(error_message)
                 except AttributeError as e:
-                    e.message = e.message + "Attribute couldn't be found or missing. "\
-                        "Please check if your code acts in error, "\
-                        "or file a bug in Durable Python repository: "\
-                        "https://github.com/Azure/azure-functions-durable-python.git."
+                    e.message = "Durable Functions SDK internal error: an "\
+                        +"expected attribute is missing from the `FunctionBuilder` "\
+                        +"object in the Python V2 programming model. Please report "\
+                        +"this bug in the Durable Functions Python SDK repo: "\
+                        +"https://github.com/Azure/azure-functions-durable-python.git.\n"\
+                        +"Error trace: " + e.message
                     raise e
             else:
-                error_message = "Received a callable function without an associated trigger-type."\
+                error_message = "The `call_activity` API received a `Callable` without an"\
+                    " associated Azure Functions trigger-type. "\
                     "Please ensure you're using the Python programming model V2 "\
-                    "and that your function is annotated with the `activity_trigger` decorator."\
-                    "Otherwise, directly pass in the name of the activity as a string."
+                    "and that your activity function is annotated with the `activity_trigger`"\
+                    "decorator. Otherwise, provide in the name of the activity as a string."
                 raise Exception(error_message)
 
         action = CallActivityAction(name, input_)
@@ -224,16 +227,19 @@ class DurableOrchestrationContext:
                             "or directly pass in the name of the activity as a string."
                         raise Exception(error_message)
                 except AttributeError as e:
-                    e.message = e.message + "Attribute couldn't be found or missing. "\
-                        "Please check if your code acts in error, "\
-                        "or file a bug in Durable Python repository: "\
-                        "https://github.com/Azure/azure-functions-durable-python.git."
+                    e.message = "Durable Functions SDK internal error: an "\
+                        +"expected attribute is missing from the `FunctionBuilder` "\
+                        +"object in the Python V2 programming model. Please report "\
+                        +"this bug in the Durable Functions Python SDK repo: "\
+                        +"https://github.com/Azure/azure-functions-durable-python.git.\n"\
+                        +"Error trace: " + e.message
                     raise e
             else:
-                error_message = "Received a callable function without an associated trigger-type."\
-                    "Please ensure you're using the Python programming model V2"\
-                    "and that your function is annotated with the `activity_trigger` decorator."\
-                    "Otherwise, directly pass in the name of the activity as a string."
+                error_message = "The `call_activity` API received a `Callable` without an"\
+                    " associated Azure Functions trigger-type. "\
+                    "Please ensure you're using the Python programming model V2 "\
+                    "and that your activity function is annotated with the `activity_trigger`"\
+                    "decorator. Otherwise, provide in the name of the activity as a string."
                 raise Exception(error_message)
 
         action = CallActivityWithRetryAction(name, retry_options, input_)
