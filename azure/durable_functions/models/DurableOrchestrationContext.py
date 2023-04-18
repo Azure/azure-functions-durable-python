@@ -175,11 +175,11 @@ class DurableOrchestrationContext:
                         raise Exception(error_message)
                 except AttributeError as e:
                     e.message = "Durable Functions SDK internal error: an "\
-                        +"expected attribute is missing from the `FunctionBuilder` "\
-                        +"object in the Python V2 programming model. Please report "\
-                        +"this bug in the Durable Functions Python SDK repo: "\
-                        +"https://github.com/Azure/azure-functions-durable-python.git.\n"\
-                        +"Error trace: " + e.message
+                        "expected attribute is missing from the `FunctionBuilder` "\
+                        "object in the Python V2 programming model. Please report "\
+                        "this bug in the Durable Functions Python SDK repo: "\
+                        "https://github.com/Azure/azure-functions-durable-python.git.\n"\
+                        "Error trace: " + e.message
                     raise e
             else:
                 error_message = "The `call_activity` API received a `Callable` without an"\
@@ -228,11 +228,11 @@ class DurableOrchestrationContext:
                         raise Exception(error_message)
                 except AttributeError as e:
                     e.message = "Durable Functions SDK internal error: an "\
-                        +"expected attribute is missing from the `FunctionBuilder` "\
-                        +"object in the Python V2 programming model. Please report "\
-                        +"this bug in the Durable Functions Python SDK repo: "\
-                        +"https://github.com/Azure/azure-functions-durable-python.git.\n"\
-                        +"Error trace: " + e.message
+                        "expected attribute is missing from the `FunctionBuilder` "\
+                        "object in the Python V2 programming model. Please report "\
+                        "this bug in the Durable Functions Python SDK repo: "\
+                        "https://github.com/Azure/azure-functions-durable-python.git.\n"\
+                        "Error trace: " + e.message
                     raise e
             else:
                 error_message = "The `call_activity` API received a `Callable` without an"\
