@@ -341,10 +341,10 @@ def test_call_activity_function_callable_exception():
 
         expected_state = base_expected_state()
         error_msg = "The `call_activity` API received a `Callable` without an "\
-                    "associated Azure Functions trigger-type. "\
-                    "Please ensure you're using the Python programming model V2 "\
-                    "and that your activity function is annotated with the `activity_trigger`"\
-                    "decorator. Otherwise, provide in the name of the activity as a string."
+                "associated Azure Functions trigger-type. "\
+                "Please ensure you're using the Python programming model V2 "\
+                "and that your activity function is annotated with the `activity_trigger`"\
+                "decorator. Otherwise, provide in the name of the activity as a string."
         expected_state._error = error_msg
         state_str = expected_state.to_json_string()
         
@@ -365,10 +365,10 @@ def test_call_activity_function_with_orchestrator_exception():
 
         expected_state = base_expected_state()
         error_msg = "Received function with Trigger-type `"\
-                    + generator_function_rasing_ex_with_pystein._function._trigger.type\
-                    + "` but expected `ActivityTrigger`. Ensure your "\
-                    "function is annotated with the `activity_trigger` decorator "\
-                    "or directly pass in the name of the activity as a string."
+                + generator_function_rasing_ex_with_pystein._function._trigger.type\
+                + "` but expected `ActivityTrigger`. Ensure your "\
+                "function is annotated with the `activity_trigger` decorator "\
+                "or directly pass in the name of the activity as a string."
         expected_state._error = error_msg
         state_str = expected_state.to_json_string()
         
