@@ -162,13 +162,13 @@ class DurableOrchestrationContext:
             A Durable Task that completes when the called activity function completes or fails.
         """
         if(isinstance(name, Callable) and not isinstance(name, FunctionBuilder)):
-            error_message = "The `call_activity` API received a `Callable` without an"\
-                    " associated Azure Functions trigger-type. "\
+            error_message = "The `call_activity` API received a `Callable` without an "\
+                    "associated Azure Functions trigger-type. "\
                     "Please ensure you're using the Python programming model V2 "\
                     "and that your activity function is annotated with the `activity_trigger`"\
                     "decorator. Otherwise, provide in the name of the activity as a string."
             raise ValueError(error_message)
-        
+
         if(isinstance(name, FunctionBuilder)):
             try:
                 if (isinstance(name._function._trigger, ActivityTrigger)):
@@ -215,13 +215,13 @@ class DurableOrchestrationContext:
             fails completely.
         """
         if(isinstance(name, Callable) and not isinstance(name, FunctionBuilder)):
-            error_message = "The `call_activity` API received a `Callable` without an"\
-                    " associated Azure Functions trigger-type. "\
+            error_message = "The `call_activity` API received a `Callable` without an "\
+                    "associated Azure Functions trigger-type. "\
                     "Please ensure you're using the Python programming model V2 "\
                     "and that your activity function is annotated with the `activity_trigger`"\
                     "decorator. Otherwise, provide in the name of the activity as a string."
             raise ValueError(error_message)
-        
+
         if(isinstance(name, FunctionBuilder)):
             try:
                 if (isinstance(name._function._trigger, ActivityTrigger)):

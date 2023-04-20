@@ -340,8 +340,8 @@ def test_call_activity_function_callable_exception():
         error_str = str(e)
 
         expected_state = base_expected_state()
-        error_msg = "The `call_activity` API received a `Callable` without an"\
-                    " associated Azure Functions trigger-type. "\
+        error_msg = "The `call_activity` API received a `Callable` without an "\
+                    "associated Azure Functions trigger-type. "\
                     "Please ensure you're using the Python programming model V2 "\
                     "and that your activity function is annotated with the `activity_trigger`"\
                     "decorator. Otherwise, provide in the name of the activity as a string."
