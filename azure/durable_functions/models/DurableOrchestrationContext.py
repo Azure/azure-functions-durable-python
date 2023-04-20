@@ -163,10 +163,10 @@ class DurableOrchestrationContext:
         """
         if(isinstance(name, Callable) and not isinstance(name, FunctionBuilder)):
             error_message = "The `call_activity` API received a `Callable` without an "\
-                    "associated Azure Functions trigger-type. "\
-                    "Please ensure you're using the Python programming model V2 "\
-                    "and that your activity function is annotated with the `activity_trigger`"\
-                    "decorator. Otherwise, provide in the name of the activity as a string."
+                "associated Azure Functions trigger-type. "\
+                "Please ensure you're using the Python programming model V2 "\
+                "and that your activity function is annotated with the `activity_trigger`"\
+                "decorator. Otherwise, provide in the name of the activity as a string."
             raise ValueError(error_message)
 
         if(isinstance(name, FunctionBuilder)):
