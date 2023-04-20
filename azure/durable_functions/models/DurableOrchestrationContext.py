@@ -161,33 +161,33 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called activity function completes or fails.
         """
-        if(isinstance(name, Callable)):
-            if (isinstance(name, FunctionBuilder)):
-                try:
-                    if (isinstance(name._function._trigger, ActivityTrigger)):
-                        name = name._function._name
-                    else:
-                        error_message = "Received function with Trigger-type `"\
-                            + name._function._trigger.type\
-                            + "` but expected `ActivityTrigger`. Ensure your "\
-                            "function is annotated with the `activity_trigger` decorator "\
-                            "or directly pass in the name of the activity as a string."
-                        raise ValueError(error_message)
-                except AttributeError as e:
-                    e.message = "Durable Functions SDK internal error: an "\
-                        "expected attribute is missing from the `FunctionBuilder` "\
-                        "object in the Python V2 programming model. Please report "\
-                        "this bug in the Durable Functions Python SDK repo: "\
-                        "https://github.com/Azure/azure-functions-durable-python.git.\n"\
-                        "Error trace: " + e.message
-                    raise e
-            else:
-                error_message = "The `call_activity` API received a `Callable` without an"\
+        if(isinstance(name, Callable) and not isinstance(name, FunctionBuilder)):
+            error_message = "The `call_activity` API received a `Callable` without an"\
                     " associated Azure Functions trigger-type. "\
                     "Please ensure you're using the Python programming model V2 "\
                     "and that your activity function is annotated with the `activity_trigger`"\
                     "decorator. Otherwise, provide in the name of the activity as a string."
-                raise ValueError(error_message)
+            raise ValueError(error_message)
+        
+        if(isinstance(name, FunctionBuilder)):
+            try:
+                if (isinstance(name._function._trigger, ActivityTrigger)):
+                    name = name._function._name
+                else:
+                    error_message = "Received function with Trigger-type `"\
+                        + name._function._trigger.type\
+                        + "` but expected `ActivityTrigger`. Ensure your "\
+                        "function is annotated with the `activity_trigger` decorator "\
+                        "or directly pass in the name of the activity as a string."
+                    raise ValueError(error_message)
+            except AttributeError as e:
+                e.message = "Durable Functions SDK internal error: an "\
+                    "expected attribute is missing from the `FunctionBuilder` "\
+                    "object in the Python V2 programming model. Please report "\
+                    "this bug in the Durable Functions Python SDK repo: "\
+                    "https://github.com/Azure/azure-functions-durable-python.git.\n"\
+                    "Error trace: " + e.message
+                raise e
 
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
@@ -214,33 +214,33 @@ class DurableOrchestrationContext:
             A Durable Task that completes when the called activity function completes or
             fails completely.
         """
-        if(isinstance(name, Callable)):
-            if (isinstance(name, FunctionBuilder)):
-                try:
-                    if (isinstance(name._function._trigger, ActivityTrigger)):
-                        name = name._function._name
-                    else:
-                        error_message = "Received function with Trigger-type `"\
-                            + name._function._trigger.type\
-                            + "` but expected `ActivityTrigger`. Ensure your "\
-                            "function is annotated with the `activity_trigger` decorator "\
-                            "or directly pass in the name of the activity as a string."
-                        raise ValueError(error_message)
-                except AttributeError as e:
-                    e.message = "Durable Functions SDK internal error: an "\
-                        "expected attribute is missing from the `FunctionBuilder` "\
-                        "object in the Python V2 programming model. Please report "\
-                        "this bug in the Durable Functions Python SDK repo: "\
-                        "https://github.com/Azure/azure-functions-durable-python.git.\n"\
-                        "Error trace: " + e.message
-                    raise e
-            else:
-                error_message = "The `call_activity` API received a `Callable` without an"\
+        if(isinstance(name, Callable) and not isinstance(name, FunctionBuilder)):
+            error_message = "The `call_activity` API received a `Callable` without an"\
                     " associated Azure Functions trigger-type. "\
                     "Please ensure you're using the Python programming model V2 "\
                     "and that your activity function is annotated with the `activity_trigger`"\
                     "decorator. Otherwise, provide in the name of the activity as a string."
-                raise ValueError(error_message)
+            raise ValueError(error_message)
+        
+        if(isinstance(name, FunctionBuilder)):
+            try:
+                if (isinstance(name._function._trigger, ActivityTrigger)):
+                    name = name._function._name
+                else:
+                    error_message = "Received function with Trigger-type `"\
+                        + name._function._trigger.type\
+                        + "` but expected `ActivityTrigger`. Ensure your "\
+                        "function is annotated with the `activity_trigger` decorator "\
+                        "or directly pass in the name of the activity as a string."
+                    raise ValueError(error_message)
+            except AttributeError as e:
+                e.message = "Durable Functions SDK internal error: an "\
+                    "expected attribute is missing from the `FunctionBuilder` "\
+                    "object in the Python V2 programming model. Please report "\
+                    "this bug in the Durable Functions Python SDK repo: "\
+                    "https://github.com/Azure/azure-functions-durable-python.git.\n"\
+                    "Error trace: " + e.message
+                raise e
 
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
