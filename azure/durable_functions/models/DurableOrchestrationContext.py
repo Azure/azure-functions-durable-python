@@ -655,7 +655,7 @@ class DurableOrchestrationContext:
                 self._add_to_open_tasks(child)
 
     def _get_function_name(self, name: FunctionBuilder,
-                           trigger_type: OrchestrationTrigger | ActivityTrigger):
+                           trigger_type: Union[OrchestrationTrigger,ActivityTrigger]):
         try:
             if (isinstance(name._function._trigger, trigger_type)):
                 name = name._function._name
