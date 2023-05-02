@@ -654,7 +654,8 @@ class DurableOrchestrationContext:
             for child in task.children:
                 self._add_to_open_tasks(child)
 
-    def _get_function_name(self, name: FunctionBuilder, trigger_type: OrchestrationTrigger | ActivityTrigger):
+    def _get_function_name(self, name: FunctionBuilder, \
+                           trigger_type: OrchestrationTrigger | ActivityTrigger):
         try:
             if (isinstance(name._function._trigger, trigger_type)):
                 name = name._function._name
@@ -667,9 +668,9 @@ class DurableOrchestrationContext:
                 error_message = "Received function with Trigger-type `"\
                     + name._function._trigger.type\
                     + "` but expected `" + trigger_type + "`. Ensure your "\
-                    +"function is annotated with the `" + trigger_type \
-                    +"` decorator or directly pass in the name of the "\
-                    +"function as a string."
+                    "function is annotated with the `" + trigger_type +\
+                    "` decorator or directly pass in the name of the "\
+                    "function as a string."
                 raise ValueError(error_message)
         except AttributeError as e:
             e.message = "Durable Functions SDK internal error: an "\
