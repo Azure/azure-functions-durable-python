@@ -34,7 +34,7 @@ from ..models.TokenSource import TokenSource
 from .utils.entity_utils import EntityId
 from azure.functions._durable_functions import _deserialize_custom_object
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
-from azure.durable_functions.decorators.metadata import ActivityTrigger
+from azure.durable_functions.decorators.metadata import OrchestrationTrigger, ActivityTrigger
 from azure.functions.decorators.function_app import FunctionBuilder
 
 
@@ -170,7 +170,7 @@ class DurableOrchestrationContext:
             raise ValueError(error_message)
 
         if isinstance(name, FunctionBuilder):
-            name = self._get_activity_function_name(name)
+            name = self._get_function_name(name, ActivityTrigger)
 
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
@@ -206,7 +206,7 @@ class DurableOrchestrationContext:
             raise ValueError(error_message)
 
         if isinstance(name, FunctionBuilder):
-            name = self._get_activity_function_name(name)
+            name = self._get_function_name(name, ActivityTrigger)
 
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
@@ -654,17 +654,22 @@ class DurableOrchestrationContext:
             for child in task.children:
                 self._add_to_open_tasks(child)
 
-    def _get_activity_function_name(self, name: FunctionBuilder):
+    def _get_function_name(self, name: FunctionBuilder, trigger_type: OrchestrationTrigger | ActivityTrigger):
         try:
-            if (isinstance(name._function._trigger, ActivityTrigger)):
+            if (isinstance(name._function._trigger, trigger_type)):
                 name = name._function._name
                 return name
             else:
+                if(trigger_type == OrchestrationTrigger):
+                    trigger_type = "OrchestrationTrigger"
+                else:
+                    trigger_type = "ActivityTrigger"
                 error_message = "Received function with Trigger-type `"\
                     + name._function._trigger.type\
-                    + "` but expected `ActivityTrigger`. Ensure your "\
-                    "function is annotated with the `activity_trigger` decorator "\
-                    "or directly pass in the name of the activity as a string."
+                    + "` but expected `" + trigger_type + "`. Ensure your "\
+                    +"function is annotated with the `" + trigger_type \
+                    +"` decorator or directly pass in the name of the "\
+                    +"function as a string."
                 raise ValueError(error_message)
         except AttributeError as e:
             e.message = "Durable Functions SDK internal error: an "\
