@@ -247,13 +247,13 @@ class DurableOrchestrationContext:
         return task
 
     def call_sub_orchestrator(self,
-                              name: str, input_: Optional[Any] = None,
+                              name: Union[str, Callable], input_: Optional[Any] = None,
                               instance_id: Optional[str] = None) -> TaskBase:
         """Schedule sub-orchestration function named `name` for execution.
 
         Parameters
         ----------
-        name: str
+        name: Union[str, Callable]
             The name of the orchestrator function to call.
         input_: Optional[Any]
             The JSON-serializable input to pass to the orchestrator function.
@@ -265,19 +265,30 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called sub-orchestrator completes or fails.
         """
+        if isinstance(name, Callable) and not isinstance(name, FunctionBuilder):
+            error_message = "The `call_activity` API received a `Callable` without an "\
+                "associated Azure Functions trigger-type. "\
+                "Please ensure you're using the Python programming model V2 "\
+                "and that your activity function is annotated with the `activity_trigger`"\
+                "decorator. Otherwise, provide in the name of the activity as a string."
+            raise ValueError(error_message)
+
+        if isinstance(name, FunctionBuilder):
+            name = self._get_function_name(name, OrchestrationTrigger)
+
         action = CallSubOrchestratorAction(name, input_, instance_id)
         task = self._generate_task(action)
         return task
 
     def call_sub_orchestrator_with_retry(self,
-                                         name: str, retry_options: RetryOptions,
+                                         name: Union[str, Callable], retry_options: RetryOptions,
                                          input_: Optional[Any] = None,
                                          instance_id: Optional[str] = None) -> TaskBase:
         """Schedule sub-orchestration function named `name` for execution, with retry-options.
 
         Parameters
         ----------
-        name: str
+        name: Union[str, Callable]
             The name of the activity function to schedule.
         retry_options: RetryOptions
             The settings for retrying this sub-orchestrator in case of a failure.
@@ -291,6 +302,17 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called sub-orchestrator completes or fails.
         """
+        if isinstance(name, Callable) and not isinstance(name, FunctionBuilder):
+            error_message = "The `call_activity` API received a `Callable` without an "\
+                "associated Azure Functions trigger-type. "\
+                "Please ensure you're using the Python programming model V2 "\
+                "and that your activity function is annotated with the `activity_trigger`"\
+                "decorator. Otherwise, provide in the name of the activity as a string."
+            raise ValueError(error_message)
+
+        if isinstance(name, FunctionBuilder):
+            name = self._get_function_name(name, OrchestrationTrigger)
+
         action = CallSubOrchestratorWithRetryAction(name, retry_options, input_, instance_id)
         task = self._generate_task(action, retry_options)
         return task
