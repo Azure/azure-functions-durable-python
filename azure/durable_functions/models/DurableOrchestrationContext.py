@@ -677,6 +677,6 @@ class DurableOrchestrationContext:
                 "expected attribute is missing from the `FunctionBuilder` "\
                 "object in the Python V2 programming model. Please report "\
                 "this bug in the Durable Functions Python SDK repo: "\
-                "https://github.com/Azure/azure-functions-durable-python.git.\n"\
+                "https://github.com/Azure/azure-functions-durable-python.\n"\
                 "Error trace: " + e.message
             raise e
