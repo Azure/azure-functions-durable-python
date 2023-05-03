@@ -638,7 +638,7 @@ class DurableOrchestrationClient:
             self, instance_id: str, event_name: str,
             task_hub_name: Optional[str], connection_name: Optional[str]) -> str:
         request_url = f'{self._orchestration_bindings.rpc_base_url}' \
-                      f'instances/{instance_id}/raiseEvent/{quote(event_name)}'
+                      f'instances/{instance_id}/raiseEvent/{quote(event_name, safe="")}'
 
         query: List[str] = []
         if task_hub_name:
