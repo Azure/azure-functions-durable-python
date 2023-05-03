@@ -257,18 +257,21 @@ class DurableOrchestrationContext:
         return task
 
     def call_sub_orchestrator_with_retry(self,
-                               name: Union[str, Callable], input_: Optional[Any] = None,
-                              instance_id: Optional[str] = None) -> TaskBase:
-        """Schedule sub-orchestration function named `name` for execution.
+                                         name: Union[str, Callable], retry_options: RetryOptions,
+                                         input_: Optional[Any] = None,
+                                         instance_id: Optional[str] = None) -> TaskBase:
+        """Schedule sub-orchestration function named `name` for execution, with retry-options.
 
         Parameters
         ----------
         name: Union[str, Callable]
-            The name of the orchestrator function to call.
+            The name of the activity function to schedule.
+        retry_options: RetryOptions
+            The settings for retrying this sub-orchestrator in case of a failure.
         input_: Optional[Any]
-            The JSON-serializable input to pass to the orchestrator function.
-        instance_id: Optional[str]
-            A unique ID to use for the sub-orchestration instance.
+            The JSON-serializable input to pass to the activity function. Defaults to None.
+        instance_id: str
+            The instance ID of the sub-orchestrator to call.
 
         Returns
         -------
