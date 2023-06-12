@@ -11,8 +11,8 @@ from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel
 from functools import wraps
 
 
-class BluePrint(TriggerApi, BindingApi):
-    """Durable Functions (DF) blueprint container.
+class Blueprint(TriggerApi, BindingApi):
+    """Durable Functions (DF) Blueprint container.
 
     It allows functions to be declared via trigger and binding decorators,
     but does not automatically index/register these functions.
@@ -232,7 +232,7 @@ class BluePrint(TriggerApi, BindingApi):
         return wrap
 
 
-class DFApp(BluePrint, FunctionRegister):
+class DFApp(Blueprint, FunctionRegister):
     """Durable Functions (DF) app.
 
     Exports the decorators required to declare and index DF Function-types.
