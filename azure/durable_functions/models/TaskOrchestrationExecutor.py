@@ -229,7 +229,7 @@ class TaskOrchestrationExecutor:
             task_succeeded = current_task.state is TaskState.SUCCEEDED
             new_task = self.generator.send(
                 task_value) if task_succeeded else self.generator.throw(task_value)
-            if isinstance(new_task, TaskBase) and not(new_task.is_scheduled):
+            if isinstance(new_task, TaskBase) and not (new_task._is_scheduled):
                 self.context._add_to_open_tasks(new_task)
         except StopIteration as stop_exception:
             # the orchestration returned,
@@ -246,17 +246,17 @@ class TaskOrchestrationExecutor:
                 # user yielded the same task multiple times, continue executing code
                 # until a new/not-previously-yielded task is encountered
                 self.resume_user_code()
-            elif not (self.current_task.is_scheduled):
+            elif not (self.current_task._is_scheduled):
                 # new task is received. it needs to be resolved to a value
                 self.context._add_to_actions(self.current_task.action_repr)
-                self.mark_as_scheduled(self.current_task)
+                self._mark_as_scheduled(self.current_task)
 
-    def mark_as_scheduled(self, task: TaskBase):
+    def _mark_as_scheduled(self, task: TaskBase):
         if isinstance(task, CompoundTask):
             for task in task.children:
-                self.mark_as_scheduled(task)
+                self._mark_as_scheduled(task)
         else:
-            task.set_is_scheduled(True)
+            task._set_is_scheduled(True)
 
     def get_orchestrator_state_str(self) -> str:
         """Obtain a JSON-formatted string representing the orchestration's state.

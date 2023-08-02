@@ -56,14 +56,14 @@ class TaskBase:
         self.result: Any = None
         self.action_repr: Union[List[Action], Action] = actions
         self.is_played = False
-        self._is_scheduled = False
+        self._is_scheduled_flag = False
 
     @property
-    def is_scheduled(self) -> bool:
-        return self._is_scheduled
+    def _is_scheduled(self) -> bool:
+        return self._is_scheduled_flag
 
-    def set_is_scheduled(self, is_scheduled: bool):
-        self._is_scheduled = is_scheduled
+    def _set_is_scheduled(self, is_scheduled: bool):
+        self._is_scheduled_flag = is_scheduled
 
     @property
     def is_completed(self) -> bool:
@@ -186,8 +186,8 @@ class CompoundTask(TaskBase):
                 self.handle_completion(child)
 
     @property
-    def is_scheduled(self) -> bool:
-        return all([child.is_scheduled for child in self.children])
+    def _is_scheduled(self) -> bool:
+        return all([child._is_scheduled for child in self.children])
 
     def handle_completion(self, child: TaskBase):
         """Manage sub-task completion events.
