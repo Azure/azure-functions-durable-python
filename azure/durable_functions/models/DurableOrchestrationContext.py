@@ -683,7 +683,7 @@ class DurableOrchestrationContext:
                 name = name._function._name
                 return name
             else:
-                if(trigger_type == OrchestrationTrigger):
+                if (trigger_type == OrchestrationTrigger):
                     trigger_type = "OrchestrationTrigger"
                 else:
                     trigger_type = "ActivityTrigger"
