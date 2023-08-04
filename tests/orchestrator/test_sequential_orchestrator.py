@@ -77,6 +77,24 @@ def generator_function_duplicate_yield(context):
 
     return ""
 
+def generator_function_reducing_when_all(context):
+    task1 = context.call_activity("Hello", "Tokyo")
+    task2 = context.call_activity("Hello", "Seattle")
+    pending_tasks = [task1, task2]
+
+    #  Yield until first task is completed
+    finished_task1 = yield context.task_any(pending_tasks)
+
+    #  Remove completed task from pending tasks
+    pending_tasks.remove(finished_task1)
+
+    #  Yield remaining task
+    yield context.task_any(pending_tasks)
+
+    # Ensure we can still schedule new tasks
+    yield context.call_activity("Hello", "London")
+    return ""
+
 def generator_function_compound_tasks(context):
     yield context.call_activity("Hello", "Tokyo")
 
@@ -687,6 +705,30 @@ def test_duplicate_yields_do_not_add_duplicate_actions():
     expected = expected_state.to_json()
 
     assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_reducing_when_any_pattern():
+    """Tests that a user can call when_any on a progressively smaller list of already scheduled tasks"""
+    context_builder = ContextBuilder('test_reducing_when_any', replay_schema=ReplaySchema.V2)
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
+    add_hello_completed_events(context_builder, 2, "\"Hello London!\"")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_reducing_when_all)
+
+    # this scenario is only supported for V2 replay
+    expected_state = base_expected_state("",replay_schema=ReplaySchema.V2)
+    expected_state._actions = [
+        [WhenAnyAction(
+            [CallActivityAction("Hello", "Seattle"), CallActivityAction("Hello", "Tokyo")]),
+            CallActivityAction("Hello", "London")
+        ]
+    ]
+
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
     assert_orchestration_state_equals(expected, result)
 
 def test_compound_tasks_return_single_action_in_V2():
