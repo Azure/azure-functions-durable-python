@@ -661,6 +661,9 @@ class DurableOrchestrationContext:
 
     def _add_to_open_tasks(self, task: TaskBase):
 
+        if task._is_scheduled:
+            return
+
         if isinstance(task, AtomicTask):
             if task.id is None:
                 task.id = self._sequence_number
