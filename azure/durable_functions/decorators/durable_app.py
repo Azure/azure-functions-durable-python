@@ -7,11 +7,11 @@ from azure.durable_functions.entity import Entity
 from azure.durable_functions.orchestrator import Orchestrator
 from azure.durable_functions import DurableOrchestrationClient
 from typing import Union
-from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel
+from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel, SettingsApi
 from functools import wraps
 
 
-class Blueprint(TriggerApi, BindingApi):
+class Blueprint(TriggerApi, BindingApi, SettingsApi):
     """Durable Functions (DF) Blueprint container.
 
     It allows functions to be declared via trigger and binding decorators,

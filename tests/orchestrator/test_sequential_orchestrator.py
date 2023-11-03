@@ -27,6 +27,7 @@ def generator_function(context):
 
     return outputs
 
+@app.function_name("generator_function_with_pystein")
 @app.orchestration_trigger(context_name="context")
 def generator_function_with_pystein(context):
     outputs = []
