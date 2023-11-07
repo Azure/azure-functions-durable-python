@@ -11,10 +11,13 @@ from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel
 from functools import wraps
 
 try:
-    from azure.functions import SettingsApi 
-except ImportError:
+    from azure.functions import SettingsApi
+except ImportError:  # backwards compatibility path
     class SettingsApi:
+        """Backwards compatibility mock of SettingsApi."""
+
         pass
+
 
 class Blueprint(TriggerApi, BindingApi, SettingsApi):
     """Durable Functions (DF) Blueprint container.
