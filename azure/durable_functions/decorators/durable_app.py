@@ -7,8 +7,16 @@ from azure.durable_functions.entity import Entity
 from azure.durable_functions.orchestrator import Orchestrator
 from azure.durable_functions import DurableOrchestrationClient
 from typing import Union
-from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel, SettingsApi
+from azure.functions import FunctionRegister, TriggerApi, BindingApi, AuthLevel
 from functools import wraps
+
+try:
+    from azure.functions import SettingsApi
+except ImportError:  # backwards compatibility path
+    class SettingsApi:
+        """Backwards compatibility mock of SettingsApi."""
+
+        pass
 
 
 class Blueprint(TriggerApi, BindingApi, SettingsApi):
