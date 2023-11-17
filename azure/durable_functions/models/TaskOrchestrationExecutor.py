@@ -165,14 +165,14 @@ class TaskOrchestrationExecutor:
 
             # We provide the ability to deserialize custom objects, because the output of this
             # will be passed directly to the orchestrator as the output of some activity
-            if (event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED 
-                and directive_result.Result is not None):
+            if (event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED and
+                directive_result.Result is not None):
                 return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
-            if (event_type == HistoryEventType.TASK_COMPLETED 
-                and directive_result.Result is not None):
+            if (event_type == HistoryEventType.TASK_COMPLETED and
+                directive_result.Result is not None):
                 return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
-            if (event_type == HistoryEventType.EVENT_RAISED
-                and directive_result.Result is not None):
+            if (event_type == HistoryEventType.EVENT_RAISED and
+                directive_result.Result is not None):
                 # TODO: Investigate why the payload is in "Input" instead of "Result"
                 response = json.loads(directive_result.Input,
                                       object_hook=_deserialize_custom_object)
