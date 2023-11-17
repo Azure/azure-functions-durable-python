@@ -257,9 +257,30 @@ def generator_function_call_activity_with_orchestrator(context):
 
     return outputs
 
+def generator_function_call_activity_with_none_return(context):
+    """Simple orchestrator that call activity function which can return None"""
+    outputs = []
+
+    task1 = yield context.call_activity(hello_return_none, "Tokyo")
+    task2 = yield context.call_activity(hello_return_none, "Seattle")
+    task3 = yield context.call_activity(hello_return_none, "London")
+
+    outputs.append(task1)
+    outputs.append(task2)
+    outputs.append(task3)
+
+    return outputs
+
 @app.activity_trigger(input_name = "myArg")
 def Hello(myArg: str):
     return "Hello" + myArg
+
+@app.activity_trigger(input_name = "myArg")
+def hello_return_none(myArg: str):
+    if myArg == "London":
+        return None
+    else:
+        return "Hello" + myArg
 
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
     return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema)
@@ -356,6 +377,25 @@ def test_call_activity_with_name():
 
     expected_state = base_expected_state(
         ['Hello Tokyo!', 'Hello Seattle!', 'Hello London!'])
+    add_hello_action(expected_state, 'Tokyo')
+    add_hello_action(expected_state, 'Seattle')
+    add_hello_action(expected_state, 'London')
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_call_activity_with_none_return():
+    context_builder = ContextBuilder('test_call_activity_with_none_return')
+    add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
+    add_hello_completed_events(context_builder, 1, "\"Hello Seattle!\"")
+    add_hello_completed_events(context_builder, 2, None)
+    result = get_orchestration_state_result(
+        context_builder, generator_function_call_activity_with_none_return)
+
+    expected_state = base_expected_state(
+        ['Hello Tokyo!', 'Hello Seattle!', None])
     add_hello_action(expected_state, 'Tokyo')
     add_hello_action(expected_state, 'Seattle')
     add_hello_action(expected_state, 'London')
