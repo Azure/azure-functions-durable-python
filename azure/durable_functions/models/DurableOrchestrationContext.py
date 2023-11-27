@@ -1,4 +1,5 @@
 from collections import defaultdict
+from urllib.parse import quote
 from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
 from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
 from azure.durable_functions.models.Task import TaskBase, TimerTask
@@ -583,7 +584,7 @@ class DurableOrchestrationContext:
             Task to wait for the event
         """
         action = WaitForExternalEventAction(name)
-        task = self._generate_task(action, id_=name)
+        task = self._generate_task(action, id_=quote(name, safe=""))
         return task
 
     def continue_as_new(self, input_: Any):
