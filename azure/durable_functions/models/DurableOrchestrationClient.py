@@ -311,20 +311,30 @@ class DurableOrchestrationClient:
         """
         options = RpcManagementOptions()
         request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
-        response = await self._get_async_request(request_url)
-        switch_statement = {
-            200: lambda: None,  # instance completed
-        }
+        all_statuses: List[DurableOrchestrationStatus] = []
 
-        has_error_message = switch_statement.get(
-            response[0],
-            lambda: f"The operation failed with an unexpected status code {response[0]}")
-        error_message = has_error_message()
-        if error_message:
-            raise Exception(error_message)
-        else:
-            statuses: List[Any] = response[1]
-            return [DurableOrchestrationStatus.from_json(o) for o in statuses]
+        continuation_token = None
+        while True:
+            headers = {}
+            if continuation_token:
+                headers['x-ms-continuation-token'] = continuation_token
+            response = await self._get_async_request(request_url, headers=headers)
+            switch_statement = {
+                200: lambda: None,  # instance completed
+            }
+            has_error_message = switch_statement.get(
+                response[0],
+                lambda: f"The operation failed with an unexpected status code {response[0]}")
+            error_message = has_error_message()
+            if error_message:
+                raise Exception(error_message)
+            else:
+                statuses: List[Any] = response[1]
+                all_statuses.extend([DurableOrchestrationStatus.from_json(o) for o in statuses])
+                continuation_token = response.headers.get('x-ms-continuation-token')
+                if not continuation_token:
+                    break
+        return all_statuses
 
     async def get_status_by(self, created_time_from: datetime = None,
                             created_time_to: datetime = None,

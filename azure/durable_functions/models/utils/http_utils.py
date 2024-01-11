@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any, List, Union, Dict, Optional
 
 import aiohttp
 
@@ -29,20 +29,22 @@ async def post_async_request(url: str, data: Any = None) -> List[Union[int, Any]
             return [response.status, data]
 
 
-async def get_async_request(url: str) -> List[Any]:
+async def get_async_request(url: str, headers: Dict[Any, Any] = None) -> List[Any]:
     """Get the data from the url provided.
 
     Parameters
     ----------
     url: str
         url to get the data from
+    headers: Dict[str, str]
+        headers to send with the request
 
     Returns
     -------
     [int, Any]
         Tuple with the Response status code and the data returned from the request
     """
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(url) as response:
             data = await response.json(content_type=None)
             if data is None:
