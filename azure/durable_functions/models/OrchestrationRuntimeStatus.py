@@ -27,3 +27,6 @@ class OrchestrationRuntimeStatus(Enum):
 
     Pending = 'Pending'
     """The orchestration instance has been scheduled but has not yet started running."""
+
+    Suspended = 'Suspended'
+    """The orchestration instance has been paused."""
