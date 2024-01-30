@@ -25,4 +25,3 @@ class HistoryEventType(IntEnum):
     HISTORY_STATE = 18
     EXECUTION_SUSPENDED = 19
     EXECUTION_RESUMED = 20
-
