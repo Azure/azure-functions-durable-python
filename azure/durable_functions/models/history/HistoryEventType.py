@@ -23,3 +23,6 @@ class HistoryEventType(IntEnum):
     CONTINUE_AS_NEW = 16
     GENERIC_EVENT = 17
     HISTORY_STATE = 18
+    EXECUTION_SUSPENDED = 19
+    EXECUTION_RESUMED = 20
+
