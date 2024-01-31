@@ -71,3 +71,11 @@ __all__ = [
     'OrchestrationRuntimeStatus',
     'RetryOptions'
 ]
+
+try:
+    # disabling linter on this line because it fails to recognize the conditional export
+    from .decorators.durable_app import (DFApp, Blueprint) # noqa
+    __all__.append('DFApp')
+    __all__.append('Blueprint')
+except ModuleNotFoundError:
+    pass

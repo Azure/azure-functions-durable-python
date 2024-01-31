@@ -1,4 +1,4 @@
-from azure.durable_functions.models.Task import TaskBase, TaskState, AtomicTask
+from azure.durable_functions.models.Task import TaskBase, TaskState, AtomicTask, CompoundTask
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
 from typing import Any, List, Optional, Union
@@ -49,7 +49,7 @@ class TaskOrchestrationExecutor:
 
     def execute(self, context: DurableOrchestrationContext,
                 history: List[HistoryEvent], fn) -> str:
-        """Execute an orchestration using the orchestration history to evaluate Tasks and replay events.
+        """Execute an orchestration via its history to evaluate Tasks and replay events.
 
         Parameters
         ----------
@@ -165,11 +165,14 @@ class TaskOrchestrationExecutor:
 
             # We provide the ability to deserialize custom objects, because the output of this
             # will be passed directly to the orchestrator as the output of some activity
-            if event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED:
+            if (event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED
+                    and directive_result.Result is not None):
                 return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
-            if event_type == HistoryEventType.TASK_COMPLETED:
+            if (event_type == HistoryEventType.TASK_COMPLETED
+                    and directive_result.Result is not None):
                 return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
-            if event_type == HistoryEventType.EVENT_RAISED:
+            if (event_type == HistoryEventType.EVENT_RAISED
+                    and directive_result.Input is not None):
                 # TODO: Investigate why the payload is in "Input" instead of "Result"
                 response = json.loads(directive_result.Input,
                                       object_hook=_deserialize_custom_object)
@@ -208,7 +211,7 @@ class TaskOrchestrationExecutor:
 
         # with a yielded task now evaluated, we can try to resume the user code
         task.set_is_played(event._is_played)
-        task.set_value(is_error=not(is_success), value=new_value)
+        task.set_value(is_error=not is_success, value=new_value)
 
     def resume_user_code(self):
         """Attempt to continue executing user code.
@@ -229,7 +232,8 @@ class TaskOrchestrationExecutor:
             task_succeeded = current_task.state is TaskState.SUCCEEDED
             new_task = self.generator.send(
                 task_value) if task_succeeded else self.generator.throw(task_value)
-            self.context._add_to_open_tasks(new_task)
+            if isinstance(new_task, TaskBase) and not (new_task._is_scheduled):
+                self.context._add_to_open_tasks(new_task)
         except StopIteration as stop_exception:
             # the orchestration returned,
             # flag it as such and capture its output
@@ -245,9 +249,17 @@ class TaskOrchestrationExecutor:
                 # user yielded the same task multiple times, continue executing code
                 # until a new/not-previously-yielded task is encountered
                 self.resume_user_code()
-            else:
+            elif not (self.current_task._is_scheduled):
                 # new task is received. it needs to be resolved to a value
                 self.context._add_to_actions(self.current_task.action_repr)
+                self._mark_as_scheduled(self.current_task)
+
+    def _mark_as_scheduled(self, task: TaskBase):
+        if isinstance(task, CompoundTask):
+            for task in task.children:
+                self._mark_as_scheduled(task)
+        else:
+            task._set_is_scheduled(True)
 
     def get_orchestrator_state_str(self) -> str:
         """Obtain a JSON-formatted string representing the orchestration's state.
@@ -310,7 +322,7 @@ class TaskOrchestrationExecutor:
         bool
             Whether the orchestration invocation is completed.
         """
-        return self.orchestration_invocation_succeeded or not(self.exception is None)
+        return self.orchestration_invocation_succeeded or not (self.exception is None)
 
     @property
     def orchestration_invocation_succeeded(self) -> bool:

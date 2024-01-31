@@ -34,6 +34,10 @@ setup(
     ]),
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
+    author="Azure Functions team at Microsoft Corp.",
+    author_email="azurefunctions@microsoft.com",
+    keywords="azure functions azurefunctions python serverless workflows durablefunctions",
+    url="https://github.com/Azure/azure-functions-durable-python",
     description='Durable Functions For Python',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -50,7 +54,7 @@ setup(
     license='MIT',
     python_requires='>=3.6,<4',
     install_requires=[
-        'azure-functions>=1.2.0',
+        'azure-functions>=1.12.0',
         'aiohttp>=3.6.2',
         'requests==2.*',
         'python-dateutil>=2.8.0',
@@ -59,7 +63,7 @@ setup(
     extra_requires=[
         'flake8==3.7.8',
         'flake8-docstrings==1.5.0',
-        'pytest==5.3.2',
+        'pytest==7.1.2',
         'python-dateutil==2.8.0',
         'requests==2.22.0',
         'jsonschema==3.2.0',
@@ -67,7 +71,7 @@ setup(
         'azure-functions>=1.2.0',
         'nox==2019.11.9',
         'furl==2.1.0',
-        'pytest-asyncio==0.10.0'
+        'pytest-asyncio==0.20.2'
     ],
     include_package_data=True,
     data_files= [

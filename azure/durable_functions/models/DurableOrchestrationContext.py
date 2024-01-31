@@ -22,7 +22,7 @@ from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import json
 import datetime
 import inspect
-from typing import DefaultDict, List, Any, Dict, Optional, Tuple, Union
+from typing import DefaultDict, List, Any, Dict, Optional, Tuple, Union, Callable
 from uuid import UUID, uuid5, NAMESPACE_URL, NAMESPACE_OID
 from datetime import timezone
 
@@ -34,6 +34,8 @@ from ..models.TokenSource import TokenSource
 from .utils.entity_utils import EntityId
 from azure.functions._durable_functions import _deserialize_custom_object
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
+from azure.durable_functions.decorators.metadata import OrchestrationTrigger, ActivityTrigger
+from azure.functions.decorators.function_app import FunctionBuilder
 
 
 class DurableOrchestrationContext:
@@ -129,7 +131,7 @@ class DurableOrchestrationContext:
         task.parent = parent
 
         # if task is retryable, provide the retryable wrapper class
-        if not(retry_options is None):
+        if not (retry_options is None):
             task = RetryAbleTask(task, retry_options, self)
         return task
 
@@ -143,13 +145,14 @@ class DurableOrchestrationContext:
         """
         self._is_replaying = is_replaying
 
-    def call_activity(self, name: str, input_: Optional[Any] = None) -> TaskBase:
+    def call_activity(self, name: Union[str, Callable], input_: Optional[Any] = None) -> TaskBase:
         """Schedule an activity for execution.
 
         Parameters
         ----------
-        name: str
-            The name of the activity function to call.
+        name: str | Callable
+            Either the name of the activity function to call, as a string or,
+            in the Python V2 programming model, the activity function itself.
         input_: Optional[Any]
             The JSON-serializable input to pass to the activity function.
 
@@ -158,19 +161,31 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called activity function completes or fails.
         """
+        if isinstance(name, Callable) and not isinstance(name, FunctionBuilder):
+            error_message = "The `call_activity` API received a `Callable` without an "\
+                "associated Azure Functions trigger-type. "\
+                "Please ensure you're using the Python programming model V2 "\
+                "and that your activity function is annotated with the `activity_trigger`"\
+                "decorator. Otherwise, provide in the name of the activity as a string."
+            raise ValueError(error_message)
+
+        if isinstance(name, FunctionBuilder):
+            name = self._get_function_name(name, ActivityTrigger)
+
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
         return task
 
     def call_activity_with_retry(self,
-                                 name: str, retry_options: RetryOptions,
+                                 name: Union[str, Callable], retry_options: RetryOptions,
                                  input_: Optional[Any] = None) -> TaskBase:
         """Schedule an activity for execution with retry options.
 
         Parameters
         ----------
-        name: str
-            The name of the activity function to call.
+        name: str | Callable
+            Either the name of the activity function to call, as a string or,
+            in the Python V2 programming model, the activity function itself.
         retry_options: RetryOptions
             The retry options for the activity function.
         input_: Optional[Any]
@@ -182,6 +197,17 @@ class DurableOrchestrationContext:
             A Durable Task that completes when the called activity function completes or
             fails completely.
         """
+        if isinstance(name, Callable) and not isinstance(name, FunctionBuilder):
+            error_message = "The `call_activity` API received a `Callable` without an "\
+                "associated Azure Functions trigger-type. "\
+                "Please ensure you're using the Python programming model V2 "\
+                "and that your activity function is annotated with the `activity_trigger`"\
+                "decorator. Otherwise, provide in the name of the activity as a string."
+            raise ValueError(error_message)
+
+        if isinstance(name, FunctionBuilder):
+            name = self._get_function_name(name, ActivityTrigger)
+
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
         return task
@@ -221,13 +247,13 @@ class DurableOrchestrationContext:
         return task
 
     def call_sub_orchestrator(self,
-                              name: str, input_: Optional[Any] = None,
+                              name: Union[str, Callable], input_: Optional[Any] = None,
                               instance_id: Optional[str] = None) -> TaskBase:
         """Schedule sub-orchestration function named `name` for execution.
 
         Parameters
         ----------
-        name: str
+        name: Union[str, Callable]
             The name of the orchestrator function to call.
         input_: Optional[Any]
             The JSON-serializable input to pass to the orchestrator function.
@@ -239,19 +265,30 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called sub-orchestrator completes or fails.
         """
+        if isinstance(name, Callable) and not isinstance(name, FunctionBuilder):
+            error_message = "The `call_activity` API received a `Callable` without an "\
+                "associated Azure Functions trigger-type. "\
+                "Please ensure you're using the Python programming model V2 "\
+                "and that your activity function is annotated with the `activity_trigger`"\
+                "decorator. Otherwise, provide in the name of the activity as a string."
+            raise ValueError(error_message)
+
+        if isinstance(name, FunctionBuilder):
+            name = self._get_function_name(name, OrchestrationTrigger)
+
         action = CallSubOrchestratorAction(name, input_, instance_id)
         task = self._generate_task(action)
         return task
 
     def call_sub_orchestrator_with_retry(self,
-                                         name: str, retry_options: RetryOptions,
+                                         name: Union[str, Callable], retry_options: RetryOptions,
                                          input_: Optional[Any] = None,
                                          instance_id: Optional[str] = None) -> TaskBase:
         """Schedule sub-orchestration function named `name` for execution, with retry-options.
 
         Parameters
         ----------
-        name: str
+        name: Union[str, Callable]
             The name of the activity function to schedule.
         retry_options: RetryOptions
             The settings for retrying this sub-orchestrator in case of a failure.
@@ -265,6 +302,17 @@ class DurableOrchestrationContext:
         Task
             A Durable Task that completes when the called sub-orchestrator completes or fails.
         """
+        if isinstance(name, Callable) and not isinstance(name, FunctionBuilder):
+            error_message = "The `call_activity` API received a `Callable` without an "\
+                "associated Azure Functions trigger-type. "\
+                "Please ensure you're using the Python programming model V2 "\
+                "and that your activity function is annotated with the `activity_trigger`"\
+                "decorator. Otherwise, provide in the name of the activity as a string."
+            raise ValueError(error_message)
+
+        if isinstance(name, FunctionBuilder):
+            name = self._get_function_name(name, OrchestrationTrigger)
+
         action = CallSubOrchestratorWithRetryAction(name, retry_options, input_, instance_id)
         task = self._generate_task(action, retry_options)
         return task
@@ -505,7 +553,7 @@ class DurableOrchestrationContext:
         return self._continue_as_new_flag
 
     def create_timer(self, fire_at: datetime.datetime) -> TaskBase:
-        """Create a Durable Timer Task to implement a deadline at which to wake-up the orchestrator.
+        """Create a Timer Task to fire after at the specified deadline.
 
         Parameters
         ----------
@@ -613,6 +661,9 @@ class DurableOrchestrationContext:
 
     def _add_to_open_tasks(self, task: TaskBase):
 
+        if task._is_scheduled:
+            return
+
         if isinstance(task, AtomicTask):
             if task.id is None:
                 task.id = self._sequence_number
@@ -627,3 +678,30 @@ class DurableOrchestrationContext:
         else:
             for child in task.children:
                 self._add_to_open_tasks(child)
+
+    def _get_function_name(self, name: FunctionBuilder,
+                           trigger_type: Union[OrchestrationTrigger, ActivityTrigger]):
+        try:
+            if (isinstance(name._function._trigger, trigger_type)):
+                name = name._function._name
+                return name
+            else:
+                if (trigger_type == OrchestrationTrigger):
+                    trigger_type = "OrchestrationTrigger"
+                else:
+                    trigger_type = "ActivityTrigger"
+                error_message = "Received function with Trigger-type `"\
+                    + name._function._trigger.type\
+                    + "` but expected `" + trigger_type + "`. Ensure your "\
+                    "function is annotated with the `" + trigger_type +\
+                    "` decorator or directly pass in the name of the "\
+                    "function as a string."
+                raise ValueError(error_message)
+        except AttributeError as e:
+            e.message = "Durable Functions SDK internal error: an "\
+                "expected attribute is missing from the `FunctionBuilder` "\
+                "object in the Python V2 programming model. Please report "\
+                "this bug in the Durable Functions Python SDK repo: "\
+                "https://github.com/Azure/azure-functions-durable-python.\n"\
+                "Error trace: " + e.message
+            raise e
