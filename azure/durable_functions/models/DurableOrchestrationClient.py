@@ -447,6 +447,76 @@ class DurableOrchestrationClient:
         if error_message:
             raise Exception(error_message)
 
+    async def suspend(self, instance_id: str, reason: str) -> None:
+        """Suspend the specified orchestration instance.
+
+        Parameters
+        ----------
+        instance_id : str
+            The ID of the orchestration instance to query.
+        reason: str
+            The reason for suspending the instance.
+
+        Raises
+        ------
+        Exception:
+            When the suspend call failed with an unexpected status code
+
+        Returns
+        -------
+        None
+        """
+        request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}/" \
+                      f"suspend?reason={quote(reason)}"
+        response = await self._post_async_request(request_url, None)
+        switch_statement = {
+            202: lambda: None,  # instance in progress
+            410: lambda: None,  # instance failed or terminated
+            404: lambda: lambda: f"No instance with ID '{instance_id}' found.",
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+
+    async def resume(self, instance_id: str, reason: str) -> None:
+        """Resume the specified orchestration instance.
+
+        Parameters
+        ----------
+        instance_id : str
+            The ID of the orchestration instance to query.
+        reason: str
+            The reason for resuming the instance.
+
+        Raises
+        ------
+        Exception:
+            When the suspend call failed with an unexpected status code
+
+        Returns
+        -------
+        None
+        """
+        request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}/" \
+                      f"resume?reason={quote(reason)}"
+        response = await self._post_async_request(request_url, None)
+        switch_statement = {
+            202: lambda: None,  # instance in progress
+            410: lambda: None,  # instance failed or terminated
+            404: lambda: lambda: f"No instance with ID '{instance_id}' found.",
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+
     async def wait_for_completion_or_create_check_status_response(
             self, request, instance_id: str, timeout_in_milliseconds: int = 10000,
             retry_interval_in_milliseconds: int = 1000) -> func.HttpResponse:
