@@ -716,7 +716,7 @@ class DurableOrchestrationClient:
         Parameters
         ----------
         instance_id : str
-            The ID of the orchestration instance to query.
+            The ID of the orchestration instance to suspend.
         reason: str
             The reason for suspending the instance.
 
@@ -733,7 +733,7 @@ class DurableOrchestrationClient:
                       f"suspend?reason={quote(reason)}"
         response = await self._post_async_request(request_url, None)
         switch_statement = {
-            202: lambda: None,  # instance in progress
+            202: lambda: None,  # instance is suspended
             410: lambda: None,  # instance completed
             404: lambda: f"No instance with ID '{instance_id}' found.",
         }
@@ -746,7 +746,7 @@ class DurableOrchestrationClient:
             raise Exception(error_message)
 
     async def resume(self, instance_id: str, reason: str) -> None:
-        """Suspend the specified orchestration instance.
+        """Resume the specified orchestration instance.
 
         Parameters
         ----------
@@ -768,7 +768,7 @@ class DurableOrchestrationClient:
                       f"resume?reason={quote(reason)}"
         response = await self._post_async_request(request_url, None)
         switch_statement = {
-            202: lambda: None,  # instance in progress
+            202: lambda: None,  # instance is resumed
             410: lambda: None,  # instance completed
             404: lambda: f"No instance with ID '{instance_id}' found.",
         }
