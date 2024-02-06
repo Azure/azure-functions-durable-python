@@ -54,3 +54,15 @@ def test_extracts_purge_history_delete_uri(binding_info):
         "=Storage&code=AUTH_CODE")
     assert expected_url == binding_info.management_urls[
         "purgeHistoryDeleteUri"]
+
+def test_extracts_suspend_post_uri(binding_info):
+    expected_url = replace_stand_in_bits(
+        "BASE_URL/instances/INSTANCEID/suspend?reason={"
+        "text}&taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE")
+    assert expected_url == binding_info.management_urls["suspendPostUri"]
+
+def test_extracts_resume_post_uri(binding_info):
+    expected_url = replace_stand_in_bits(
+        "BASE_URL/instances/INSTANCEID/resume?reason={"
+        "text}&taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE")
+    assert expected_url == binding_info.management_urls["resumePostUri"]
