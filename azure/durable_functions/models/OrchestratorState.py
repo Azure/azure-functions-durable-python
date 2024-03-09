@@ -76,7 +76,7 @@ class OrchestratorState:
         """Get the Replay Schema represented in this OrchestratorState payload."""
         return self._replay_schema.value
 
-    def to_json(self) -> Dict[str, Union[str, int, Any]]:
+    def to_json(self) -> Dict[str, Any]:
         """Convert object into a json dictionary.
 
         Returns
@@ -84,7 +84,7 @@ class OrchestratorState:
         Dict[str, Any]
             The instance of the class converted into a json dictionary
         """
-        json_dict: Dict[str, Union[str, int]] = {}
+        json_dict: Dict[str, Any] = {}
         add_attrib(json_dict, self, '_is_done', 'isDone')
         if self._replay_schema != ReplaySchema.V1:
             add_attrib(json_dict, self, 'schema_version', 'schemaVersion')
