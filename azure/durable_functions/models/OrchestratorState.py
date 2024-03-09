@@ -5,6 +5,7 @@ from azure.durable_functions.models.ReplaySchema import ReplaySchema
 
 from .utils.json_utils import add_attrib
 from azure.durable_functions.models.actions.Action import Action
+from azure.functions._durable_functions import _serialize_custom_object
 
 
 class OrchestratorState:
@@ -75,7 +76,7 @@ class OrchestratorState:
         """Get the Replay Schema represented in this OrchestratorState payload."""
         return self._replay_schema.value
 
-    def to_json(self) -> Dict[str, Union[str, int]]:
+    def to_json(self) -> Dict[str, Union[str, int, Any]]:
         """Convert object into a json dictionary.
 
         Returns
@@ -113,4 +114,4 @@ class OrchestratorState:
             The instance of the object in json string format
         """
         json_dict = self.to_json()
-        return json.dumps(json_dict)
+        return json.dumps(json_dict, default=_serialize_custom_object)
