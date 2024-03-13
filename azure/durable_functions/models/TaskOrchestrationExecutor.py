@@ -89,10 +89,7 @@ class TaskOrchestrationExecutor:
         # them with values when the history provides them
         if isinstance(evaluated_user_code, GeneratorType):
             self.generator = evaluated_user_code
-            for event in history:
-                self.process_event(event)
-                if self.has_execution_completed:
-                    break
+            self.__execute()
 
         # Due to backwards compatibility reasons, it's possible
         # for the `continue_as_new` API to be called without `yield` statements.
@@ -102,6 +99,59 @@ class TaskOrchestrationExecutor:
             self.orchestrator_returned = True
             self.output = evaluated_user_code
         return self.get_orchestrator_state_str()
+
+    def lookup_result(self, task: TaskBase):
+        # This looks up a task's result in the extension's payload
+        found_task = False
+        if isinstance(task, AtomicTask):
+            # First, assign this task an ID
+            if task.id is None:
+                task.id = self.context._sequence_number
+                self.context._sequence_number += 1
+
+                key = task.id
+                # Now, see if TaskID can be found in the extension's payload
+                if key in self.context.tasks.keys():
+                    (payload, is_error) = self.context.tasks[key]
+                    if is_error:
+                        payload = Exception(payload)
+                    task.set_value(is_error, payload)
+                    found_task = True
+                    # We've set the result, we're ready to continue!
+        else:
+            for child in task.children:
+                # this is a simplified algorithm, I think there are a few
+                # more cases here to manage. This does the trick for now though :)
+                found_task = self.lookup_result(child)
+        return found_task
+
+    def __execute(self):
+        # Replay user-code until a task is yielded that does not have
+        # a result according to the extension's payload.
+
+        task_result = None
+        should_throw = False
+        have_task_result = True
+        while have_task_result:
+            execute_code = self.generator.throw if should_throw else self.generator.send
+            try:
+                # Run user-code, feed in prev Task's result
+                task = execute_code(task_result)
+            except StopIteration as stop_exception:
+                self.orchestrator_returned = True
+                self.output = stop_exception.value
+                return
+            except Exception as exception:
+                self.exception = exception
+                return
+            # record actions, to send back to C#
+            self.context._add_to_actions(task.action_repr)
+            # lookup task result
+            have_task_result = self.lookup_result(task)
+
+            if have_task_result:
+                task_result = task.result
+                should_throw = task.state is TaskState.FAILED
 
     def process_event(self, event: HistoryEvent):
         """Evaluate a history event.
