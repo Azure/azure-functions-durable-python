@@ -426,6 +426,116 @@ async def test_post_500_terminate(binding_string):
     with pytest.raises(Exception):
         await client.terminate(TEST_INSTANCE_ID, raw_reason)
 
+@pytest.mark.asyncio
+async def test_post_202_suspend(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/suspend?reason={reason}",
+        response=[202, None])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    result = await client.suspend(TEST_INSTANCE_ID, raw_reason)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_post_410_suspend(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/suspend?reason={reason}",
+        response=[410, None])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    result = await client.suspend(TEST_INSTANCE_ID, raw_reason)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_post_404_suspend(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/suspend?reason={reason}",
+        response=[404, MESSAGE_404])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    with pytest.raises(Exception):
+        await client.suspend(TEST_INSTANCE_ID, raw_reason)
+
+
+@pytest.mark.asyncio
+async def test_post_500_suspend(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/suspend?reason={reason}",
+        response=[500, MESSAGE_500])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    with pytest.raises(Exception):
+        await client.suspend(TEST_INSTANCE_ID, raw_reason)
+
+@pytest.mark.asyncio
+async def test_post_202_resume(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/resume?reason={reason}",
+        response=[202, None])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    result = await client.resume(TEST_INSTANCE_ID, raw_reason)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_post_410_suspend(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/resume?reason={reason}",
+        response=[410, None])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    result = await client.resume(TEST_INSTANCE_ID, raw_reason)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_post_404_suspend(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/resume?reason={reason}",
+        response=[404, MESSAGE_404])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    with pytest.raises(Exception):
+        await client.resume(TEST_INSTANCE_ID, raw_reason)
+
+
+@pytest.mark.asyncio
+async def test_post_500_resume(binding_string):
+    raw_reason = 'stuff and things'
+    reason = 'stuff%20and%20things'
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/resume?reason={reason}",
+        response=[500, MESSAGE_500])
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    with pytest.raises(Exception):
+        await client.resume(TEST_INSTANCE_ID, raw_reason)
+
 
 @pytest.mark.asyncio
 async def test_wait_or_response_200_completed(binding_string):
