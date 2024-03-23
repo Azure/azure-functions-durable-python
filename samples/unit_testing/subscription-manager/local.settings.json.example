@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "",
+    "BILLING_ACCOUNT_ID": "",
+    "ENROLLMENT_ACCOUNT_ID": "",
+    "SecurityGroups_SUBSCRIPTION_MANAGERS": "ef6d2d1a-78eb-4bb1-97c7-bb8a8e509e9c",
+    "SecurityGroups_SUBSCRIPTION_READERS": "3b231ce1-29c1-441e-bddb-033f96401888"
+  }
+}
