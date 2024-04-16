@@ -285,7 +285,7 @@ class TaskOrchestrationExecutor:
             except Exception as e:
                 self.output = None
                 self.exception = e
-        
+
         state = OrchestratorState(
             is_done=self.orchestration_invocation_succeeded,
             actions=self.context._actions,
