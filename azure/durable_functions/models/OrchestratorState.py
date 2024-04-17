@@ -1,5 +1,5 @@
 import json
-from typing import List, Any, Dict, Optional, Union
+from typing import List, Any, Dict, Optional
 
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 
