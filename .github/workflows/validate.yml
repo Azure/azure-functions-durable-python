@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dajusto/add-gh-actions-tests
 
 jobs:
   empty_job:
