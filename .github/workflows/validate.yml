@@ -13,14 +13,11 @@ on:
       - dajusto/add-gh-actions-tests
 
 jobs:
-  empty_job:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Empty step
-        run: echo "This is an empty GitHub Actions workflow."
 
       - name: Set up Python
         uses: actions/setup-python@v2
