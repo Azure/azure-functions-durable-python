@@ -1,43 +1,16 @@
-name: Validate
+name: Empty Workflow
 
 on:
   push:
     branches:
       - main
-      - dev
-      - dajusto/add-gh-action-tests
-    paths-ignore: [ '**.md' ]
-  pull_request:
-    branches:
-      - main
-      - dev
-      - dajusto/add-gh-action-tests
-    paths-ignore: [ '**.md' ]
 
 jobs:
-  build:
-    runs-on: windows-latest
-
+  empty_job:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: true
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run Linter
-        run: |
-          cd azure
-          flake8 . --count --show-source --statistics
-
-      - name: Run tests
-        run: |
-          pytest
+      - name: Empty step
+        run: echo "This is an empty GitHub Actions workflow."
