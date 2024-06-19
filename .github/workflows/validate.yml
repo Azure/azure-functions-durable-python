@@ -5,12 +5,10 @@ on:
     branches:
       - main
       - dev
-      - dajusto/add-gh-actions-tests
   pull_request:
     branches:
       - main
       - dev
-      - dajusto/add-gh-actions-tests
 
 jobs:
   validate:
