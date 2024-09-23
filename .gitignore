@@ -132,3 +132,6 @@ appsettings.*.json
 /samples/python_durable_bindings/bin/
 /samples/python_durable_bindings/.vs/
 /samples/python_durable_bindings/obj/
+
+# azurite emulator
+__azurite_db_*.json
