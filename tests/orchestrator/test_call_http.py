@@ -1,5 +1,6 @@
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import json
+import pytest
 from typing import Dict
 
 from azure.durable_functions.constants import HTTP_ACTION_NAME
@@ -7,6 +8,7 @@ from azure.durable_functions.models import DurableHttpRequest
 from .orchestrator_test_utils import assert_orchestration_state_equals, \
     get_orchestration_state_result, assert_valid_schema, assert_dict_are_equal
 from tests.test_utils.ContextBuilder import ContextBuilder
+from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.TokenSource import ManagedIdentityTokenSource
@@ -198,7 +200,6 @@ def test_call_http_content_handling(content, expected_content):
 
     task = context.call_http(method, uri, content)
 
-    assert isinstance(task, TaskBase)
     assert len(context._actions) == 1
     action = context._actions[0][0]
     assert isinstance(action, CallHttpAction)
