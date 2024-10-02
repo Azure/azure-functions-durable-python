@@ -236,10 +236,11 @@ class DurableOrchestrationContext:
             The durable HTTP request to schedule.
         """
         json_content: Optional[str] = None
-        if content is None:
-            json_content = json.dumps(content)
-        else:
-            json_content = content
+        if content is not None:
+            if not isinstance(content, str):
+                json_content = json.dumps(content)
+            else:
+                json_content = content
 
         request = DurableHttpRequest(method, uri, json_content, headers, token_source)
         action = CallHttpAction(request)
