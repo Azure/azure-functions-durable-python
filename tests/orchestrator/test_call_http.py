@@ -174,3 +174,36 @@ def test_post_completed_state():
     # assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
     validate_result_http_request(result)
+
+@pytest.mark.parametrize("content, expected_content", [
+    (None, None),
+    ("string data", "string data"),
+    ('{"key": "value"}', '{"key": "value"}'),
+    ('["list", "content"]', '["list", "content"]'),
+    ('[]', '[]'),
+    ('42', '42'),
+    ('true', 'true'),  
+    # Cases that test actual behavior (not strictly adhering to Optional[str])
+    ({"key": "value"}, '{"key": "value"}'),
+    (["list", "content"], '["list", "content"]'),
+    ([], '[]'),
+    (42, '42'),
+    (True, 'true'),
+])
+def test_call_http_content_handling(content, expected_content):
+    context = DurableOrchestrationContext.from_json(
+        '{"history":[],"input":null,"instanceId":"test","isReplaying":false,"parentInstanceId":null}')
+    method = "GET"
+    uri = "https://localhost:7071/test"
+
+    task = context.call_http(method, uri, content)
+
+    assert isinstance(task, TaskBase)
+    assert len(context._actions) == 1
+    action = context._actions[0][0]
+    assert isinstance(action, CallHttpAction)
+    
+    http_request = action.http_request
+    assert http_request.method == method
+    assert http_request.uri == uri
+    assert http_request.content == expected_content
