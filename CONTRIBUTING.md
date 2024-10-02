@@ -18,11 +18,13 @@ Thank you for taking the time to contribute to Durable Functions in [Python](htt
 
 ## Pre-requisites
 
+> Alternatively you can use a dev container or [open in GitHub Codespaces](https://codespaces.new/Azure/azure-functions-durable-python).
+
 - OS
     - MacOS (or) Windows10 Ubuntu WSL
 - Language Runtimes
     - .NET Core 2.0
-    - \>= Python 3.6.x 
+    - \>= Python 3.6.x
 
 Note: Some ML libraries may not be compatible with newer Python versions. Make sure the library is compatible with the Python version.
 
@@ -35,7 +37,7 @@ Note: Some ML libraries may not be compatible with newer Python versions. Make s
     - [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator) (or) [Create a storage account in Azure](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal)
     - [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools) v2.7.x and above.
     - [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/)
-  
+
 
 ## Pull Request Change flow
 

@@ -1,0 +1,42 @@
+jobs:
+    - job: Build
+
+      templateContext:
+          outputs:
+              - output: pipelineArtifact
+                path: $(build.artifactStagingDirectory)
+                artifact: drop
+                sbomBuildDropPath: $(System.DefaultWorkingDirectory)
+                sbomPackageName: 'Durable Functions Python'
+
+      steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: '3.7.x'
+        - script: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install wheel
+          workingDirectory: $(System.DefaultWorkingDirectory)
+          displayName: 'Install dependencies'
+
+        - script: |
+            cd azure
+            flake8 . --count --show-source --statistics
+          displayName: 'Run lint test with flake8'
+
+        - script: |
+            pip install pytest pytest-azurepipelines
+            pytest
+          displayName: 'pytest'
+        - script: |
+            python setup.py sdist bdist_wheel
+          workingDirectory: $(System.DefaultWorkingDirectory)
+          displayName: 'Building'
+
+        - task: CopyFiles@2
+          displayName: 'Copy publish file to Artifact Staging Directory'
+          inputs:
+            SourceFolder: dist
+            Contents: '**'
+            TargetFolder: $(Build.ArtifactStagingDirectory)

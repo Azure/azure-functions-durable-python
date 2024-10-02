@@ -276,6 +276,16 @@ class TaskOrchestrationExecutor:
             message contains in it the string representation of the orchestration's
             state
         """
+        if(self.output is not None):
+            try:
+                # Attempt to serialize the output. If serialization fails, raise an
+                # error indicating that the orchestration output is not serializable,
+                # which is not permitted in durable Python functions.
+                json.dumps(self.output)
+            except Exception as e:
+                self.output = None
+                self.exception = e
+
         state = OrchestratorState(
             is_done=self.orchestration_invocation_succeeded,
             actions=self.context._actions,

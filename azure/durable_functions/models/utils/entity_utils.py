@@ -89,3 +89,15 @@ class EntityId:
             A SchedulerId-based string representation of the EntityId
         """
         return EntityId.get_scheduler_id(entity_id=self)
+
+    def __eq__(self, other: object) -> bool:
+        """Check if two EntityId objects are equal.
+
+        Parameters
+        ----------
+        other: object
+        """
+        if not isinstance(other, EntityId):
+            return False
+
+        return self.name == other.name and self.key == other.key
