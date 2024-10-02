@@ -63,8 +63,8 @@ def get_request() -> DurableHttpRequest:
     return DurableHttpRequest(method='GET', uri=TEST_URI)
 
 
-def post_request() -> DurableHttpRequest:
-    return DurableHttpRequest(method="POST", uri=TEST_URI, content=json.dumps(CONTENT),
+def post_request(content: Optional[str] = None) -> DurableHttpRequest:
+    return DurableHttpRequest(method="POST", uri=TEST_URI, content=json.dumps(content),
                               headers=HEADERS, token_source=TOKEN_SOURCE)
 
 
@@ -135,7 +135,7 @@ def test_initial_post_state():
         context_builder, complete_generator_function)
 
     expected_state = base_expected_state()
-    request = post_request()
+    request = post_request(CONTENT)
     add_http_action(expected_state, request)
     expected = expected_state.to_json()
 
@@ -168,7 +168,7 @@ def test_post_completed_state():
         context_builder, complete_generator_function)
 
     expected_state = base_expected_state()
-    request = post_request()
+    request = post_request(CONTENT)
     add_http_action(expected_state, request)
     expected_state._is_done = True
     expected = expected_state.to_json()
@@ -193,18 +193,15 @@ def test_post_completed_state():
     (True, 'true'),
 ])
 def test_call_http_content_handling(content, expected_content):
-    context = DurableOrchestrationContext.from_json(
-        '{"history":[],"input":null,"instanceId":"test","isReplaying":false,"parentInstanceId":null}')
-    method = "GET"
-    uri = "https://localhost:7071/test"
+    def orchestrator_function(context):
+        yield context.call_http("POST", TEST_URI, content)
 
-    task = context.call_http(method, uri, content)
+    context_builder = ContextBuilder('test_call_http_content_handling')
+    result = get_orchestration_state_result(context_builder, orchestrator_function)
 
-    assert len(context._actions) == 1
-    action = context._actions[0][0]
-    assert isinstance(action, CallHttpAction)
+    assert len(result['actions']) == 1
+    http_action = result['actions'][0][0]['httpRequest']
     
-    http_request = action.http_request
-    assert http_request.method == method
-    assert http_request.uri == uri
-    assert http_request.content == expected_content
+    assert http_action['method'] == "POST"
+    assert http_action['uri'] == TEST_URI
+    assert http_action['content'] == expected_content
