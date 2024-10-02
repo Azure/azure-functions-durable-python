@@ -63,7 +63,7 @@ def get_request() -> DurableHttpRequest:
     return DurableHttpRequest(method='GET', uri=TEST_URI)
 
 
-def post_request(content: Optional[str] = None) -> DurableHttpRequest:
+def post_request() -> DurableHttpRequest:
     return DurableHttpRequest(method="POST", uri=TEST_URI, content=json.dumps(content),
                               headers=HEADERS, token_source=TOKEN_SOURCE)
 
@@ -135,7 +135,7 @@ def test_initial_post_state():
         context_builder, complete_generator_function)
 
     expected_state = base_expected_state()
-    request = post_request(CONTENT)
+    request = post_request()
     add_http_action(expected_state, request)
     expected = expected_state.to_json()
 
@@ -168,7 +168,7 @@ def test_post_completed_state():
         context_builder, complete_generator_function)
 
     expected_state = base_expected_state()
-    request = post_request(CONTENT)
+    request = post_request()
     add_http_action(expected_state, request)
     expected_state._is_done = True
     expected = expected_state.to_json()
