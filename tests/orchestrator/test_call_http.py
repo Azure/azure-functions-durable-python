@@ -64,7 +64,7 @@ def get_request() -> DurableHttpRequest:
 
 
 def post_request() -> DurableHttpRequest:
-    return DurableHttpRequest(method="POST", uri=TEST_URI, content=json.dumps(content),
+    return DurableHttpRequest(method="POST", uri=TEST_URI, content=json.dumps(CONTENT),
                               headers=HEADERS, token_source=TOKEN_SOURCE)
 
 
