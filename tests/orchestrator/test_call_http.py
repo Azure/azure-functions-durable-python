@@ -8,7 +8,6 @@ from azure.durable_functions.models import DurableHttpRequest
 from .orchestrator_test_utils import assert_orchestration_state_equals, \
     get_orchestration_state_result, assert_valid_schema, assert_dict_are_equal
 from tests.test_utils.ContextBuilder import ContextBuilder
-from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.TokenSource import ManagedIdentityTokenSource
