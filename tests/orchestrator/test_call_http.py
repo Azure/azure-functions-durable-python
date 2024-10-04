@@ -178,12 +178,12 @@ def test_post_completed_state():
 
 @pytest.mark.parametrize("content, expected_content", [
     (None, None),
-    ("string data", "string data"),
-    ('{"key": "value"}', '{"key": "value"}'),
-    ('["list", "content"]', '["list", "content"]'),
-    ('[]', '[]'),
-    ('42', '42'),
-    ('true', 'true'),  
+    ("string data", '"string data"'),
+    ('{"key": "value"}', '"{\\"key\\": \\"value\\"}"'),
+    ('["list", "content"]', '"[\\"list\\", \\"content\\"]"'),
+    ('[]', '"[]"'),
+    ('42', '"42"'),
+    ('true', '"true"'),  
     # Cases that test actual behavior (not strictly adhering to Optional[str])
     ({"key": "value"}, '{"key": "value"}'),
     (["list", "content"], '["list", "content"]'),
