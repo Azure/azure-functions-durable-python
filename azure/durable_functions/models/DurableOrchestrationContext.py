@@ -214,7 +214,8 @@ class DurableOrchestrationContext:
 
     def call_http(self, method: str, uri: str, content: Optional[str] = None,
                   headers: Optional[Dict[str, str]] = None,
-                  token_source: TokenSource = None) -> TaskBase:
+                  token_source: TokenSource = None,
+                  is_raw_str: bool = False) -> TaskBase:
         """Schedule a durable HTTP call to the specified endpoint.
 
         Parameters
@@ -237,10 +238,11 @@ class DurableOrchestrationContext:
         """
         json_content: Optional[str] = None
         if content is not None:
-            if not isinstance(content, str):
-                json_content = json.dumps(content)
-            else:
+            if isinstance(content, str) and is_raw_str:
+            # don't serialize the str value - use it as the raw HTTP request payload
                 json_content = content
+            else:
+                json_content = json.dumps(content)
 
         request = DurableHttpRequest(method, uri, json_content, headers, token_source)
         action = CallHttpAction(request)
