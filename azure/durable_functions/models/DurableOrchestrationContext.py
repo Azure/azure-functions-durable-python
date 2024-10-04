@@ -239,7 +239,7 @@ class DurableOrchestrationContext:
         json_content: Optional[str] = None
         if content is not None:
             if isinstance(content, str) and is_raw_str:
-            # don't serialize the str value - use it as the raw HTTP request payload
+                # don't serialize the str value - use it as the raw HTTP request payload
                 json_content = content
             else:
                 json_content = json.dumps(content)
