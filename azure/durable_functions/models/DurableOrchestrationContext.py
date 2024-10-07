@@ -231,8 +231,8 @@ class DurableOrchestrationContext:
         token_source: TokenSource
             The source of OAuth token to add to the request.
         is_raw_str: bool, optional
-            If True, the content will be treated as a raw string and will not be serialized to JSON.
-            If False (default), the content will be serialized to a JSON string before sending.
+            If True, send content as-is.
+            If False (default), serialize content to JSON.
 
         Returns
         -------
