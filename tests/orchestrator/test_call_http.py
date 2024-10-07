@@ -176,24 +176,28 @@ def test_post_completed_state():
     assert_orchestration_state_equals(expected, result)
     validate_result_http_request(result)
 
-@pytest.mark.parametrize("content, expected_content", [
-    (None, None),
-    ("string data", '"string data"'),
-    ('{"key": "value"}', '"{\\"key\\": \\"value\\"}"'),
-    ('["list", "content"]', '"[\\"list\\", \\"content\\"]"'),
-    ('[]', '"[]"'),
-    ('42', '"42"'),
-    ('true', '"true"'),  
+@pytest.mark.parametrize("content, expected_content, is_raw_str", [
+    (None, None, False),
+    ("string data", '"string data"', False),
+    ('{"key": "value"}', '"{\\"key\\": \\"value\\"}"', False),
+    ('["list", "content"]', '"[\\"list\\", \\"content\\"]"', False),
+    ('[]', '"[]"', False),
+    ('42', '"42"', False),
+    ('true', '"true"', False),  
     # Cases that test actual behavior (not strictly adhering to Optional[str])
-    ({"key": "value"}, '{"key": "value"}'),
-    (["list", "content"], '["list", "content"]'),
-    ([], '[]'),
-    (42, '42'),
-    (True, 'true'),
+    ({"key": "value"}, '{"key": "value"}', False),
+    (["list", "content"], '["list", "content"]', False),
+    ([], '[]', False),
+    (42, '42', False),
+    (True, 'true', False),
+    # Cases when is_raw_str is True
+    ("string data", "string data", True),
+    ('{"key": "value"}', '{"key": "value"}', True),
+    ('[]', '[]', True),
 ])
-def test_call_http_content_handling(content, expected_content):
+def test_call_http_content_handling(content, expected_content, is_raw_str):
     def orchestrator_function(context):
-        yield context.call_http("POST", TEST_URI, content)
+        yield context.call_http("POST", TEST_URI, content, is_raw_str=is_raw_str)
 
     context_builder = ContextBuilder('test_call_http_content_handling')
     result = get_orchestration_state_result(context_builder, orchestrator_function)
