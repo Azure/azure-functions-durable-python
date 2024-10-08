@@ -194,6 +194,7 @@ def test_post_completed_state():
     ("string data", "string data", True),
     ('{"key": "value"}', '{"key": "value"}', True),
     ('[]', '[]', True),
+    (None, None, True),
 ])
 def test_call_http_content_handling(content, expected_content, is_raw_str):
     def orchestrator_function(context):
@@ -208,3 +209,17 @@ def test_call_http_content_handling(content, expected_content, is_raw_str):
     assert http_action['method'] == "POST"
     assert http_action['uri'] == TEST_URI
     assert http_action['content'] == expected_content
+
+# Test that call_http raises a TypeError when is_raw_str is True but content is not a string
+def test_call_http_non_string_content_with_raw_str():
+    def orchestrator_function(context):
+        yield context.call_http("POST", TEST_URI, {"key": "value"}, is_raw_str=True)
+
+    context_builder = ContextBuilder('test_call_http_non_string_content_with_raw_str')
+    
+    with pytest.raises(TypeError) as e:
+        get_orchestration_state_result(context_builder, orchestrator_function)
+
+    expected_error_message = "Invalid use of 'is_raw_str' parameter: 'is_raw_str' is set to 'True' but 'content' is not an instance of type 'str'. Either set 'is_raw_str' to 'False', or ensure your 'content' is of type 'str'."
+    assert e.type == TypeError
+    assert str(e.value) == expected_error_message

@@ -231,7 +231,7 @@ class DurableOrchestrationContext:
         token_source: TokenSource
             The source of OAuth token to add to the request.
         is_raw_str: bool, optional
-            If True, send content as-is.
+            If True, send string content as-is.
             If False (default), serialize content to JSON.
 
         Returns
@@ -240,6 +240,12 @@ class DurableOrchestrationContext:
             The durable HTTP request to schedule.
         """
         json_content: Optional[str] = None
+
+        # validate parameters
+        if (not isinstance(content, str)) and is_raw_str:
+            raise TypeError("Invalid use of 'is_raw_str' parameter: 'is_raw_str' is set to 'True' but 'content' is not an instance of type 'str'. " \
+                            "Either set 'is_raw_str' to 'False', or ensure your 'content' is of type 'str'.")
+
         if content is not None:
             if isinstance(content, str) and is_raw_str:
                 # don't serialize the str value - use it as the raw HTTP request payload
