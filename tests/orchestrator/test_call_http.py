@@ -224,9 +224,9 @@ def test_call_http_non_string_content_with_raw_str():
         error_str = str(e)
 
         expected_state = base_expected_state()
-        error_msg = "Invalid use of 'is_raw_str' parameter: 'is_raw_str' is "
-                "set to 'True' but 'content' is not an instance of type 'str'. "
-                "Either set 'is_raw_str' to 'False', or ensure your 'content' "
+        error_msg = "Invalid use of 'is_raw_str' parameter: 'is_raw_str' is "\
+                "set to 'True' but 'content' is not an instance of type 'str'. "\
+                "Either set 'is_raw_str' to 'False', or ensure your 'content' "\
                 "is of type 'str'."
         expected_state._error = error_msg
         state_str = expected_state.to_json_string()
