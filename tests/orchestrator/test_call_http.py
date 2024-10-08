@@ -1,5 +1,6 @@
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 import json
+import pytest
 from typing import Dict
 
 from azure.durable_functions.constants import HTTP_ACTION_NAME
@@ -174,3 +175,61 @@ def test_post_completed_state():
     # assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
     validate_result_http_request(result)
+
+@pytest.mark.parametrize("content, expected_content, is_raw_str", [
+    (None, None, False),
+    ("string data", '"string data"', False),
+    ('{"key": "value"}', '"{\\"key\\": \\"value\\"}"', False),
+    ('["list", "content"]', '"[\\"list\\", \\"content\\"]"', False),
+    ('[]', '"[]"', False),
+    ('42', '"42"', False),
+    ('true', '"true"', False),  
+    # Cases that test actual behavior (not strictly adhering to Optional[str])
+    ({"key": "value"}, '{"key": "value"}', False),
+    (["list", "content"], '["list", "content"]', False),
+    ([], '[]', False),
+    (42, '42', False),
+    (True, 'true', False),
+    # Cases when is_raw_str is True
+    ("string data", "string data", True),
+    ('{"key": "value"}', '{"key": "value"}', True),
+    ('[]', '[]', True),
+])
+def test_call_http_content_handling(content, expected_content, is_raw_str):
+    def orchestrator_function(context):
+        yield context.call_http("POST", TEST_URI, content, is_raw_str=is_raw_str)
+
+    context_builder = ContextBuilder('test_call_http_content_handling')
+    result = get_orchestration_state_result(context_builder, orchestrator_function)
+
+    assert len(result['actions']) == 1
+    http_action = result['actions'][0][0]['httpRequest']
+    
+    assert http_action['method'] == "POST"
+    assert http_action['uri'] == TEST_URI
+    assert http_action['content'] == expected_content
+
+# Test that call_http raises a TypeError when is_raw_str is True but content is not a string
+def test_call_http_non_string_content_with_raw_str():
+    def orchestrator_function(context):
+        yield context.call_http("POST", TEST_URI, {"key": "value"}, is_raw_str=True)
+
+    context_builder = ContextBuilder('test_call_http_non_string_content_with_raw_str')
+    
+    try:
+        result = get_orchestration_state_result(context_builder, orchestrator_function)
+        assert False
+    except Exception as e:
+        error_label = "\n\n$OutOfProcData$:"
+        error_str = str(e)
+
+        expected_state = base_expected_state()
+        error_msg = "Invalid use of 'is_raw_str' parameter: 'is_raw_str' is "\
+                "set to 'True' but 'content' is not an instance of type 'str'. "\
+                "Either set 'is_raw_str' to 'False', or ensure your 'content' "\
+                "is of type 'str'."
+        expected_state._error = error_msg
+        state_str = expected_state.to_json_string()
+        
+        expected_error_str = f"{error_msg}{error_label}{state_str}"
+        assert expected_error_str == error_str

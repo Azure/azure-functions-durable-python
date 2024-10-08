@@ -214,7 +214,8 @@ class DurableOrchestrationContext:
 
     def call_http(self, method: str, uri: str, content: Optional[str] = None,
                   headers: Optional[Dict[str, str]] = None,
-                  token_source: TokenSource = None) -> TaskBase:
+                  token_source: TokenSource = None,
+                  is_raw_str: bool = False) -> TaskBase:
         """Schedule a durable HTTP call to the specified endpoint.
 
         Parameters
@@ -229,6 +230,9 @@ class DurableOrchestrationContext:
             The HTTP request headers.
         token_source: TokenSource
             The source of OAuth token to add to the request.
+        is_raw_str: bool, optional
+            If True, send string content as-is.
+            If False (default), serialize content to JSON.
 
         Returns
         -------
@@ -236,10 +240,21 @@ class DurableOrchestrationContext:
             The durable HTTP request to schedule.
         """
         json_content: Optional[str] = None
-        if content and content is not isinstance(content, str):
-            json_content = json.dumps(content)
-        else:
-            json_content = content
+
+        # validate parameters
+        if (not isinstance(content, str)) and is_raw_str:
+            raise TypeError(
+                "Invalid use of 'is_raw_str' parameter: 'is_raw_str' is "
+                "set to 'True' but 'content' is not an instance of type 'str'. "
+                "Either set 'is_raw_str' to 'False', or ensure your 'content' "
+                "is of type 'str'.")
+
+        if content is not None:
+            if isinstance(content, str) and is_raw_str:
+                # don't serialize the str value - use it as the raw HTTP request payload
+                json_content = content
+            else:
+                json_content = json.dumps(content)
 
         request = DurableHttpRequest(method, uri, json_content, headers, token_source)
         action = CallHttpAction(request)
