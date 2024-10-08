@@ -243,9 +243,10 @@ class DurableOrchestrationContext:
 
         # validate parameters
         if (not isinstance(content, str)) and is_raw_str:
-            raise TypeError("Invalid use of 'is_raw_str' parameter: 'is_raw_str' is "\
-                "set to 'True' but 'content' is not an instance of type 'str'. "\
-                "Either set 'is_raw_str' to 'False', or ensure your 'content' "\
+            raise TypeError(
+                "Invalid use of 'is_raw_str' parameter: 'is_raw_str' is "
+                "set to 'True' but 'content' is not an instance of type 'str'. "
+                "Either set 'is_raw_str' to 'False', or ensure your 'content' "
                 "is of type 'str'.")
 
         if content is not None:
