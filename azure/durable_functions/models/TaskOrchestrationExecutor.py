@@ -291,7 +291,7 @@ class TaskOrchestrationExecutor:
             actions=self.context._actions,
             output=self.output,
             replay_schema=self.context._replay_schema,
-            error=None if self.exception is None else str(self.exception),
+            error=None if self.exception is None else (str(type(self.exception)) if not str(self.exception) else str(self.exception)),
             custom_status=self.context.custom_status
         )
 
