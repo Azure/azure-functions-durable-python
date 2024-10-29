@@ -285,7 +285,7 @@ class TaskOrchestrationExecutor:
             except Exception as e:
                 self.output = None
                 self.exception = e
-        
+
         exception_str = None
         if self.exception is not None:
             exception_str = str(self.exception)
