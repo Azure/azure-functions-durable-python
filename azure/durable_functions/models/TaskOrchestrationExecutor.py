@@ -286,12 +286,18 @@ class TaskOrchestrationExecutor:
                 self.output = None
                 self.exception = e
 
+        exception_str = None
+        if self.exception is not None:
+            exception_str = str(self.exception)
+            if not exception_str:
+                exception_str = str(type(self.exception))
+
         state = OrchestratorState(
             is_done=self.orchestration_invocation_succeeded,
             actions=self.context._actions,
             output=self.output,
             replay_schema=self.context._replay_schema,
-            error=None if self.exception is None else str(self.exception),
+            error=exception_str,
             custom_status=self.context.custom_status
         )
 
