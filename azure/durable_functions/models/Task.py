@@ -377,8 +377,8 @@ class LongTimerTask(WhenAllTask):
     def try_set_value(self, child: TimerTask):
         """Transition this LongTimer Task to a terminal state and set its value.
 
-        If the LongTimer has not yet reached the designated completion time, starts a new 
-        TimerTask for the next interval and does not close. 
+        If the LongTimer has not yet reached the designated completion time, starts a new
+        TimerTask for the next interval and does not close.
 
         Parameters
         ----------
@@ -392,8 +392,8 @@ class LongTimerTask(WhenAllTask):
             self.add_new_child(next_timer)
         return super().try_set_value(child)
 
-    def get_next_timer_task(self, final_fire_time: datetime, current_time: datetime) -> TimerTask: 
-        """Creates a TimerTask that represents the next interval of the LongTimer
+    def get_next_timer_task(self, final_fire_time: datetime, current_time: datetime) -> TimerTask:
+        """Creates a TimerTask that represents the next interval of the LongTimer.
 
         Parameters
         ----------
@@ -415,7 +415,9 @@ class LongTimerTask(WhenAllTask):
         return TimerTask(None, CreateTimerAction(next_fire_time))
 
     def add_new_child(self, child_timer: TimerTask):
-        """Adds the TimerTask to this Task's children and schedules it in the orchestrationcontext
+        """Add the TimerTask to this task's children.
+        
+        Also register the TimerTask with the orchestration context.
 
         Parameters
         ----------
@@ -427,6 +429,7 @@ class LongTimerTask(WhenAllTask):
         self.orchestration_context._add_to_open_tasks(child_timer)
         self.orchestration_context._add_to_actions(child_timer.action_repr)
         child_timer._set_is_scheduled(True)
+
 
 class WhenAnyTask(CompoundTask):
     """A Task representing `when_any` scenarios."""

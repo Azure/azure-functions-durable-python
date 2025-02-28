@@ -51,8 +51,9 @@ class DurableOrchestrationContext:
     def __init__(self,
                  history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
                  parentInstanceId: str, input: Any = None, upperSchemaVersion: int = 0,
-                 maximumShortTimerDuration:str = None, longRunningTimerIntervalDuration:str = None,
-                 upperSchemaVersionNew:int = None, **kwargs):
+                 maximumShortTimerDuration: str = None, 
+                 longRunningTimerIntervalDuration: str = None, upperSchemaVersionNew: int = None,
+                 **kwargs):
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
@@ -628,14 +629,14 @@ class DurableOrchestrationContext:
         if self._replay_schema.value >= ReplaySchema.V3.value:
             if not self.maximum_short_timer_duration or not self.long_timer_interval_duration:
                 raise Exception(
-                    "A framework-internal error was detected: " +
-                        "replay schema version >= V3 is being used, " +
-                        "but one or more of the properties `maximumShortTimerDuration`" +
-                        "and `longRunningTimerIntervalDuration` are not defined. " +
-                        "This is likely an issue with the Durable Functions Extension. " +
-                        "Please report this bug here: " + 
-                        "https://github.com/Azure/azure-functions-durable-python/issues\n" +
-                        f"maximumShortTimerDuration: {self.maximum_short_timer_duration}\n" +
+                    "A framework-internal error was detected: "\
+                        "replay schema version >= V3 is being used, "\
+                        "but one or more of the properties `maximumShortTimerDuration`"\
+                        "and `longRunningTimerIntervalDuration` are not defined. "\
+                        "This is likely an issue with the Durable Functions Extension. "\
+                        "Please report this bug here: "\
+                        "https://github.com/Azure/azure-functions-durable-python/issues\n"\
+                        f"maximumShortTimerDuration: {self.maximum_short_timer_duration}\n"\
                         f"longRunningTimerIntervalDuration: {self.long_timer_interval_duration}"
                 )
             if fire_at > self.current_utc_datetime + self.maximum_short_timer_duration:
@@ -718,7 +719,7 @@ class DurableOrchestrationContext:
 
         if self._replay_schema is ReplaySchema.V1 and isinstance(action_repr, list):
             self._action_payload_v1.append(action_repr)
-        elif (self._replay_schema.value >= ReplaySchema.V2.value 
+        elif (self._replay_schema.value >= ReplaySchema.V2.value
               and isinstance(action_repr, Action)):
             self._action_payload_v2.append(action_repr)
         else:
