@@ -319,13 +319,26 @@ class WhenAllTask(CompoundTask):
 
 
 class LongTimerTask(WhenAllTask):
-    def __init__(self, id, action: CreateTimerAction, orchestration_context, executor, maximum_timer_length, long_running_timer_duration):
+    """A Timer Task for intervals longer than supported by the storage backend."""
+
+    def __init__(self, id, action: CreateTimerAction, orchestration_context):
+        """Initialize a LongTimerTask.
+
+        Parameters
+        ----------
+        id_ : int
+            An ID for the task
+        action : CreateTimerAction
+            The action this task represents
+        orchestration_context: DurableOrchestrationContext
+            The orchestration context this task was created in
+        """
         current_time = orchestration_context.current_utc_datetime
         final_fire_time = action.fire_at
         duration_until_fire = final_fire_time - current_time
 
-        if duration_until_fire > maximum_timer_length:
-            next_fire_time = current_time + long_running_timer_duration
+        if duration_until_fire > self.orchestration_context.maximum_timer_length:
+            next_fire_time = current_time + self.orchestration_context.long_running_timer_duration
         else:
             next_fire_time = final_fire_time
 
@@ -336,35 +349,79 @@ class LongTimerTask(WhenAllTask):
         self.id = id
         self.action = action
         self.orchestration_context = orchestration_context
-        self.executor = executor
-        self.maximum_timer_length = maximum_timer_length
-        self.long_running_timer_duration = long_running_timer_duration
+        self.maximum_timer_length = self.orchestration_context.maximum_timer_length
+        self.long_running_timer_duration = self.orchestration_context.long_running_timer_duration
 
     def is_canceled(self) -> bool:
+        """Check if the LongTimer is cancelled.
+
+        Returns
+        -------
+        bool
+            Returns whether the timer has been cancelled or not
+        """
         return self.action.is_cancelled
-    
+
     def cancel(self):
+        """Cancel a timer.
+
+        Raises
+        ------
+        ValueError
+            Raises an error if the task is already completed and an attempt is made to cancel it
+        """
         if (self.result):
             raise Exception("Cannot cancel a completed task.")
         self.action.is_cancelled = True
 
     def try_set_value(self, child: TimerTask):
+        """Transition this LongTimer Task to a terminal state and set its value.
+
+        If the LongTimer has not yet reached the designated completion time, starts a new 
+        TimerTask for the next interval and does not close. 
+
+        Parameters
+        ----------
+        child : TimerTask
+            A timer sub-task that just completed
+        """
         current_time = self.orchestration_context.current_utc_datetime
         final_fire_time = self.action.fire_at
         if final_fire_time > current_time:
             next_timer = self.get_next_timer_task(final_fire_time, current_time)
             self.add_new_child(next_timer)
         return super().try_set_value(child)
-    
-    def get_next_timer_task(self, final_fire_time:datetime, current_time:datetime):
+
+    def get_next_timer_task(self, final_fire_time: datetime, current_time: datetime) -> TimerTask: 
+        """Creates a TimerTask that represents the next interval of the LongTimer
+
+        Parameters
+        ----------
+        final_fire_time : datetime.datetime
+            The final firing time of the LongTimer
+        current_time : datetime.datetime
+            The current time
+
+        Returns
+        -------
+        TimerTask
+            A TimerTask representing the next interval of the LongTimer
+        """
         duration_until_fire = final_fire_time - current_time
         if duration_until_fire > self.maximum_timer_length:
             next_fire_time = current_time + self.long_running_timer_duration
         else:
             next_fire_time = final_fire_time
         return TimerTask(None, CreateTimerAction(next_fire_time))
-    
+
     def add_new_child(self, child_timer: TimerTask):
+        """Adds the TimerTask to this Task's children and schedules it in the orchestrationcontext
+
+        Parameters
+        ----------
+        child_timer : TimerTask
+            The newly created TimerTask to add
+        """
         child_timer.parent = self
         self.pending_tasks.add(child_timer)
         self.orchestration_context._add_to_open_tasks(child_timer)

@@ -38,12 +38,13 @@ def add_datetime_attrib(json_dict: Dict[str, Any], object_,
         json_dict[alt_name or attribute_name] = \
             getattr(object_, attribute_name).strftime(DATETIME_STRING_FORMAT)
 
-# When we recieve properties from WebJobs extension originally parsed as TimeSpan objects through Newtonsoft, 
-#   the format complies with the constant format specifier for TimeSpan in .NET. 
-#   See https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-timespan-format-strings#the-constant-c-format-specifier
-#   Python offers no convenient way to parse these back into timedeltas, so we use this regex method instead
-def parse_datetime_attrib_timespan(from_str: str) -> datetime.timedelta:
-    """Converts a string originally produced by TimeSpan.ToString("c") in .NET into python's timespan.timedelta
+# When we recieve properties from WebJobs extension originally parsed as 
+#   TimeSpan objects through Newtonsoft, the format complies with the constant 
+#   format specifier for TimeSpan in .NET.
+#   Python offers no convenient way to parse these back into timedeltas, 
+#   so we use this regex method instead
+def parse_timespan_attrib(from_str: str) -> datetime.timedelta:
+    """Converts a string representing TimeSpan.ToString("c") in .NET to python timespan.timedelta
 
     Parameters
     ----------
@@ -55,9 +56,16 @@ def parse_datetime_attrib_timespan(from_str: str) -> datetime.timedelta:
         The TimeSpan expressed as a Python datetime.timedelta
 
     """
-    match = re.match(r"^(-)?(?:([0-9]*)\.)?([0-9]{2}):([0-9]{2}):([0-9]{2})(?:\.([0-9]{7}))?$", from_str)
+    expr = r"^(-)?(?:([0-9]*)\.)?([0-9]{2}):([0-9]{2}):([0-9]{2})(?:\.([0-9]{7}))?$"
+    match = re.match(expr, from_str)
     if match:
-        span = datetime.timedelta(days=int(match.group(2) or "0"), hours=int(match.group(3)), minutes=int(match.group(4)), seconds=int(match.group(5)), microseconds=int(match.group(6) or "0") // 10)
+        span = datetime.timedelta(
+            days=int(match.group(2) or "0"), 
+            hours=int(match.group(3)), 
+            minutes=int(match.group(4)), 
+            seconds=int(match.group(5)), 
+            microseconds=int(match.group(6) or "0") // 10)
+        
         if match.group(1):
             span = -span
         return span
