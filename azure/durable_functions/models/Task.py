@@ -1,3 +1,4 @@
+from datetime import datetime
 from azure.durable_functions.models.actions.NoOpAction import NoOpAction
 from azure.durable_functions.models.actions.CompoundAction import CompoundAction
 from azure.durable_functions.models.RetryOptions import RetryOptions
@@ -170,7 +171,7 @@ class CompoundTask(TaskBase):
                     child_actions.append(action_repr)
         if compound_action_constructor is None:
             self.action_repr = child_actions
-        else:  # replay_schema is ReplaySchema.V2
+        else:  # replay_schema >= ReplaySchema.V2
             self.action_repr = compound_action_constructor(child_actions)
         self._first_error: Optional[Exception] = None
         self.pending_tasks: Set[TaskBase] = set(tasks)
@@ -292,7 +293,7 @@ class WhenAllTask(CompoundTask):
             The ReplaySchema, which determines the inner action payload representation
         """
         compound_action_constructor = None
-        if replay_schema is ReplaySchema.V2:
+        if replay_schema.value >= ReplaySchema.V2.value:
             compound_action_constructor = WhenAllAction
         super().__init__(task, compound_action_constructor)
 
@@ -317,6 +318,59 @@ class WhenAllTask(CompoundTask):
                 self.set_value(is_error=True, value=self._first_error)
 
 
+class LongTimerTask(WhenAllTask):
+    def __init__(self, id, action: CreateTimerAction, orchestration_context, executor, maximum_timer_length, long_running_timer_duration):
+        current_time = orchestration_context.current_utc_datetime
+        final_fire_time = action.fire_at
+        duration_until_fire = final_fire_time - current_time
+
+        if duration_until_fire > maximum_timer_length:
+            next_fire_time = current_time + long_running_timer_duration
+        else:
+            next_fire_time = final_fire_time
+
+        next_timer_action = CreateTimerAction(next_fire_time)
+        next_timer_task = TimerTask(None, next_timer_action)
+        super().__init__([next_timer_task], orchestration_context._replay_schema)
+
+        self.id = id
+        self.action = action
+        self.orchestration_context = orchestration_context
+        self.executor = executor
+        self.maximum_timer_length = maximum_timer_length
+        self.long_running_timer_duration = long_running_timer_duration
+
+    def is_canceled(self) -> bool:
+        return self.action.is_cancelled
+    
+    def cancel(self):
+        if (self.result):
+            raise Exception("Cannot cancel a completed task.")
+        self.action.is_cancelled = True
+
+    def try_set_value(self, child: TimerTask):
+        current_time = self.orchestration_context.current_utc_datetime
+        final_fire_time = self.action.fire_at
+        if final_fire_time > current_time:
+            next_timer = self.get_next_timer_task(final_fire_time, current_time)
+            self.add_new_child(next_timer)
+        return super().try_set_value(child)
+    
+    def get_next_timer_task(self, final_fire_time:datetime, current_time:datetime):
+        duration_until_fire = final_fire_time - current_time
+        if duration_until_fire > self.maximum_timer_length:
+            next_fire_time = current_time + self.long_running_timer_duration
+        else:
+            next_fire_time = final_fire_time
+        return TimerTask(None, CreateTimerAction(next_fire_time))
+    
+    def add_new_child(self, child_timer: TimerTask):
+        child_timer.parent = self
+        self.pending_tasks.add(child_timer)
+        self.orchestration_context._add_to_open_tasks(child_timer)
+        self.orchestration_context._add_to_actions(child_timer.action_repr)
+        child_timer._set_is_scheduled(True)
+
 class WhenAnyTask(CompoundTask):
     """A Task representing `when_any` scenarios."""
 
@@ -331,7 +385,7 @@ class WhenAnyTask(CompoundTask):
             The ReplaySchema, which determines the inner action payload representation
         """
         compound_action_constructor = None
-        if replay_schema is ReplaySchema.V2:
+        if replay_schema.value >= ReplaySchema.V2.value:
             compound_action_constructor = WhenAnyAction
         super().__init__(task, compound_action_constructor)
 

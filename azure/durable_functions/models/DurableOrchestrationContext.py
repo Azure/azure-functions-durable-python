@@ -1,7 +1,7 @@
 from collections import defaultdict
 from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
 from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
-from azure.durable_functions.models.Task import TaskBase, TimerTask
+from azure.durable_functions.models.Task import LongTimerTask, TaskBase, TimerTask
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
 from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import \
@@ -26,6 +26,8 @@ from typing import DefaultDict, List, Any, Dict, Optional, Tuple, Union, Callabl
 from uuid import UUID, uuid5, NAMESPACE_URL, NAMESPACE_OID
 from datetime import timezone
 
+from azure.durable_functions.models.utils.json_utils import parse_datetime_attrib_timespan
+
 from .RetryOptions import RetryOptions
 from .FunctionContext import FunctionContext
 from .history import HistoryEvent, HistoryEventType
@@ -48,11 +50,19 @@ class DurableOrchestrationContext:
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     def __init__(self,
                  history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
-                 parentInstanceId: str, input: Any = None, upperSchemaVersion: int = 0, **kwargs):
+                 parentInstanceId: str, input: Any = None, upperSchemaVersion: int = 0,
+                 maximumShortTimerDuration=None, longRunningTimerIntervalDuration=None,
+                 upperSchemaVersionNew = None, **kwargs):
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
+        self._maximum_short_timer_duration: datetime.timedelta
+        if maximumShortTimerDuration is not None:
+            self._maximum_short_timer_duration = parse_datetime_attrib_timespan(maximumShortTimerDuration)
+        self._long_running_timer_interval_duration: datetime.timedelta
+        if longRunningTimerIntervalDuration is not None:
+            self._long_running_timer_interval_duration = parse_datetime_attrib_timespan(longRunningTimerIntervalDuration)
         self._custom_status: Any = None
         self._new_uuid_counter: int = 0
         self._sub_orchestrator_counter: int = 0
@@ -66,6 +76,8 @@ class DurableOrchestrationContext:
         self._function_context: FunctionContext = FunctionContext(**kwargs)
         self._sequence_number = 0
         self._replay_schema = ReplaySchema(upperSchemaVersion)
+        if upperSchemaVersionNew is not None and upperSchemaVersionNew > self._replay_schema.value:
+            self._replay_schema = ReplaySchema(upperSchemaVersionNew)
 
         self._action_payload_v1: List[List[Action]] = []
         self._action_payload_v2: List[Action] = []
@@ -472,6 +484,37 @@ class DurableOrchestrationContext:
         return self._parent_instance_id
 
     @property
+    def maximum_short_timer_duration(self) -> datetime.timedelta:
+        """Get the maximum duration for a short timer
+
+        The maximum length of a "short timer" is defined by the storage backend.
+        Some storage backends have a maximum future date for scheduled tasks, and
+        so for timers longer than this duration, we must simulate a long timer by
+        waiting in chunks.
+
+        Returns
+        -------
+        str
+            Maximum allowable duration for a short timer in Durable
+        """
+        return self._maximum_short_timer_duration
+
+    @property
+    def long_running_timer_interval_duration(self) -> datetime.timedelta:
+        """Get the interval for long timers.
+
+        When a timer is scheduled for a duration longer than the maximum short timer
+        duration, the timer is set to run in chunks of time. The long running timer
+        interval duration defines how long these chunks of time should be.
+
+        Returns
+        -------
+        str
+            Duration for intervals of a long-running timer
+        """
+        return self._long_running_timer_interval_duration
+
+    @property
     def current_utc_datetime(self) -> datetime.datetime:
         """Get the current date/time.
 
@@ -532,10 +575,10 @@ class DurableOrchestrationContext:
             The action to append
         """
         new_action: Union[List[Action], Action]
-        if self._replay_schema is ReplaySchema.V2:
-            new_action = action
-        else:
+        if self._replay_schema is ReplaySchema.V1:
             new_action = [action]
+        else:
+            new_action = action
         self._add_to_actions(new_action)
         self._sequence_number += 1
 
@@ -580,6 +623,20 @@ class DurableOrchestrationContext:
         TaskBase
             A Durable Timer Task that schedules the timer to wake up the activity
         """
+        if self._replay_schema.value >= ReplaySchema.V3.value:
+            if not self.maximum_short_timer_duration or not self.long_running_timer_interval_duration:
+                raise Exception(
+                    "A framework-internal error was detected: replay schema version >= V3 is being used, " +
+                        "but one or more of the properties `maximumShortTimerDuration` and `longRunningTimerIntervalDuration` are not defined. " +
+                        "This is likely an issue with the Durable Functions Extension. " +
+                        "Please report this bug here: https://github.com/Azure/azure-functions-durable-js/issues\n" +
+                        f"maximumShortTimerDuration: {self.maximum_short_timer_duration}\n" +
+                        f"longRunningTimerIntervalDuration: {self.long_running_timer_interval_duration}"
+                )
+            if fire_at > self.current_utc_datetime + self.maximum_short_timer_duration:
+                action = CreateTimerAction(fire_at)
+                return LongTimerTask(None, action, self, None, self.maximum_short_timer_duration, self.long_running_timer_interval_duration)
+
         action = CreateTimerAction(fire_at)
         task = self._generate_task(action, task_constructor=TimerTask)
         return task
@@ -656,7 +713,7 @@ class DurableOrchestrationContext:
 
         if self._replay_schema is ReplaySchema.V1 and isinstance(action_repr, list):
             self._action_payload_v1.append(action_repr)
-        elif self._replay_schema is ReplaySchema.V2 and isinstance(action_repr, Action):
+        elif self._replay_schema.value >= ReplaySchema.V2.value and isinstance(action_repr, Action):
             self._action_payload_v2.append(action_repr)
         else:
             raise Exception(f"DF-internal exception: ActionRepr of signature {type(action_repr)}"
