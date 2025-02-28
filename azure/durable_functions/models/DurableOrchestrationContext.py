@@ -64,7 +64,7 @@ class DurableOrchestrationContext:
             self._maximum_short_timer_duration = max_short_duration
         self._long_timer_interval_duration: datetime.timedelta
         if longRunningTimerIntervalDuration is not None:
-            long_interval_duration = datetime.timedelta(seconds=10) # parse_timespan_attrib(longRunningTimerIntervalDuration)
+            long_interval_duration = parse_timespan_attrib(longRunningTimerIntervalDuration)
             self._long_timer_interval_duration = long_interval_duration
         self._custom_status: Any = None
         self._new_uuid_counter: int = 0
