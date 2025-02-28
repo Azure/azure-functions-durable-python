@@ -337,8 +337,8 @@ class LongTimerTask(WhenAllTask):
         final_fire_time = action.fire_at
         duration_until_fire = final_fire_time - current_time
 
-        if duration_until_fire > self.orchestration_context.maximum_timer_length:
-            next_fire_time = current_time + self.orchestration_context.long_running_timer_duration
+        if duration_until_fire > orchestration_context.maximum_short_timer_duration:
+            next_fire_time = current_time + orchestration_context.long_timer_interval_duration
         else:
             next_fire_time = final_fire_time
 
@@ -349,8 +349,8 @@ class LongTimerTask(WhenAllTask):
         self.id = id
         self.action = action
         self.orchestration_context = orchestration_context
-        self.maximum_timer_length = self.orchestration_context.maximum_timer_length
-        self.long_running_timer_duration = self.orchestration_context.long_running_timer_duration
+        self.maximum_short_timer_duration = self.orchestration_context.maximum_short_timer_duration
+        self.long_timer_interval_duration = self.orchestration_context.long_timer_interval_duration
 
     def is_canceled(self) -> bool:
         """Check if the LongTimer is cancelled.
@@ -408,8 +408,8 @@ class LongTimerTask(WhenAllTask):
             A TimerTask representing the next interval of the LongTimer
         """
         duration_until_fire = final_fire_time - current_time
-        if duration_until_fire > self.maximum_timer_length:
-            next_fire_time = current_time + self.long_running_timer_duration
+        if duration_until_fire > self.maximum_short_timer_duration:
+            next_fire_time = current_time + self.long_timer_interval_duration
         else:
             next_fire_time = final_fire_time
         return TimerTask(None, CreateTimerAction(next_fire_time))

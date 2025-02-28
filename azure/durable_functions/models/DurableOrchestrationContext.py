@@ -64,7 +64,7 @@ class DurableOrchestrationContext:
             self._maximum_short_timer_duration = max_short_duration
         self._long_timer_interval_duration: datetime.timedelta
         if longRunningTimerIntervalDuration is not None:
-            long_interval_duration = parse_timespan_attrib(longRunningTimerIntervalDuration)
+            long_interval_duration = datetime.timedelta(seconds=10) # parse_timespan_attrib(longRunningTimerIntervalDuration)
             self._long_timer_interval_duration = long_interval_duration
         self._custom_status: Any = None
         self._new_uuid_counter: int = 0
@@ -80,9 +80,12 @@ class DurableOrchestrationContext:
         self._sequence_number = 0
         self._replay_schema = ReplaySchema(upperSchemaVersion)
         if (upperSchemaVersionNew is not None
-                and upperSchemaVersionNew > self._replay_schema.value
-                and upperSchemaVersionNew in ReplaySchema._value2member_map_):
-            self._replay_schema = ReplaySchema(upperSchemaVersionNew)
+                and upperSchemaVersionNew > self._replay_schema.value):
+            valid_schema_values = [enum_member.value for enum_member in ReplaySchema]
+            if upperSchemaVersionNew in valid_schema_values:
+                self._replay_schema = ReplaySchema(upperSchemaVersionNew)
+            else:
+                self._replay_schema = ReplaySchema(max(valid_schema_values))
 
         self._action_payload_v1: List[List[Action]] = []
         self._action_payload_v2: List[Action] = []

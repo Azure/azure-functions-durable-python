@@ -57,17 +57,20 @@ def parse_timespan_attrib(from_str: str) -> datetime.timedelta:
         The TimeSpan expressed as a Python datetime.timedelta
 
     """
-    expr = r"^(-)?(?:([0-9]*)\.)?([0-9]{2}):([0-9]{2}):([0-9]{2})(?:\.([0-9]{7}))?$"
-    match = re.match(expr, from_str)
+    match = re.match(r"^(?P<negative>-)?(?:(?P<days>[0-9]*)\.)?"
+                     r"(?P<hours>[0-9]{2}):(?P<minutes>[0-9]{2})"
+                     r":(?P<seconds>[0-9]{2})(?:\.(?P<ticks>[0-9]{7}))?$",
+                     from_str)
     if match:
+        groups = match.groupdict()
         span = datetime.timedelta(
-            days=int(match.group(2) or "0"),
-            hours=int(match.group(3)),
-            minutes=int(match.group(4)),
-            seconds=int(match.group(5)),
-            microseconds=int(match.group(6) or "0") // 10)
+            days=int(groups['days'] or "0"),
+            hours=int(groups['hours']),
+            minutes=int(groups['minutes']),
+            seconds=int(groups['seconds']),
+            microseconds=int(groups['ticks'] or "0") // 10)
 
-        if match.group(1):
+        if groups['negative'] == '-':
             span = -span
         return span
     else:
