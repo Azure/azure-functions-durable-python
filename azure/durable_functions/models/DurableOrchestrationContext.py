@@ -79,7 +79,9 @@ class DurableOrchestrationContext:
         self._function_context: FunctionContext = FunctionContext(**kwargs)
         self._sequence_number = 0
         self._replay_schema = ReplaySchema(upperSchemaVersion)
-        if upperSchemaVersionNew is not None and upperSchemaVersionNew > self._replay_schema.value:
+        if (upperSchemaVersionNew is not None
+                and upperSchemaVersionNew > self._replay_schema.value
+                and upperSchemaVersionNew in ReplaySchema._value2member_map_):
             self._replay_schema = ReplaySchema(upperSchemaVersionNew)
 
         self._action_payload_v1: List[List[Action]] = []
