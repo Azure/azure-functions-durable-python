@@ -393,7 +393,7 @@ class LongTimerTask(WhenAllTask):
         return super().try_set_value(child)
 
     def get_next_timer_task(self, final_fire_time: datetime, current_time: datetime) -> TimerTask:
-        """Creates a TimerTask that represents the next interval of the LongTimer.
+        """Create a TimerTask to represent the next interval of the LongTimer.
 
         Parameters
         ----------
@@ -416,7 +416,7 @@ class LongTimerTask(WhenAllTask):
 
     def add_new_child(self, child_timer: TimerTask):
         """Add the TimerTask to this task's children.
-        
+
         Also register the TimerTask with the orchestration context.
 
         Parameters
