@@ -3,7 +3,7 @@ from typing import Any, List, Union
 import aiohttp
 
 
-async def post_async_request(url: str, data: Any = None) -> List[Union[int, Any]]:
+async def post_async_request(url: str, data: Any = None, trace_parent: str = None, trace_state: str = None) -> List[Union[int, Any]]:
     """Post request with the data provided to the url provided.
 
     Parameters
@@ -20,7 +20,11 @@ async def post_async_request(url: str, data: Any = None) -> List[Union[int, Any]
     """
     async with aiohttp.ClientSession() as session:
         async with session.post(url,
-                                json=data) as response:
+                                json=data,
+                                headers={
+                                    "traceparent": trace_parent,
+                                    "tracestate": trace_state
+                                }) as response:
             # We disable aiohttp's input type validation
             # as the server may respond with alternative
             # data encodings. This is potentially unsafe.

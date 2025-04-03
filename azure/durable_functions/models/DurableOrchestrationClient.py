@@ -47,7 +47,9 @@ class DurableOrchestrationClient:
     async def start_new(self,
                         orchestration_function_name: str,
                         instance_id: Optional[str] = None,
-                        client_input: Optional[Any] = None) -> str:
+                        client_input: Optional[Any] = None,
+                        trace_parent: str = None,
+                        trace_state: str = None) -> str:
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
@@ -72,7 +74,10 @@ class DurableOrchestrationClient:
             instance_id=instance_id, orchestration_function_name=orchestration_function_name)
 
         response: List[Any] = await self._post_async_request(
-            request_url, self._get_json_input(client_input))
+            request_url,
+            self._get_json_input(client_input),
+            trace_parent,
+            trace_state)
 
         status_code: int = response[0]
         if status_code <= 202 and response[1]:
