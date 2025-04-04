@@ -58,11 +58,11 @@ class DurableOrchestrationContext:
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
-        self._maximum_short_timer_duration: datetime.timedelta
+        self._maximum_short_timer_duration: datetime.timedelta = None
         if maximumShortTimerDuration is not None:
             max_short_duration = parse_timespan_attrib(maximumShortTimerDuration)
             self._maximum_short_timer_duration = max_short_duration
-        self._long_timer_interval_duration: datetime.timedelta
+        self._long_timer_interval_duration: datetime.timedelta = None
         if longRunningTimerIntervalDuration is not None:
             long_interval_duration = parse_timespan_attrib(longRunningTimerIntervalDuration)
             self._long_timer_interval_duration = long_interval_duration
