@@ -684,7 +684,8 @@ class DurableOrchestrationContext:
                 task.id = self._sequence_number
                 self._sequence_number += 1
                 self.open_tasks[task.id] = task
-            elif task.id != -1:
+            elif (task.id != -1 and task.id in self.open_tasks
+                  and isinstance(self.open_tasks[task.id], list)):
                 self.open_tasks[task.id].append(task)
 
             if task.id in self.deferred_tasks:
