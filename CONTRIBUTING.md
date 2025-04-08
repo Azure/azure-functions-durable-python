@@ -123,7 +123,20 @@ pip install -e $REPOSITORY_ROOT/
 ```
 where REPOSITORY_ROOT is the root folder of the azure-functions-durable-python repository 
 
-7. Set breakpoints and click Run -> Start Debugging in VS Code. This should internally start the Azure Function using `func host start` command.
+7. Set breakpoints and click Run -> Start Debugging in VS Code. This should internally start the Azure Function using `func host start` command. If the breakpoints are not getting hit, check to make sure that you have set `justMyCode: false` in the function app's .vscode/launch.json.
+
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      ...
+      "justMyCode": false
+      ...
+    }
+  ]
+}
+```
 
 ### Debugging end-to-end
 
