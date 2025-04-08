@@ -3,7 +3,10 @@ from typing import Any, List, Union
 import aiohttp
 
 
-async def post_async_request(url: str, data: Any = None, trace_parent: str = None, trace_state: str = None) -> List[Union[int, Any]]:
+async def post_async_request(url: str,
+                             data: Any = None,
+                             trace_parent: str = None,
+                             trace_state: str = None) -> List[Union[int, Any]]:
     """Post request with the data provided to the url provided.
 
     Parameters
