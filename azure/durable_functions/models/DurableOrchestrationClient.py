@@ -48,8 +48,8 @@ class DurableOrchestrationClient:
                         orchestration_function_name: str,
                         instance_id: Optional[str] = None,
                         client_input: Optional[Any] = None,
-                        trace_parent: str = None,
-                        trace_state: str = None) -> str:
+                        trace_parent: Optional[str] = None,
+                        trace_state: Optional[str] = None) -> str:
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
@@ -64,6 +64,10 @@ class DurableOrchestrationClient:
             the Durable Functions extension will generate a random GUID (recommended).
         client_input : Optional[Any]
             JSON-serializable input value for the orchestrator function.
+        trace_parent : str
+            The traceparent header to send with the request.
+        trace_state : str
+            The tracestate header to send with the request.
 
         Returns
         -------
