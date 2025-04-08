@@ -492,37 +492,6 @@ class DurableOrchestrationContext:
         return self._parent_instance_id
 
     @property
-    def _maximum_short_timer_duration(self) -> datetime.timedelta:
-        """Get the maximum duration for a short timer.
-
-        The maximum length of a "short timer" is defined by the storage backend.
-        Some storage backends have a maximum future date for scheduled tasks, and
-        so for timers longer than this duration, we must simulate a long timer by
-        waiting in chunks.
-
-        Returns
-        -------
-        str
-            Maximum allowable duration for a short timer in Durable
-        """
-        return self._maximum_short_timer_duration
-
-    @property
-    def _long_timer_interval_duration(self) -> datetime.timedelta:
-        """Get the interval for long timers.
-
-        When a timer is scheduled for a duration longer than the maximum short timer
-        duration, the timer is set to run in chunks of time. The long running timer
-        interval duration defines how long these chunks of time should be.
-
-        Returns
-        -------
-        str
-            Duration for intervals of a long-running timer
-        """
-        return self._long_timer_interval_duration
-
-    @property
     def current_utc_datetime(self) -> datetime.datetime:
         """Get the current date/time.
 
