@@ -43,28 +43,28 @@ def test_long_timer_fires_appropriately(starting_context_v3):
     starting_time = starting_context_v3.current_utc_datetime
     final_fire_time = starting_time + datetime.timedelta(hours=20)
     long_timer_action = CreateTimerAction(final_fire_time)
-    long_timer_task = LongTimerTask(None, long_timer_action, starting_context_v3)
-    assert long_timer_task.action.fire_at == final_fire_time
-    assert long_timer_task.action == long_timer_action
+    long_timer = LongTimerTask(None, long_timer_action, starting_context_v3)
+    assert long_timer.action.fire_at == final_fire_time
+    assert long_timer.action == long_timer_action
 
     # Check the first "inner" timer and simulate firing it
-    short_timer_task = long_timer_task.pending_tasks.pop()
-    assert short_timer_task.action_repr.fire_at == starting_time + datetime.timedelta(hours=8)
+    short_timer = long_timer.pending_tasks.pop()
+    assert short_timer.action_repr.fire_at == starting_time + datetime.timedelta(hours=8)
     # This happens when the task is reconstructed during replay, doing it manually for the test
-    long_timer_task.orchestration_context.current_utc_datetime = short_timer_task.action_repr.fire_at
-    short_timer_task.state = TaskState.SUCCEEDED 
-    long_timer_task.try_set_value(short_timer_task)
+    long_timer._orchestration_context.current_utc_datetime = short_timer.action_repr.fire_at
+    short_timer.state = TaskState.SUCCEEDED 
+    long_timer.try_set_value(short_timer)
 
-    assert long_timer_task.state == TaskState.RUNNING
+    assert long_timer.state == TaskState.RUNNING
 
     # Check the scond "inner" timer and simulate firing it. This one should be set to the final
     # fire time, the remaining time (12 hours) is less than the max long timer duration (16 hours)
-    short_timer_task = long_timer_task.pending_tasks.pop()
-    assert short_timer_task.action_repr.fire_at == final_fire_time
-    long_timer_task.orchestration_context.current_utc_datetime = short_timer_task.action_repr.fire_at
-    short_timer_task.state = TaskState.SUCCEEDED 
-    long_timer_task.try_set_value(short_timer_task)
+    short_timer = long_timer.pending_tasks.pop()
+    assert short_timer.action_repr.fire_at == final_fire_time
+    long_timer._orchestration_context.current_utc_datetime = short_timer.action_repr.fire_at
+    short_timer.state = TaskState.SUCCEEDED 
+    long_timer.try_set_value(short_timer)
 
     # Ensure the LongTimerTask finished
-    assert len(long_timer_task.pending_tasks) == 0
-    assert long_timer_task.state == TaskState.SUCCEEDED
+    assert len(long_timer.pending_tasks) == 0
+    assert long_timer.state == TaskState.SUCCEEDED

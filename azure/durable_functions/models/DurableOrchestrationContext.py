@@ -492,7 +492,7 @@ class DurableOrchestrationContext:
         return self._parent_instance_id
 
     @property
-    def maximum_short_timer_duration(self) -> datetime.timedelta:
+    def _maximum_short_timer_duration(self) -> datetime.timedelta:
         """Get the maximum duration for a short timer.
 
         The maximum length of a "short timer" is defined by the storage backend.
@@ -508,7 +508,7 @@ class DurableOrchestrationContext:
         return self._maximum_short_timer_duration
 
     @property
-    def long_timer_interval_duration(self) -> datetime.timedelta:
+    def _long_timer_interval_duration(self) -> datetime.timedelta:
         """Get the interval for long timers.
 
         When a timer is scheduled for a duration longer than the maximum short timer
@@ -632,7 +632,7 @@ class DurableOrchestrationContext:
             A Durable Timer Task that schedules the timer to wake up the activity
         """
         if self._replay_schema.value >= ReplaySchema.V3.value:
-            if not self.maximum_short_timer_duration or not self.long_timer_interval_duration:
+            if not self._maximum_short_timer_duration or not self._long_timer_interval_duration:
                 raise Exception(
                     "A framework-internal error was detected: "
                     "replay schema version >= V3 is being used, "
@@ -641,10 +641,10 @@ class DurableOrchestrationContext:
                     "This is likely an issue with the Durable Functions Extension. "
                     "Please report this bug here: "
                     "https://github.com/Azure/azure-functions-durable-python/issues\n"
-                    f"maximumShortTimerDuration: {self.maximum_short_timer_duration}\n"
-                    f"longRunningTimerIntervalDuration: {self.long_timer_interval_duration}"
+                    f"maximumShortTimerDuration: {self._maximum_short_timer_duration}\n"
+                    f"longRunningTimerIntervalDuration: {self._long_timer_interval_duration}"
                 )
-            if fire_at > self.current_utc_datetime + self.maximum_short_timer_duration:
+            if fire_at > self.current_utc_datetime + self._maximum_short_timer_duration:
                 action = CreateTimerAction(fire_at)
                 return LongTimerTask(None, action, self)
 

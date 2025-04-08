@@ -321,7 +321,7 @@ class WhenAllTask(CompoundTask):
 class LongTimerTask(WhenAllTask):
     """A Timer Task for intervals longer than supported by the storage backend."""
 
-    def __init__(self, id, action: CreateTimerAction, orchestration_context):
+    def __init__(self, id_, action: CreateTimerAction, orchestration_context):
         """Initialize a LongTimerTask.
 
         Parameters
@@ -337,8 +337,8 @@ class LongTimerTask(WhenAllTask):
         final_fire_time = action.fire_at
         duration_until_fire = final_fire_time - current_time
 
-        if duration_until_fire > orchestration_context.maximum_short_timer_duration:
-            next_fire_time = current_time + orchestration_context.long_timer_interval_duration
+        if duration_until_fire > orchestration_context._maximum_short_timer_duration:
+            next_fire_time = current_time + orchestration_context._long_timer_interval_duration
         else:
             next_fire_time = final_fire_time
 
@@ -346,11 +346,11 @@ class LongTimerTask(WhenAllTask):
         next_timer_task = TimerTask(None, next_timer_action)
         super().__init__([next_timer_task], orchestration_context._replay_schema)
 
-        self.id = id
+        self.id = id_
         self.action = action
-        self.orchestration_context = orchestration_context
-        self.maximum_short_timer_duration = self.orchestration_context.maximum_short_timer_duration
-        self.long_timer_interval_duration = self.orchestration_context.long_timer_interval_duration
+        self._orchestration_context = orchestration_context
+        self._max_short_timer_duration = self._orchestration_context._maximum_short_timer_duration
+        self._long_timer_interval = self._orchestration_context._long_timer_interval_duration
 
     def is_canceled(self) -> bool:
         """Check if the LongTimer is cancelled.
@@ -385,7 +385,7 @@ class LongTimerTask(WhenAllTask):
         child : TimerTask
             A timer sub-task that just completed
         """
-        current_time = self.orchestration_context.current_utc_datetime
+        current_time = self._orchestration_context.current_utc_datetime
         final_fire_time = self.action.fire_at
         if final_fire_time > current_time:
             next_timer = self.get_next_timer_task(final_fire_time, current_time)
@@ -408,8 +408,8 @@ class LongTimerTask(WhenAllTask):
             A TimerTask representing the next interval of the LongTimer
         """
         duration_until_fire = final_fire_time - current_time
-        if duration_until_fire > self.maximum_short_timer_duration:
-            next_fire_time = current_time + self.long_timer_interval_duration
+        if duration_until_fire > self._max_short_timer_duration:
+            next_fire_time = current_time + self._long_timer_interval
         else:
             next_fire_time = final_fire_time
         return TimerTask(None, CreateTimerAction(next_fire_time))
@@ -426,8 +426,8 @@ class LongTimerTask(WhenAllTask):
         """
         child_timer.parent = self
         self.pending_tasks.add(child_timer)
-        self.orchestration_context._add_to_open_tasks(child_timer)
-        self.orchestration_context._add_to_actions(child_timer.action_repr)
+        self._orchestration_context._add_to_open_tasks(child_timer)
+        self._orchestration_context._add_to_actions(child_timer.action_repr)
         child_timer._set_is_scheduled(True)
 
 
