@@ -28,9 +28,9 @@ async def post_async_request(url: str,
     async with aiohttp.ClientSession() as session:
         headers = {}
         if trace_parent:
-            headers["traceparent"] = trace_parent
+            headers["x-client-traceparent"] = trace_parent
         if trace_state:
-            headers["tracestate"] = trace_state
+            headers["x-client-tracestate"] = trace_state
         async with session.post(url, json=data, headers=headers) as response:
             # We disable aiohttp's input type validation
             # as the server may respond with alternative
