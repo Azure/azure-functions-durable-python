@@ -25,7 +25,7 @@ class EntityHandler(Callable):
         func: Callable[[DurableEntityContext], None]
             The user defined entity function.
         """
-        self._func = func
+        self.entity_function = func
 
     def __call__(self, context: func.EntityContext) -> str:
         """Handle the execution of the user defined entity function.
@@ -40,7 +40,7 @@ class EntityHandler(Callable):
         if context_body is None:
             context_body = context
         ctx, batch = DurableEntityContext.from_json(context_body)
-        return Entity(self._func).handle(ctx, batch)
+        return Entity(self.entity_function).handle(ctx, batch)
 
 
 class Entity:

@@ -207,7 +207,7 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
         #    async method.
         # Here we lose type hinting and auto-documentation - not great. Need to find a better way
         # to do this. 
-        df_client_middleware._func = fb._function._func
+        df_client_middleware.client_function = fb._function._func
 
         user_code_with_rich_client = df_client_middleware
         fb._function._func = user_code_with_rich_client

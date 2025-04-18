@@ -26,7 +26,7 @@ class OrchestrationHandler(Callable):
         func: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]]
             The user defined orchestrator function.
         """
-        self._func = func
+        self.orchestrator_function = func
 
     def __call__(self, context: func.OrchestrationContext) -> str:
         """Handle the execution of the user defined orchestrator function.
@@ -37,7 +37,7 @@ class OrchestrationHandler(Callable):
         context_body = getattr(context, "body", None)
         if context_body is None:
             context_body = context
-        return Orchestrator(self._func).handle(DurableOrchestrationContext.from_json(context_body))
+        return Orchestrator(self.orchestrator_function).handle(DurableOrchestrationContext.from_json(context_body))
 
 
 class Orchestrator:
