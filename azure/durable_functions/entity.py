@@ -31,15 +31,14 @@ class EntityHandler(Callable):
         self.entity_function = func
 
     def __call__(self, context: func.EntityContext) -> str:
-        """Handle the execution of the user defined entity function.
-
-        Serializes a DurableEntityContext object from the input context and
-        passes it to the entity function.
+        """
+        Handle the execution of the user defined entity function.
 
         Parameters
         ----------
         context : func.EntityContext
-            The DF entity context"""
+            The DF entity context
+        """
         # It is not clear when the context JSON would be found
         # inside a "body"-key, but this pattern matches the
         # orchestrator implementation, so we keep it for safety.
