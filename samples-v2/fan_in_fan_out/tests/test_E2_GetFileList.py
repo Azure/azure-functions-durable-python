@@ -1,0 +1,1 @@
+# Stub file - test this function with standard Azure Functions Python testing tools. 
