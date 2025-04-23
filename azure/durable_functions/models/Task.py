@@ -1,3 +1,4 @@
+from datetime import datetime
 from azure.durable_functions.models.actions.NoOpAction import NoOpAction
 from azure.durable_functions.models.actions.CompoundAction import CompoundAction
 from azure.durable_functions.models.RetryOptions import RetryOptions
@@ -170,7 +171,7 @@ class CompoundTask(TaskBase):
                     child_actions.append(action_repr)
         if compound_action_constructor is None:
             self.action_repr = child_actions
-        else:  # replay_schema is ReplaySchema.V2
+        else:  # replay_schema >= ReplaySchema.V2
             self.action_repr = compound_action_constructor(child_actions)
         self._first_error: Optional[Exception] = None
         self.pending_tasks: Set[TaskBase] = set(tasks)
@@ -292,7 +293,7 @@ class WhenAllTask(CompoundTask):
             The ReplaySchema, which determines the inner action payload representation
         """
         compound_action_constructor = None
-        if replay_schema is ReplaySchema.V2:
+        if replay_schema.value >= ReplaySchema.V2.value:
             compound_action_constructor = WhenAllAction
         super().__init__(task, compound_action_constructor)
 
@@ -317,6 +318,119 @@ class WhenAllTask(CompoundTask):
                 self.set_value(is_error=True, value=self._first_error)
 
 
+class LongTimerTask(WhenAllTask):
+    """A Timer Task for intervals longer than supported by the storage backend."""
+
+    def __init__(self, id_, action: CreateTimerAction, orchestration_context):
+        """Initialize a LongTimerTask.
+
+        Parameters
+        ----------
+        id_ : int
+            An ID for the task
+        action : CreateTimerAction
+            The action this task represents
+        orchestration_context: DurableOrchestrationContext
+            The orchestration context this task was created in
+        """
+        current_time = orchestration_context.current_utc_datetime
+        final_fire_time = action.fire_at
+        duration_until_fire = final_fire_time - current_time
+
+        if duration_until_fire > orchestration_context._maximum_short_timer_duration:
+            next_fire_time = current_time + orchestration_context._long_timer_interval_duration
+        else:
+            next_fire_time = final_fire_time
+
+        next_timer_action = CreateTimerAction(next_fire_time)
+        next_timer_task = TimerTask(None, next_timer_action)
+        super().__init__([next_timer_task], orchestration_context._replay_schema)
+
+        self.id = id_
+        self.action = action
+        self._orchestration_context = orchestration_context
+        self._max_short_timer_duration = self._orchestration_context._maximum_short_timer_duration
+        self._long_timer_interval = self._orchestration_context._long_timer_interval_duration
+
+    def is_canceled(self) -> bool:
+        """Check if the LongTimer is cancelled.
+
+        Returns
+        -------
+        bool
+            Returns whether the timer has been cancelled or not
+        """
+        return self.action.is_cancelled
+
+    def cancel(self):
+        """Cancel a timer.
+
+        Raises
+        ------
+        ValueError
+            Raises an error if the task is already completed and an attempt is made to cancel it
+        """
+        if (self.result):
+            raise Exception("Cannot cancel a completed task.")
+        self.action.is_cancelled = True
+
+    def try_set_value(self, child: TimerTask):
+        """Transition this LongTimer Task to a terminal state and set its value.
+
+        If the LongTimer has not yet reached the designated completion time, starts a new
+        TimerTask for the next interval and does not close.
+
+        Parameters
+        ----------
+        child : TimerTask
+            A timer sub-task that just completed
+        """
+        current_time = self._orchestration_context.current_utc_datetime
+        final_fire_time = self.action.fire_at
+        if final_fire_time > current_time:
+            next_timer = self.get_next_timer_task(final_fire_time, current_time)
+            self.add_new_child(next_timer)
+        return super().try_set_value(child)
+
+    def get_next_timer_task(self, final_fire_time: datetime, current_time: datetime) -> TimerTask:
+        """Create a TimerTask to represent the next interval of the LongTimer.
+
+        Parameters
+        ----------
+        final_fire_time : datetime.datetime
+            The final firing time of the LongTimer
+        current_time : datetime.datetime
+            The current time
+
+        Returns
+        -------
+        TimerTask
+            A TimerTask representing the next interval of the LongTimer
+        """
+        duration_until_fire = final_fire_time - current_time
+        if duration_until_fire > self._max_short_timer_duration:
+            next_fire_time = current_time + self._long_timer_interval
+        else:
+            next_fire_time = final_fire_time
+        return TimerTask(None, CreateTimerAction(next_fire_time))
+
+    def add_new_child(self, child_timer: TimerTask):
+        """Add the TimerTask to this task's children.
+
+        Also register the TimerTask with the orchestration context.
+
+        Parameters
+        ----------
+        child_timer : TimerTask
+            The newly created TimerTask to add
+        """
+        child_timer.parent = self
+        self.pending_tasks.add(child_timer)
+        self._orchestration_context._add_to_open_tasks(child_timer)
+        self._orchestration_context._add_to_actions(child_timer.action_repr)
+        child_timer._set_is_scheduled(True)
+
+
 class WhenAnyTask(CompoundTask):
     """A Task representing `when_any` scenarios."""
 
@@ -331,7 +445,7 @@ class WhenAnyTask(CompoundTask):
             The ReplaySchema, which determines the inner action payload representation
         """
         compound_action_constructor = None
-        if replay_schema is ReplaySchema.V2:
+        if replay_schema.value >= ReplaySchema.V2.value:
             compound_action_constructor = WhenAnyAction
         super().__init__(task, compound_action_constructor)
 

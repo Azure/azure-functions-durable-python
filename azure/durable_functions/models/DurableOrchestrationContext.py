@@ -1,7 +1,7 @@
 from collections import defaultdict
 from azure.durable_functions.models.actions.SignalEntityAction import SignalEntityAction
 from azure.durable_functions.models.actions.CallEntityAction import CallEntityAction
-from azure.durable_functions.models.Task import TaskBase, TimerTask
+from azure.durable_functions.models.Task import LongTimerTask, TaskBase, TimerTask
 from azure.durable_functions.models.actions.CallHttpAction import CallHttpAction
 from azure.durable_functions.models.DurableHttpRequest import DurableHttpRequest
 from azure.durable_functions.models.actions.CallSubOrchestratorWithRetryAction import \
@@ -26,6 +26,8 @@ from typing import DefaultDict, List, Any, Dict, Optional, Tuple, Union, Callabl
 from uuid import UUID, uuid5, NAMESPACE_URL, NAMESPACE_OID
 from datetime import timezone
 
+from azure.durable_functions.models.utils.json_utils import parse_timespan_attrib
+
 from .RetryOptions import RetryOptions
 from .FunctionContext import FunctionContext
 from .history import HistoryEvent, HistoryEventType
@@ -48,11 +50,22 @@ class DurableOrchestrationContext:
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions
     def __init__(self,
                  history: List[Dict[Any, Any]], instanceId: str, isReplaying: bool,
-                 parentInstanceId: str, input: Any = None, upperSchemaVersion: int = 0, **kwargs):
+                 parentInstanceId: str, input: Any = None, upperSchemaVersion: int = 0,
+                 maximumShortTimerDuration: str = None,
+                 longRunningTimerIntervalDuration: str = None, upperSchemaVersionNew: int = None,
+                 **kwargs):
         self._histories: List[HistoryEvent] = [HistoryEvent(**he) for he in history]
         self._instance_id: str = instanceId
         self._is_replaying: bool = isReplaying
         self._parent_instance_id: str = parentInstanceId
+        self._maximum_short_timer_duration: datetime.timedelta = None
+        if maximumShortTimerDuration is not None:
+            max_short_duration = parse_timespan_attrib(maximumShortTimerDuration)
+            self._maximum_short_timer_duration = max_short_duration
+        self._long_timer_interval_duration: datetime.timedelta = None
+        if longRunningTimerIntervalDuration is not None:
+            long_interval_duration = parse_timespan_attrib(longRunningTimerIntervalDuration)
+            self._long_timer_interval_duration = long_interval_duration
         self._custom_status: Any = None
         self._new_uuid_counter: int = 0
         self._sub_orchestrator_counter: int = 0
@@ -66,6 +79,13 @@ class DurableOrchestrationContext:
         self._function_context: FunctionContext = FunctionContext(**kwargs)
         self._sequence_number = 0
         self._replay_schema = ReplaySchema(upperSchemaVersion)
+        if (upperSchemaVersionNew is not None
+                and upperSchemaVersionNew > self._replay_schema.value):
+            valid_schema_values = [enum_member.value for enum_member in ReplaySchema]
+            if upperSchemaVersionNew in valid_schema_values:
+                self._replay_schema = ReplaySchema(upperSchemaVersionNew)
+            else:
+                self._replay_schema = ReplaySchema(max(valid_schema_values))
 
         self._action_payload_v1: List[List[Action]] = []
         self._action_payload_v2: List[Action] = []
@@ -532,10 +552,10 @@ class DurableOrchestrationContext:
             The action to append
         """
         new_action: Union[List[Action], Action]
-        if self._replay_schema is ReplaySchema.V2:
-            new_action = action
-        else:
+        if self._replay_schema is ReplaySchema.V1:
             new_action = [action]
+        else:
+            new_action = action
         self._add_to_actions(new_action)
         self._sequence_number += 1
 
@@ -580,6 +600,23 @@ class DurableOrchestrationContext:
         TaskBase
             A Durable Timer Task that schedules the timer to wake up the activity
         """
+        if self._replay_schema.value >= ReplaySchema.V3.value:
+            if not self._maximum_short_timer_duration or not self._long_timer_interval_duration:
+                raise Exception(
+                    "A framework-internal error was detected: "
+                    "replay schema version >= V3 is being used, "
+                    "but one or more of the properties `maximumShortTimerDuration`"
+                    "and `longRunningTimerIntervalDuration` are not defined. "
+                    "This is likely an issue with the Durable Functions Extension. "
+                    "Please report this bug here: "
+                    "https://github.com/Azure/azure-functions-durable-python/issues\n"
+                    f"maximumShortTimerDuration: {self._maximum_short_timer_duration}\n"
+                    f"longRunningTimerIntervalDuration: {self._long_timer_interval_duration}"
+                )
+            if fire_at > self.current_utc_datetime + self._maximum_short_timer_duration:
+                action = CreateTimerAction(fire_at)
+                return LongTimerTask(None, action, self)
+
         action = CreateTimerAction(fire_at)
         task = self._generate_task(action, task_constructor=TimerTask)
         return task
@@ -656,7 +693,8 @@ class DurableOrchestrationContext:
 
         if self._replay_schema is ReplaySchema.V1 and isinstance(action_repr, list):
             self._action_payload_v1.append(action_repr)
-        elif self._replay_schema is ReplaySchema.V2 and isinstance(action_repr, Action):
+        elif (self._replay_schema.value >= ReplaySchema.V2.value
+              and isinstance(action_repr, Action)):
             self._action_payload_v2.append(action_repr)
         else:
             raise Exception(f"DF-internal exception: ActionRepr of signature {type(action_repr)}"
@@ -684,7 +722,8 @@ class DurableOrchestrationContext:
                 task.id = self._sequence_number
                 self._sequence_number += 1
                 self.open_tasks[task.id] = task
-            elif task.id != -1:
+            elif task.id != -1 and self.open_tasks[task.id] != task:
+                # Case when returning task_any with multiple external events having the same ID
                 self.open_tasks[task.id].append(task)
 
             if task.id in self.deferred_tasks:
