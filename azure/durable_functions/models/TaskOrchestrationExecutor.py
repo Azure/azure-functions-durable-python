@@ -245,14 +245,14 @@ class TaskOrchestrationExecutor:
 
         self.current_task = new_task
         if not (new_task is None):
+            if not (self.current_task._is_scheduled):
+                # new task is received. it needs to be resolved to a value
+                self.context._add_to_actions(self.current_task.action_repr)
+                self._mark_as_scheduled(self.current_task)
             if not (new_task.state is TaskState.RUNNING):
                 # user yielded the same task multiple times, continue executing code
                 # until a new/not-previously-yielded task is encountered
                 self.resume_user_code()
-            elif not (self.current_task._is_scheduled):
-                # new task is received. it needs to be resolved to a value
-                self.context._add_to_actions(self.current_task.action_repr)
-                self._mark_as_scheduled(self.current_task)
 
     def _mark_as_scheduled(self, task: TaskBase):
         if isinstance(task, CompoundTask):
