@@ -4,6 +4,7 @@ from typing import List, Any, Optional, Dict, Union
 from time import time
 from asyncio import sleep
 from urllib.parse import urlparse, quote
+from opentelemetry import trace
 
 import azure.functions as func
 
@@ -47,9 +48,7 @@ class DurableOrchestrationClient:
     async def start_new(self,
                         orchestration_function_name: str,
                         instance_id: Optional[str] = None,
-                        client_input: Optional[Any] = None,
-                        trace_parent: Optional[str] = None,
-                        trace_state: Optional[str] = None) -> str:
+                        client_input: Optional[Any] = None) -> str:
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
@@ -64,10 +63,6 @@ class DurableOrchestrationClient:
             the Durable Functions extension will generate a random GUID (recommended).
         client_input : Optional[Any]
             JSON-serializable input value for the orchestrator function.
-        trace_parent : str
-            The traceparent header to send with the request.
-        trace_state : str
-            The tracestate header to send with the request.
 
         Returns
         -------
@@ -77,6 +72,18 @@ class DurableOrchestrationClient:
         request_url = self._get_start_new_url(
             instance_id=instance_id, orchestration_function_name=orchestration_function_name)
 
+        # Get the current span
+        current_span = trace.get_current_span()
+        span_context = current_span.get_span_context()
+
+        # Get the traceparent and tracestate from the span context
+        trace_id = format(span_context.trace_id, '032x')
+        span_id = format(span_context.span_id, '016x')
+        trace_flags = format(span_context.trace_flags, '02x')
+        trace_parent = f"00-{trace_id}-{span_id}-{trace_flags}"
+        
+        trace_state = span_context.trace_state
+        
         response: List[Any] = await self._post_async_request(
             request_url,
             self._get_json_input(client_input),
