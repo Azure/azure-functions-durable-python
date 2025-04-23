@@ -31,8 +31,10 @@ class EntityHandler(Callable):
         self.entity_function = func
 
     def __call__(self, context: func.EntityContext) -> str:
-        """
-        Handle the execution of the user defined entity function.
+        """Handle the execution of the user defined entity function.
+
+        Serializes a DurableEntityContext object from the input context and
+        passes it to the entity function.
 
         Parameters
         ----------
