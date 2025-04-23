@@ -5,21 +5,24 @@ from typing import Callable, Any, List, Dict
 
 import azure.functions as func
 
+
 class InternalEntityException(Exception):
     """Framework-internal Exception class (for internal use only)."""
 
     pass
 
+
 class EntityHandler(Callable):
     """Durable Entity Handler.
+
     A callable class that wraps the user defined entity function for execution by the Python worker
     and also allows access to the original method for unit testing
     """
-    
+
     def __init__(self, func: Callable[[DurableEntityContext], None]):
         """
         Create a new entity handler for the user defined entity function.
-        
+
         Parameters
         ----------
         func: Callable[[DurableEntityContext], None]
@@ -28,7 +31,9 @@ class EntityHandler(Callable):
         self.entity_function = func
 
     def __call__(self, context: func.EntityContext) -> str:
-        """Handle the execution of the user defined entity function.
+        """
+        Handle the execution of the user defined entity function.
+
         Parameters
         ----------
         context : func.EntityContext

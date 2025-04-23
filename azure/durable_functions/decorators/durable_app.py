@@ -206,7 +206,7 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
         # 2. I have not yet fully tested the behavior of overriding __call__ on an object with an
         #    async method.
         # Here we lose type hinting and auto-documentation - not great. Need to find a better way
-        # to do this. 
+        # to do this.
         df_client_middleware.client_function = fb._function._func
 
         user_code_with_rich_client = df_client_middleware

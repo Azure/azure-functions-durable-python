@@ -13,14 +13,15 @@ import azure.functions as func
 
 class OrchestrationHandler(Callable):
     """Durable Orchestration Handler.
+
     A callable class that wraps the user defined generator function for execution by the Python worker
     and also allows access to the original method for unit testing
     """
-    
+
     def __init__(self, func: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]]):
         """
         Create a new orchestrator handler for the user defined orchestrator function.
-        
+
         Parameters
         ----------
         func: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]]
@@ -29,7 +30,9 @@ class OrchestrationHandler(Callable):
         self.orchestrator_function = func
 
     def __call__(self, context: func.OrchestrationContext) -> str:
-        """Handle the execution of the user defined orchestrator function.
+        """
+        Handle the execution of the user defined orchestrator function.
+
         Parameters
         ----------
         context : func.OrchestrationContext
