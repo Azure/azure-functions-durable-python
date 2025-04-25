@@ -83,7 +83,7 @@ class DurableOrchestrationClient:
         trace_parent = f"00-{trace_id}-{span_id}-{trace_flags}"
         
         trace_state = span_context.trace_state
-        
+
         response: List[Any] = await self._post_async_request(
             request_url,
             self._get_json_input(client_input),
