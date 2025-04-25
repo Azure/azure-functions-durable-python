@@ -11,3 +11,4 @@ furl==2.1.0
 pytest-asyncio==0.20.2
 autopep8
 types-python-dateutil
+opentelemetry-api
