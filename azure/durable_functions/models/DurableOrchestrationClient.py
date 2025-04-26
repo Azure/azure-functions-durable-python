@@ -83,7 +83,7 @@ class DurableOrchestrationClient:
         span_id = format(span_context.span_id, '016x')
         trace_flags = format(span_context.trace_flags, '02x')
         trace_parent = f"00-{trace_id}-{span_id}-{trace_flags}"
-        
+
         trace_state = span_context.trace_state
 
         response: List[Any] = await self._post_async_request(
