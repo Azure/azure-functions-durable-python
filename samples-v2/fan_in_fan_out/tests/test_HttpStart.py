@@ -3,6 +3,12 @@ import unittest
 import azure.functions as func
 from unittest.mock import AsyncMock, Mock, patch
 
+# This path manipulation allows the test to run in the Functions pipelines, and can be removed
+# if this code is used as a sample for a different project.
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir))
+
 from function_app import HttpStart
 
 class TestFunction(unittest.TestCase):

@@ -1,10 +1,11 @@
-from datetime import timedelta
 import unittest
 from unittest.mock import Mock, call, patch
 
-import azure.functions as func
-
-# import library_modifications
+# This path manipulation allows the test to run in the Functions pipelines, and can be removed
+# if this code is used as a sample for a different project.
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir))
 
 from function_app import E2_BackupSiteContent
 
