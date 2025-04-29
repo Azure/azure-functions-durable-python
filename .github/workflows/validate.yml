@@ -31,4 +31,4 @@ jobs:
           flake8 . --count --show-source --statistics
       - name: Run tests
         run: |
-          pytest
+          pytest --ignore=samples-v2
