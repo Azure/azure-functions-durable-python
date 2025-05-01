@@ -67,7 +67,7 @@ class MockRequest:
         assert url == self._expected_url
         return self._response
 
-    async def post(self, url: str, data: Any = None):
+    async def post(self, url: str, data: Any = None, trace_parent: str = None, trace_state: str = None):
         assert url == self._expected_url
         return self._response
 
