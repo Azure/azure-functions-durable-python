@@ -53,7 +53,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install ../.. --no-cache-dir --upgrade --force-reinstall
+          pip install -r ../../requirements.txt
+          pip install ../.. --no-cache-dir --upgrade --no-deps --force-reinstall
       - name: Run tests
         run: |
           python -m pytest
