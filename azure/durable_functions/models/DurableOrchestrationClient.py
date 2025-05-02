@@ -4,6 +4,7 @@ from typing import List, Any, Optional, Dict, Union
 from time import time
 from asyncio import sleep
 from urllib.parse import urlparse, quote
+from opentelemetry import trace
 
 import azure.functions as func
 
@@ -71,8 +72,25 @@ class DurableOrchestrationClient:
         request_url = self._get_start_new_url(
             instance_id=instance_id, orchestration_function_name=orchestration_function_name)
 
+        # Get the current span
+        current_span = trace.get_current_span()
+        span_context = current_span.get_span_context()
+
+        # Get the traceparent and tracestate from the span context
+        # Follows the W3C Trace Context specification for traceparent
+        # https://www.w3.org/TR/trace-context/#traceparent-header
+        trace_id = format(span_context.trace_id, '032x')
+        span_id = format(span_context.span_id, '016x')
+        trace_flags = format(span_context.trace_flags, '02x')
+        trace_parent = f"00-{trace_id}-{span_id}-{trace_flags}"
+
+        trace_state = span_context.trace_state
+
         response: List[Any] = await self._post_async_request(
-            request_url, self._get_json_input(client_input))
+            request_url,
+            self._get_json_input(client_input),
+            trace_parent,
+            trace_state)
 
         status_code: int = response[0]
         if status_code <= 202 and response[1]:
