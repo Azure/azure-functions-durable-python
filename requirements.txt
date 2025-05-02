@@ -9,6 +9,6 @@ azure-functions>=1.11.3b3
 nox==2019.11.9
 furl==2.1.0
 pytest-asyncio==0.20.2
+opentelemetry-distro==0.53b1
 autopep8
 types-python-dateutil
-opentelemetry-api
