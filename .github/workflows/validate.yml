@@ -53,9 +53,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest==8.3.5
-          pip install pytest-asyncio==0.26.0
-          pip install ../.. --no-cache-dir --upgrade --no-deps --force-reinstall
+          pip install ../.. --no-cache-dir --upgrade --force-reinstall
       - name: Run tests
         run: |
           python -m pytest
