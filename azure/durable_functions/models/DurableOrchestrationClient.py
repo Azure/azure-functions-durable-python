@@ -86,6 +86,20 @@ class DurableOrchestrationClient:
 
         trace_state = span_context.trace_state
 
+        # Get the current span
+        current_span = trace.get_current_span()
+        span_context = current_span.get_span_context()
+
+        # Get the traceparent and tracestate from the span context
+        # Follows the W3C Trace Context specification for traceparent
+        # https://www.w3.org/TR/trace-context/#traceparent-header
+        trace_id = format(span_context.trace_id, '032x')
+        span_id = format(span_context.span_id, '016x')
+        trace_flags = format(span_context.trace_flags, '02x')
+        trace_parent = f"00-{trace_id}-{span_id}-{trace_flags}"
+
+        trace_state = span_context.trace_state
+
         response: List[Any] = await self._post_async_request(
             request_url,
             self._get_json_input(client_input),
