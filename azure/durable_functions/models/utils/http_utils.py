@@ -3,7 +3,10 @@ from typing import Any, List, Union
 import aiohttp
 
 
-async def post_async_request(url: str, data: Any = None) -> List[Union[int, Any]]:
+async def post_async_request(url: str,
+                             data: Any = None,
+                             trace_parent: str = None,
+                             trace_state: str = None) -> List[Union[int, Any]]:
     """Post request with the data provided to the url provided.
 
     Parameters
@@ -12,6 +15,10 @@ async def post_async_request(url: str, data: Any = None) -> List[Union[int, Any]
         url to make the post to
     data: Any
         object to post
+    trace_parent: str
+        traceparent header to send with the request
+    trace_state: str
+        tracestate header to send with the request
 
     Returns
     -------
@@ -19,8 +26,12 @@ async def post_async_request(url: str, data: Any = None) -> List[Union[int, Any]
         Tuple with the Response status code and the data returned from the request
     """
     async with aiohttp.ClientSession() as session:
-        async with session.post(url,
-                                json=data) as response:
+        headers = {}
+        if trace_parent:
+            headers["traceparent"] = trace_parent
+        if trace_state:
+            headers["tracestate"] = trace_state
+        async with session.post(url, json=data, headers=headers) as response:
             # We disable aiohttp's input type validation
             # as the server may respond with alternative
             # data encodings. This is potentially unsafe.
