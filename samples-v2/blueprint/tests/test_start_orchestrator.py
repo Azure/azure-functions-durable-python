@@ -3,13 +3,13 @@ import unittest
 import azure.functions as func
 from unittest.mock import AsyncMock, Mock, patch
 
-from function_app import HttpStart
+from durable_blueprints import start_orchestrator
 
 class TestFunction(unittest.TestCase):
   @patch('azure.durable_functions.DurableOrchestrationClient')
   def test_HttpStart(self, client):
     # Get the original method definition as seen in the function_app.py file
-    func_call = HttpStart.build().get_user_function().client_function
+    func_call = start_orchestrator.build().get_user_function().client_function
 
     req = func.HttpRequest(method='GET',
                            body=b'{}',
