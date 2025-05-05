@@ -21,6 +21,6 @@ class TestFunction(unittest.TestCase):
     # Create a generator using the method and mocked context
     result = asyncio.run(func_call(req, client))
 
-    client.start_new.assert_called_once_with("my_orchestrator", client_input={})
+    client.start_new.assert_called_once_with("my_orchestrator")
     client.create_check_status_response.assert_called_once_with(req, "instance_id")
     self.assertEqual(result, "check_status_response")
