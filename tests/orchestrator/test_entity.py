@@ -213,7 +213,7 @@ def apply_operation(entity_state: EntityState, result: Any, state: Any, is_error
     operation_result = OperationResult(
         is_error=is_error,
         duration=duration,
-        start_time=start_time,
+        execution_start_time_ms=start_time,
         result=result
     )
     entity_state._results.append(operation_result)

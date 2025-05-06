@@ -74,7 +74,7 @@ class Entity:
             operation_result = OperationResult(
                 is_error=is_error,
                 duration=duration,
-                start_time=int(start_time.timestamp() * 1000),
+                execution_start_time_ms=int(start_time.timestamp() * 1000),
                 result=result
             )
             response.results.append(operation_result)
