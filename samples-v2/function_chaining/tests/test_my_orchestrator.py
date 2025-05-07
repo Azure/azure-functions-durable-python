@@ -6,7 +6,7 @@ from function_app import my_orchestrator
 
 # A way to wrap an orchestrator generator to simplify calling it and getting the results.
 # Because orchestrators in Durable Functions always accept the result of the previous activity for the next send() call, 
-# we can simplify the orchestrator like this to also simplify per-test code. 
+# we can unwrap the orchestrator generator using this method to simplify per-test code. 
 def orchestrator_generator_wrapper(generator):
   previous =  next(generator)
   yield previous
@@ -43,6 +43,7 @@ class TestFunction(unittest.TestCase):
     func_call = my_orchestrator.build().get_user_function().orchestrator_function
 
     context.call_activity = Mock(side_effect=mock_activity)
+
     # Create a generator using the method and mocked context
     user_orchestrator = func_call(context)
 

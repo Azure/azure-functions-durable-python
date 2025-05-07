@@ -6,7 +6,7 @@ from durable_blueprints import my_orchestrator
 
 # A way to wrap an orchestrator generator to simplify calling it and getting the results.
 # Because orchestrators in Durable Functions always accept the result of the previous activity for the next send() call, 
-# we can simplify the orchestrator like this to also simplify per-test code. 
+# we can unwrap the orchestrator generator using this method to simplify per-test code. 
 def orchestrator_generator_wrapper(generator):
   previous =  next(generator)
   yield previous

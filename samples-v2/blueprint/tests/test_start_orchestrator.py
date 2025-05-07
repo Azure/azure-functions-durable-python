@@ -18,7 +18,7 @@ class TestFunction(unittest.TestCase):
     client.start_new = AsyncMock(return_value="instance_id")
     client.create_check_status_response = Mock(return_value="check_status_response")
 
-    # Create a generator using the method and mocked context
+    # Execute the function code
     result = asyncio.run(func_call(req, client))
 
     client.start_new.assert_called_once_with("my_orchestrator")

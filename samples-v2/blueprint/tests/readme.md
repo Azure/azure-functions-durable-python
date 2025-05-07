@@ -1,6 +1,27 @@
 # Durable Functions Sample – Unit Tests (Python)
 
+## Overview
+
 This directory contains a simple **unit test** for the sample [Durable Azure Functions](https://learn.microsoft.com/azure/azure-functions/durable/durable-functions-overview) written in Python. This test demonstrates how to validate the logic of the orchestrator function in isolation using mocks.
+
+Writing unit tests for Durable functions requires sligtly different syntax for accessing the original method definition. Orchestrator functions, client functions, and entity functions all come with their own ways to access the user code: 
+
+### Orchestrator functions
+```
+my_orchestrator.build().get_user_function().orchestrator_function
+```
+
+### Client functions
+```
+my_client_function.build().get_user_function().client_function
+```
+
+### Entity functions
+```
+my_entity_function.build().get_user_function().entity_function
+```
+
+This sample app demonstrates using these accessors to get and test Durable functions. It also demonstrates how to mock the calling behavior that Durable uses to run orchestrators during replay with the orchestrator_generator_wrapper method defined in test_my_orchestrator.py and simulates the Tasks yielded by DurableOrchestrationContext with MockTask objects in the same file.
 
 ## Prerequisites
 
