@@ -1,0 +1,45 @@
+from typing import Generator, Any
+
+from azure.durable_functions.models import TaskBase
+class OrchestratorGeneratorWrapper:
+    """A helper class for unit testing orchestrator functions.
+
+    Defines a method that will unwrap a user orchestrator function in a way that is similar to the
+    Durable replay logic, but without saving state for the Durable Task Hub.
+    """
+
+    @staticmethod
+    def wrap(generator: Generator[TaskBase, Any, Any]) -> Generator[TaskBase, None, Any]:
+        """Wraps the generator to simulate the Durable replay logic.
+
+        Parameters
+        ----------
+        generator: Generator[TaskBase, Any, Any]
+            Generator orchestrator as defined in the user function app. This generator is expected
+            to yield a series of TaskBase objects and recieve the results of these tasks until
+            returning the result of the orchestrator.
+
+        Returns
+        -------
+        Generator[TaskBase, None, Any]
+            A simplified version of the orchestrator which takes no inputs. This generator will
+            yield back the TaskBase objects that are yielded from the user orchestrator as well
+            as the final result of the orchestrator. Exception handling is also simulated here
+            in the same way as replay, where tasks returning exceptions are thrown back into the
+            orchestrator. 
+        """
+        previous =  next(generator)
+        yield previous
+        while True:
+            try:
+                previous_result = None
+                try:
+                    previous_result = previous.result
+                except Exception as e: # Simulated activity exceptions, timer interrupted exceptions, anytime a task would throw. 
+                    previous = generator.throw(e)
+                else:
+                    previous = generator.send(previous_result)      
+                yield previous
+            except StopIteration as e:
+                yield e.value
+                return
