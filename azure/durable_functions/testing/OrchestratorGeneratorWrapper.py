@@ -1,4 +1,4 @@
-from typing import Generator, Any
+from typing import Generator, Any, Union
 
 from azure.durable_functions.models import TaskBase
 class OrchestratorGeneratorWrapper:
@@ -9,7 +9,7 @@ class OrchestratorGeneratorWrapper:
     """
 
     @staticmethod
-    def wrap(generator: Generator[TaskBase, Any, Any]) -> Generator[TaskBase, None, Any]:
+    def wrap(generator: Generator[TaskBase, Any, Any]) -> Generator[Union[TaskBase, Any], None, None]:
         """Wraps the generator to simulate the Durable replay logic.
 
         Parameters
@@ -21,7 +21,7 @@ class OrchestratorGeneratorWrapper:
 
         Returns
         -------
-        Generator[TaskBase, None, Any]
+        Generator[Union[TaskBase, Any], None, None]
             A simplified version of the orchestrator which takes no inputs. This generator will
             yield back the TaskBase objects that are yielded from the user orchestrator as well
             as the final result of the orchestrator. Exception handling is also simulated here
