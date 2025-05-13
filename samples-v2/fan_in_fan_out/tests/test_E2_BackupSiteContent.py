@@ -11,7 +11,7 @@ def create_mock_task(result, task):
   return task
 
 
-def mock_activity(activity_name, input, task):
+def mock_activity(activity_name, input):
   if activity_name == "E2_GetFileList":
     return create_mock_task(["C:/test/E2_Activity.py", "C:/test/E2_Orchestrator.py"])
   raise Exception("Activity not found")
