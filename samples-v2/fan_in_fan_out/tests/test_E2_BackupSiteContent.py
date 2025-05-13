@@ -14,7 +14,13 @@ def create_mock_task(result, task):
 def mock_activity(activity_name, input):
   if activity_name == "E2_GetFileList":
     return create_mock_task(["C:/test/E2_Activity.py", "C:/test/E2_Orchestrator.py"])
+  elif activity_name == "E2_CopyFileToBlob":
+    return create_mock_task(1)
   raise Exception("Activity not found")
+
+
+def mock_task_all(tasks):
+  return create_mock_task([t.result for t in tasks])
 
 
 class TestFunction(unittest.TestCase):
@@ -25,7 +31,7 @@ class TestFunction(unittest.TestCase):
 
     context.get_input = Mock(return_value="C:/test")
     context.call_activity = Mock(side_effect=mock_activity)
-    context.task_all = Mock(return_value=create_mock_task([100, 200, 300]))
+    context.task_all = Mock(side_effect=mock_task_all)
 
     # Execute the function code
     user_orchestrator = func_call(context)
@@ -43,4 +49,4 @@ class TestFunction(unittest.TestCase):
 
     context.task_all.assert_called_once()
     # Sums the result of task_all
-    self.assertEqual(values[2], 600)
+    self.assertEqual(values[2], 2)
