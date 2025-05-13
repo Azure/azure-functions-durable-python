@@ -2,8 +2,10 @@ from typing import Generator, Any, Union
 
 from azure.durable_functions.models import TaskBase
 
-def orchestrator_generator_wrapper(generator: Generator[TaskBase, Any, Any]) -> Generator[Union[TaskBase, Any], None, None]:
-    """Wraps a user-defined orchestrator function to simulate the Durable replay logic.
+
+def orchestrator_generator_wrapper(generator: Generator[TaskBase, Any, Any]) -> Generator[
+    Union[TaskBase, Any], None, None]:
+    """Wrap a user-defined orchestrator function in a way that simulates the Durable replay logic.
 
     Parameters
     ----------
@@ -19,19 +21,21 @@ def orchestrator_generator_wrapper(generator: Generator[TaskBase, Any, Any]) -> 
         yield back the TaskBase objects that are yielded from the user orchestrator as well
         as the final result of the orchestrator. Exception handling is also simulated here
         in the same way as replay, where tasks returning exceptions are thrown back into the
-        orchestrator. 
+        orchestrator.
     """
-    previous =  next(generator)
+    previous = next(generator)
     yield previous
     while True:
         try:
             previous_result = None
             try:
                 previous_result = previous.result
-            except Exception as e: # Simulated activity exceptions, timer interrupted exceptions, anytime a task would throw. 
+            except Exception as e:
+                # Simulated activity exceptions, timer interrupted exceptions,
+                # or anytime a task would throw.
                 previous = generator.throw(e)
             else:
-                previous = generator.send(previous_result)      
+                previous = generator.send(previous_result)
             yield previous
         except StopIteration as e:
             yield e.value
