@@ -1,6 +1,6 @@
 """Unit testing utilities for Azure Durable functions."""
-from .OrchestratorGeneratorWrapper import OrchestratorGeneratorWrapper
+from .OrchestratorGeneratorWrapper import orchestrator_generator_wrapper
 
 __all__ = [
-    'OrchestratorGeneratorWrapper'
+    'orchestrator_generator_wrapper'
 ]

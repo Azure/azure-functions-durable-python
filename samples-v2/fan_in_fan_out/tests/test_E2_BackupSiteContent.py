@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import Mock, call, patch
-from azure.durable_functions.testing import OrchestratorGeneratorWrapper
+from azure.durable_functions.testing import orchestrator_generator_wrapper
 
 from function_app import E2_BackupSiteContent
 
@@ -30,9 +30,9 @@ class TestFunction(unittest.TestCase):
     # Execute the function code
     user_orchestrator = func_call(context)
 
-    # Use OrchestratorGeneratorWrapper to get the values from the generator.
+    # Use orchestrator_generator_wrapper to get the values from the generator.
     # Processes the orchestrator in a way that is equivalent to the Durable replay logic
-    values = [val for val in OrchestratorGeneratorWrapper.wrap(user_orchestrator)]
+    values = [val for val in orchestrator_generator_wrapper(user_orchestrator)]
 
     expected_activity_calls = [call('E2_GetFileList', 'C:/test'),
                                call('E2_CopyFileToBlob', 'C:/test/E2_Activity.py'),

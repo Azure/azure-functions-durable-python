@@ -1,7 +1,6 @@
-from datetime import timedelta
 import unittest
 from unittest.mock import Mock, call, patch
-from azure.durable_functions.testing import OrchestratorGeneratorWrapper
+from azure.durable_functions.testing import orchestrator_generator_wrapper
 
 from durable_blueprints import my_orchestrator
 
@@ -23,9 +22,9 @@ class TestFunction(unittest.TestCase):
     # Create a generator using the method and mocked context
     user_orchestrator = func_call(context)
 
-    # Use OrchestratorGeneratorWrapper to get the values from the generator.
+    # Use orchestrator_generator_wrapper to get the values from the generator.
     # Processes the orchestrator in a way that is equivalent to the Durable replay logic
-    values = [val for val in OrchestratorGeneratorWrapper.wrap(user_orchestrator)]
+    values = [val for val in orchestrator_generator_wrapper(user_orchestrator)]
 
     expected_activity_calls = [call('say_hello', 'Tokyo'),
                                call('say_hello', 'Seattle'),
