@@ -9,7 +9,7 @@ def orchestrator_generator_wrapper(generator: Generator[TaskBase, Any, Any]) -> 
     ----------
     generator: Generator[TaskBase, Any, Any]
         Generator orchestrator as defined in the user function app. This generator is expected
-        to yield a series of TaskBase objects and recieve the results of these tasks until
+        to yield a series of TaskBase objects and receive the results of these tasks until
         returning the result of the orchestrator.
 
     Returns
