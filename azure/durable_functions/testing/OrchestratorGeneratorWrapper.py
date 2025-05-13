@@ -3,8 +3,9 @@ from typing import Generator, Any, Union
 from azure.durable_functions.models import TaskBase
 
 
-def orchestrator_generator_wrapper(generator: Generator[TaskBase, Any, Any]) -> Generator[
-    Union[TaskBase, Any], None, None]:
+def orchestrator_generator_wrapper(
+        generator: Generator[TaskBase, Any, Any]
+    ) -> Generator[Union[TaskBase, Any], None, None]:
     """Wrap a user-defined orchestrator function in a way that simulates the Durable replay logic.
 
     Parameters
