@@ -4,7 +4,6 @@ from typing import List, Any, Optional, Dict, Union
 from time import time
 from asyncio import sleep
 from urllib.parse import urlparse, quote
-from opentelemetry import trace
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 import azure.functions as func
@@ -792,7 +791,7 @@ class DurableOrchestrationClient:
         if error_message:
             raise Exception(error_message)
 
-    """Gets the current trace activity traceparent and tracestate 
+    """Gets the current trace activity traceparent and tracestate
 
     Returns
     -------
