@@ -5,6 +5,7 @@ from time import time
 from asyncio import sleep
 from urllib.parse import urlparse, quote
 from opentelemetry import trace
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 import azure.functions as func
 
@@ -791,20 +792,22 @@ class DurableOrchestrationClient:
         if error_message:
             raise Exception(error_message)
 
+    """Gets the current trace activity traceparent and tracestate 
+
+    Returns
+    -------
+    tuple[str, str]
+        A tuple containing the (traceparent, tracestate)
+    """
     @staticmethod
     def _get_current_activity_context() -> tuple[str, str]:
-        # Get the current span
-        current_span = trace.get_current_span()
-        span_context = current_span.get_span_context()
+        carrier = {}
 
-        # Get the traceparent and tracestate from the span context
-        # Follows the W3C Trace Context specification for traceparent
-        # https://www.w3.org/TR/trace-context/#traceparent-header
-        trace_id = format(span_context.trace_id, '032x')
-        span_id = format(span_context.span_id, '016x')
-        trace_flags = format(span_context.trace_flags, '02x')
-        trace_parent = f"00-{trace_id}-{span_id}-{trace_flags}"
+        # Inject the current trace context into the carrier
+        TraceContextTextMapPropagator().inject(carrier)
 
-        trace_state = span_context.trace_state
+        # Extract the traceparent and optionally the tracestate
+        trace_parent = carrier.get("traceparent")
+        trace_state = carrier.get("tracestate")
 
         return trace_parent, trace_state
