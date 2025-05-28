@@ -198,6 +198,17 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
             # Invoke user code with rich DF Client binding
             return await user_code(*args, **kwargs)
 
+        # Todo: This feels awkward - however, there are two reasons that I can't naively implement
+        # this in the same way as entities and orchestrators:
+        # 1. We intentionally wrap this exported signature with @wraps, to preserve the original
+        #    signature of the user code. This means that we can't just assign a new object to the
+        #    fb._function._func, as that would overwrite the original signature.
+        # 2. I have not yet fully tested the behavior of overriding __call__ on an object with an
+        #    async method.
+        # Here we lose type hinting and auto-documentation - not great. Need to find a better way
+        # to do this.
+        df_client_middleware.client_function = fb._function._func
+
         user_code_with_rich_client = df_client_middleware
         fb._function._func = user_code_with_rich_client
 

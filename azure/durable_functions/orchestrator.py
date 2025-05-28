@@ -11,6 +11,41 @@ from .models import DurableOrchestrationContext
 import azure.functions as func
 
 
+class OrchestrationHandler(Callable):
+    """Durable Orchestration Handler.
+
+    A callable class that wraps the user defined generator function for execution
+    by the Python worker and also allows access to the original method for unit testing
+    """
+
+    def __init__(self, func: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]]):
+        """
+        Create a new orchestrator handler for the user defined orchestrator function.
+
+        Parameters
+        ----------
+        func: Callable[[DurableOrchestrationContext], Generator[Any, Any, Any]]
+            The user defined orchestrator function.
+        """
+        self.orchestrator_function = func
+
+    def __call__(self, context: func.OrchestrationContext) -> str:
+        """
+        Handle the execution of the user defined orchestrator function.
+
+        Parameters
+        ----------
+        context : func.OrchestrationContext
+            The DF orchestration context
+        """
+        context_body = getattr(context, "body", None)
+        if context_body is None:
+            context_body = context
+        return Orchestrator(self.orchestrator_function).handle(
+            DurableOrchestrationContext.from_json(context_body)
+        )
+
+
 class Orchestrator:
     """Durable Orchestration Class.
 
@@ -58,14 +93,7 @@ class Orchestrator:
 
         Returns
         -------
-        Callable[[Any], str]
-            Handle function of the newly created orchestration client
+        OrchestrationHandler
+            Orchestration handler callable class for the newly created orchestration client
         """
-
-        def handle(context: func.OrchestrationContext) -> str:
-            context_body = getattr(context, "body", None)
-            if context_body is None:
-                context_body = context
-            return Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context_body))
-
-        return handle
+        return OrchestrationHandler(fn)

@@ -9,6 +9,7 @@ from .RetryOptions import RetryOptions
 from .DurableHttpRequest import DurableHttpRequest
 from .TokenSource import ManagedIdentityTokenSource
 from .DurableEntityContext import DurableEntityContext
+from .Task import TaskBase
 
 __all__ = [
     'DurableOrchestrationBindings',
@@ -20,5 +21,6 @@ __all__ = [
     'OrchestratorState',
     'OrchestrationRuntimeStatus',
     'PurgeHistoryResult',
-    'RetryOptions'
+    'RetryOptions',
+    'TaskBase'
 ]
