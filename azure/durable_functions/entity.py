@@ -3,8 +3,6 @@ from .models.entities import OperationResult, EntityState
 from datetime import datetime
 from typing import Callable, Any, List, Dict
 
-import azure.functions as func
-
 
 class InternalEntityException(Exception):
     """Framework-internal Exception class (for internal use only)."""
