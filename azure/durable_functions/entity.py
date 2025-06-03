@@ -12,43 +12,6 @@ class InternalEntityException(Exception):
     pass
 
 
-class EntityHandler(Callable):
-    """Durable Entity Handler.
-
-    A callable class that wraps the user defined entity function for execution by the Python worker
-    and also allows access to the original method for unit testing
-    """
-
-    def __init__(self, func: Callable[[DurableEntityContext], None]):
-        """
-        Create a new entity handler for the user defined entity function.
-
-        Parameters
-        ----------
-        func: Callable[[DurableEntityContext], None]
-            The user defined entity function.
-        """
-        self.entity_function = func
-
-    def __call__(self, context: func.EntityContext) -> str:
-        """
-        Handle the execution of the user defined entity function.
-
-        Parameters
-        ----------
-        context : func.EntityContext
-            The DF entity context
-        """
-        # It is not clear when the context JSON would be found
-        # inside a "body"-key, but this pattern matches the
-        # orchestrator implementation, so we keep it for safety.
-        context_body = getattr(context, "body", None)
-        if context_body is None:
-            context_body = context
-        ctx, batch = DurableEntityContext.from_json(context_body)
-        return Entity(self.entity_function).handle(ctx, batch)
-
-
 class Entity:
     """Durable Entity Class.
 
@@ -131,10 +94,22 @@ class Entity:
 
         Returns
         -------
-        EntityHandler
-            Entity Handler callable for the newly created entity client
+        Callable[[Any], str]
+            Handle function of the newly created entity client
         """
-        return EntityHandler(fn)
+        def handle(context) -> str:
+            # It is not clear when the context JSON would be found
+            # inside a "body"-key, but this pattern matches the
+            # orchestrator implementation, so we keep it for safety.
+            context_body = getattr(context, "body", None)
+            if context_body is None:
+                context_body = context
+            ctx, batch = DurableEntityContext.from_json(context_body)
+            return Entity(fn).handle(ctx, batch)
+
+        handle.entity_function = fn
+
+        return handle
 
     def _elapsed_milliseconds_since(self, start_time: datetime) -> int:
         """Calculate the elapsed time, in milliseconds, from the start_time to the present.
