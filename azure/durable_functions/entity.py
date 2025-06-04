@@ -104,6 +104,9 @@ class Entity:
                 context_body = context
             ctx, batch = DurableEntityContext.from_json(context_body)
             return Entity(fn).handle(ctx, batch)
+
+        handle.entity_function = fn
+
         return handle
 
     def _elapsed_milliseconds_since(self, start_time: datetime) -> int:
