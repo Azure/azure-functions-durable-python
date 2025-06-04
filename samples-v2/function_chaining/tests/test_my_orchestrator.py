@@ -31,7 +31,7 @@ class TestFunction(unittest.TestCase):
     expected_activity_calls = [call('say_hello', 'Tokyo'),
                                call('say_hello', 'Seattle'),
                                call('say_hello', 'London')]
-    
+
     self.assertEqual(context.call_activity.call_count, 3)
     self.assertEqual(context.call_activity.call_args_list, expected_activity_calls)
     self.assertEqual(values[3], ["Hello Tokyo!", "Hello Seattle!", "Hello London!"])
