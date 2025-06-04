@@ -4,3 +4,4 @@
 
 azure-functions
 azure-functions-durable>=1.2.4
+pytest

@@ -31,4 +31,30 @@ jobs:
           flake8 . --count --show-source --statistics
       - name: Run tests
         run: |
-          pytest
+          pytest --ignore=samples-v2
+  
+  test-samples:
+    strategy:
+      matrix:
+        app_name: [blueprint, fan_in_fan_out, function_chaining]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./samples-v2/${{ matrix.app_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r ../../requirements.txt
+          pip install ../.. --no-cache-dir --upgrade --no-deps --force-reinstall
+      - name: Run tests
+        run: |
+          python -m pytest

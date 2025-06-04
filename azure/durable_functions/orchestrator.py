@@ -68,4 +68,6 @@ class Orchestrator:
                 context_body = context
             return Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context_body))
 
+        handle.orchestrator_function = fn
+
         return handle

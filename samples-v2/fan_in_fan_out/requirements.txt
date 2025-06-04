@@ -5,3 +5,4 @@
 azure-functions
 azure-functions-durable
 azure-storage-blob
+pytest
