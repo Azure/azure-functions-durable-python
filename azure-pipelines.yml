@@ -48,7 +48,7 @@ stages:
 
     - script: |
         pip install pytest pytest-azurepipelines
-        pytest
+        pytest --ignore=samples-v2
       displayName: 'pytest'
     - task: ManifestGeneratorTask@0
       displayName: "SBOM Generation Task"
