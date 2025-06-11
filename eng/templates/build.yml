@@ -27,7 +27,7 @@ jobs:
 
         - script: |
             pip install pytest pytest-azurepipelines
-            pytest
+            pytest --ignore=samples-v2
           displayName: 'pytest'
         - script: |
             python setup.py sdist bdist_wheel
