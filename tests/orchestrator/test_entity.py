@@ -209,9 +209,11 @@ def apply_operation(entity_state: EntityState, result: Any, state: Any, is_error
     # We cannot control duration, so default it to zero and avoid checking for it
     # in later asserts
     duration = 0
+    start_time = 0
     operation_result = OperationResult(
         is_error=is_error,
         duration=duration,
+        execution_start_time_ms=start_time,
         result=result
     )
     entity_state._results.append(operation_result)

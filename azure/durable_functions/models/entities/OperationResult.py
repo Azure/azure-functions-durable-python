@@ -12,6 +12,7 @@ class OperationResult:
     def __init__(self,
                  is_error: bool,
                  duration: int,
+                 execution_start_time_ms: int,
                  result: Optional[str] = None):
         """Instantiate an OperationResult.
 
@@ -21,11 +22,15 @@ class OperationResult:
             Whether or not the operation resulted in an exception.
         duration: int
             How long the operation took, in milliseconds.
+        start_time: int
+            The start time of this operation's execution, in milliseconds,
+            since January 1st 1970 midnight in UTC.
         result: Optional[str]
             The operation result. Defaults to None.
         """
         self._is_error: bool = is_error
         self._duration: int = duration
+        self._execution_start_time_ms: int = execution_start_time_ms
         self._result: Optional[str] = result
 
     @property
@@ -51,6 +56,18 @@ class OperationResult:
         return self._duration
 
     @property
+    def execution_start_time_ms(self) -> int:
+        """Get the start time of this operation.
+
+        Returns
+        -------
+        int:
+            The start time of this operation's execution, in milliseconds,
+            since January 1st 1970 midnight in UTC.
+        """
+        return self._execution_start_time_ms
+
+    @property
     def result(self) -> Any:
         """Get the operation's result.
 
@@ -72,5 +89,6 @@ class OperationResult:
         to_json: Dict[str, Any] = {}
         to_json["isError"] = self.is_error
         to_json["duration"] = self.duration
+        to_json["startTime"] = self.execution_start_time_ms
         to_json["result"] = json.dumps(self.result, default=_serialize_custom_object)
         return to_json

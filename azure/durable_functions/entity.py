@@ -1,6 +1,6 @@
 from .models import DurableEntityContext
 from .models.entities import OperationResult, EntityState
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Callable, Any, List, Dict
 
 
@@ -49,7 +49,7 @@ class Entity:
         for operation_data in batch:
             result: Any = None
             is_error: bool = False
-            start_time: datetime = datetime.now()
+            start_time: datetime = datetime.now(timezone.utc)
 
             try:
                 # populate context
@@ -74,6 +74,7 @@ class Entity:
             operation_result = OperationResult(
                 is_error=is_error,
                 duration=duration,
+                execution_start_time_ms=int(start_time.timestamp() * 1000),
                 result=result
             )
             response.results.append(operation_result)
@@ -122,7 +123,7 @@ class Entity:
         int
             The time, in millseconds, from start_time to now
         """
-        end_time = datetime.now()
+        end_time = datetime.now(timezone.utc)
         time_diff = end_time - start_time
         elapsed_time = int(time_diff.total_seconds() * 1000)
         return elapsed_time
