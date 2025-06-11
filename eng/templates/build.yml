@@ -22,7 +22,7 @@ jobs:
 
         - script: |
             cd azure
-            flake8 . --count --show-source --statistics
+            python -m flake8 . --count --show-source --statistics
           displayName: 'Run lint test with flake8'
 
         - script: |
