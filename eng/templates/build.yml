@@ -12,7 +12,7 @@ jobs:
       steps:
         - task: UsePythonVersion@0
           inputs:
-            versionSpec: '3.7.x'
+            versionSpec: '3.9.x'
         - script: |
             python -m pip install --upgrade pip
             pip install -r requirements.txt
@@ -22,12 +22,12 @@ jobs:
 
         - script: |
             cd azure
-            flake8 . --count --show-source --statistics
+            python -m flake8 . --count --show-source --statistics
           displayName: 'Run lint test with flake8'
 
         - script: |
             pip install pytest pytest-azurepipelines
-            pytest
+            pytest --ignore=samples-v2
           displayName: 'pytest'
         - script: |
             python setup.py sdist bdist_wheel

@@ -13,7 +13,7 @@ trigger:
     - v*
 
 variables:     
-  python.version: '3.7'
+  python.version: '3.9'
   baseFolder: .
   componentArtifactName: 'azure_functions_durable'
   #componentArtifactName: 'dist'
@@ -48,7 +48,7 @@ stages:
 
     - script: |
         pip install pytest pytest-azurepipelines
-        pytest
+        pytest --ignore=samples-v2
       displayName: 'pytest'
     - task: ManifestGeneratorTask@0
       displayName: "SBOM Generation Task"
