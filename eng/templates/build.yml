@@ -40,3 +40,23 @@ jobs:
             SourceFolder: dist
             Contents: '**'
             TargetFolder: $(Build.ArtifactStagingDirectory)
+
+        - task: ManualValidation@1
+          timeoutInMinutes: 1440 # task times out in 1 day
+          inputs:
+            notifyUsers: |
+              andystaples@microsoft.com
+            instructions: 'Approve publish of azure-functions-durable to PyPi'
+            onTimeout: 'reject'
+
+        - script: | 
+            pip install wheel
+            pip install twine
+
+        - task: TwineAuthenticate@1
+          displayName: Twine Authenticate
+          inputs:
+            pythonUploadServiceConnection: azure-functions-durable-pypi
+
+        - script: | 
+            python -m twine upload --config-file $(PYPIRC_PATH) dist/*
