@@ -52,7 +52,7 @@ setup(
         'Development Status :: 5 - Production/Stable',
     ],
     license='MIT',
-    python_requires='>=3.6,<4',
+    python_requires='>=3.9,<4',
     install_requires=[
         'azure-functions>=1.12.0',
         'aiohttp>=3.6.2',

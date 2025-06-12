@@ -24,7 +24,7 @@ Thank you for taking the time to contribute to Durable Functions in [Python](htt
     - MacOS (or) Windows10 Ubuntu WSL
 - Language Runtimes
     - .NET Core 2.0
-    - \>= Python 3.6.x
+    - \>= Python 3.9.x
 
 Note: Some ML libraries may not be compatible with newer Python versions. Make sure the library is compatible with the Python version.
 
