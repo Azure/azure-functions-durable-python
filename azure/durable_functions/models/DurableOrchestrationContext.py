@@ -774,7 +774,7 @@ class DurableOrchestrationContext:
         return self._version
 
     @staticmethod
-    def _extract_version_from_history(history_events: List[HistoryEvent]) -> str:
+    def _extract_version_from_history(history_events: List[HistoryEvent]) -> Optional[str]:
         """Extract the version from the execution started event in history.
 
         Returns None if not found.
