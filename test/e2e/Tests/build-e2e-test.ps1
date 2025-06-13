@@ -145,7 +145,7 @@ if (!$SkipBuild)
     Write-Host "Virtual environment already exists at $E2EAppVenvDirectory"
   }
 
-  . $E2EAppVenvDirectory\Scripts\Activate.ps1
+  . "$E2EAppVenvDirectory\Scripts\Activate.ps1"
 
   python -m pip install --upgrade pip
   python -m pip install -r "$E2EAppProjectDirectory\requirements.txt" --upgrade
