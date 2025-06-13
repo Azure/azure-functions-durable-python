@@ -135,3 +135,6 @@ appsettings.*.json
 
 # azurite emulator
 __azurite_db_*.json
+
+# E2E test folders
+/test/e2e/tests/node_modules/*
