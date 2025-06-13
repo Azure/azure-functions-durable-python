@@ -136,16 +136,19 @@ else
 if (!$SkipBuild)
 {
   EnsureValidPythonVersion
+  Set-Location $E2EAppProjectDirectory
 
   if (!(Test-Path $E2EAppVenvDirectory)) {
     Write-Host "Creating virtual environment for Python app"
-    python -m venv $E2EAppVenvDirectory
+    python -m venv .venv
   }
   else {
     Write-Host "Virtual environment already exists at $E2EAppVenvDirectory"
   }
 
-  . "$E2EAppVenvDirectory\Scripts\Activate.ps1"
+  Set-Location ".venv/Scripts"
+
+  .\activate
 
   python -m pip install --upgrade pip
   python -m pip install -r "$E2EAppProjectDirectory\requirements.txt" --upgrade
