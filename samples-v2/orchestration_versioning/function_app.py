@@ -22,20 +22,16 @@ def my_orchestrator(context: df.DurableOrchestrationContext):
         # New code path
         activity_result = yield context.call_activity('say_hello', f"v{context.version}")
 
-    """
-    While the orchestration is waiting for the external event,
-    stop the app, update the defaultVersion in host.json to "2.0",
-    then restart the app and send a "Continue" event.
-    This orchestration instance should continue with the old version.
-    """
+    # While the orchestration is waiting for the external event,
+    # stop the app, update the defaultVersion in host.json to "2.0",
+    # then restart the app and send a "Continue" event.
+    # This orchestration instance should continue with the old version.
     context.set_custom_status("Waiting for Continue event...")
     yield context.wait_for_external_event("Continue")
     context.set_custom_status("Continue event received")
     
-    """
-    New orchestration instances (including sub-orchestrations)
-    will use the current defaultVersion specified in host.json.
-    """
+    # New orchestration instances (including sub-orchestrations)
+    # will use the current defaultVersion specified in host.json.
     sub_result = yield context.call_sub_orchestrator('my_sub_orchestrator')
     return [f'Orchestration version: {context.version}', f'Suborchestration version: {sub_result}', activity_result]
 
