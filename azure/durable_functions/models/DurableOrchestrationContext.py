@@ -763,13 +763,13 @@ class DurableOrchestrationContext:
             raise e
 
     @property
-    def version(self) -> str:
+    def version(self) -> Optional[str]:
         """Get the version assigned to the orchestration instance on creation.
 
         Returns
         -------
-        str
-            The version assigned to the orchestration instance on creation.
+        Optional[str]
+            The version assigned to the orchestration instance on creation, or None if not found.
         """
         return self._version
 
