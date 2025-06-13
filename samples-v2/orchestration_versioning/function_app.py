@@ -20,7 +20,7 @@ def my_orchestrator(context: df.DurableOrchestrationContext):
         activity_result = yield context.call_activity('say_hello', "v1.0")
     else:
         # New code path
-        activity_result = yield context.call_activity('say_hello', "v2.0")
+        activity_result = yield context.call_activity('say_hello', f"v{context.version}")
 
     """
     While the orchestration is waiting for the external event,
