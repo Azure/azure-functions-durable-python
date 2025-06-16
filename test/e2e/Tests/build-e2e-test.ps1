@@ -140,7 +140,7 @@ if (!$SkipBuild)
 
   if (!(Test-Path $E2EAppVenvDirectory)) {
     Write-Host "Creating virtual environment for Python app"
-    python -m venv ".venv"
+    python3 -m venv ".venv"
 
     Get-ChildItem | Format-Table -AutoSize
 
@@ -153,10 +153,10 @@ if (!$SkipBuild)
 
   .\activate
 
-  python -m pip install --upgrade pip
-  python -m pip install -r "$E2EAppProjectDirectory\requirements.txt" --upgrade
-  python -m pip install -r "$ProjectBaseDirectory\requirements.txt" --upgrade
-  python -m pip install $ProjectBaseDirectory --force-reinstall --upgrade --no-deps --no-cache-dir
+  python3 -m pip install --upgrade pip
+  python3 -m pip install -r "$E2EAppProjectDirectory\requirements.txt" --upgrade
+  python3 -m pip install -r "$ProjectBaseDirectory\requirements.txt" --upgrade
+  python3 -m pip install $ProjectBaseDirectory --force-reinstall --upgrade --no-deps --no-cache-dir
 }
 
 Set-Location $PSScriptRoot

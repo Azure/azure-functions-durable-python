@@ -68,7 +68,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
@@ -103,7 +103,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
@@ -122,26 +122,13 @@ jobs:
         run: |
           .\test\e2e\Tests\build-e2e-test.ps1
 
-      - name: Startup host
-        shell: pwsh
-        run: |
-          cd test\e2e\Apps\BasicPython
-          $job = Start-Job -ScriptBlock { func host start }
-          Start-Sleep -Seconds 20
-          if ($job.State -eq 'Running') {
-            Stop-Job -Job $job
-          }
-          $job_output = Receive-Job -Job $job
-          Write-Host "Job output: $job_output"
+      - name: Build
+        working-directory: test/e2e/Tests
+        run: dotnet build
 
-
-      # - name: Build
-      #   working-directory: test/e2e/Tests
-      #   run: dotnet build
-
-      # - name: Run E2E tests
-      #   working-directory: test/e2e/Tests
-      #   run: dotnet test --filter AzureStorage!=Skip
+      - name: Run E2E tests
+        working-directory: test/e2e/Tests
+        run: dotnet test --filter AzureStorage!=Skip
 
   e2e-mssql:
     runs-on: ubuntu-latest
@@ -151,7 +138,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
@@ -185,7 +172,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
