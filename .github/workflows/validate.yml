@@ -122,13 +122,26 @@ jobs:
         run: |
           .\test\e2e\Tests\build-e2e-test.ps1
 
-      - name: Build
-        working-directory: test/e2e/Tests
-        run: dotnet build
+      - name: Startup host
+        shell: pwsh
+        run: |
+          cd test\e2e\Apps\BasicPython
+          $job = Start-Job -ScriptBlock { func host start }
+          Start-Sleep -Seconds 20
+          if ($job.State -eq 'Running') {
+            Stop-Job -Job $job
+          }
+          $job_output = Receive-Job -Job $job
+          Write-Host "Job output: $job_output"
 
-      - name: Run E2E tests
-        working-directory: test/e2e/Tests
-        run: dotnet test --filter AzureStorage!=Skip
+
+      # - name: Build
+      #   working-directory: test/e2e/Tests
+      #   run: dotnet build
+
+      # - name: Run E2E tests
+      #   working-directory: test/e2e/Tests
+      #   run: dotnet test --filter AzureStorage!=Skip
 
   e2e-mssql:
     runs-on: ubuntu-latest

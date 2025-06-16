@@ -141,6 +141,9 @@ if (!$SkipBuild)
   if (!(Test-Path $E2EAppVenvDirectory)) {
     Write-Host "Creating virtual environment for Python app"
     python -m venv ".venv"
+
+    Get-ChildItem | Format-Table -AutoSize
+
   }
   else {
     Write-Host "Virtual environment already exists at $E2EAppVenvDirectory"
