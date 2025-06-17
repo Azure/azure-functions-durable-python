@@ -138,8 +138,8 @@ if (!$SkipBuild)
   EnsureValidPythonVersion
 
   python3 -m pip install --upgrade pip
-  python3 -m pip install -r "$E2EAppProjectDirectory\requirements.txt" --upgrade
-  python3 -m pip install -r "$ProjectBaseDirectory\requirements.txt" --upgrade
+  python3 -m pip install -r (Join-Path $E2EAppProjectDirectory "requirements.txt") --upgrade
+  python3 -m pip install -r (Join-Path $ProjectBaseDirectory "requirements.txt") --upgrade
   python3 -m pip install $ProjectBaseDirectory --force-reinstall --upgrade --no-deps --no-cache-dir
 }
 
