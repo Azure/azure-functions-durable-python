@@ -136,6 +136,22 @@ else
 if (!$SkipBuild)
 {
   EnsureValidPythonVersion
+  Set-Location $E2EAppProjectDirectory
+
+  if (!(Test-Path $E2EAppVenvDirectory)) {
+    Write-Host "Creating virtual environment for Python app"
+    python3 -m venv ".venv"
+
+    Get-ChildItem | Format-Table -AutoSize
+
+  }
+  else {
+    Write-Host "Virtual environment already exists at $E2EAppVenvDirectory"
+  }
+
+  Set-Location ".venv/Scripts"
+
+  .\activate
 
   python3 -m pip install --upgrade pip
   python3 -m pip install -r (Join-Path $E2EAppProjectDirectory "requirements.txt") --upgrade
