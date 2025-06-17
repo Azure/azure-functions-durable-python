@@ -600,22 +600,15 @@ class DurableOrchestrationContext:
         TaskBase
             A Durable Timer Task that schedules the timer to wake up the activity
         """
-        if self._replay_schema.value >= ReplaySchema.V3.value:
-            if not self._maximum_short_timer_duration or not self._long_timer_interval_duration:
-                raise Exception(
-                    "A framework-internal error was detected: "
-                    "replay schema version >= V3 is being used, "
-                    "but one or more of the properties `maximumShortTimerDuration`"
-                    "and `longRunningTimerIntervalDuration` are not defined. "
-                    "This is likely an issue with the Durable Functions Extension. "
-                    "Please report this bug here: "
-                    "https://github.com/Azure/azure-functions-durable-python/issues\n"
-                    f"maximumShortTimerDuration: {self._maximum_short_timer_duration}\n"
-                    f"longRunningTimerIntervalDuration: {self._long_timer_interval_duration}"
-                )
-            if fire_at > self.current_utc_datetime + self._maximum_short_timer_duration:
-                action = CreateTimerAction(fire_at)
-                return LongTimerTask(None, action, self)
+        if (self._replay_schema.value >= ReplaySchema.V3.value
+                and self._maximum_short_timer_duration
+                and self._long_timer_interval_duration
+                and fire_at > self.current_utc_datetime + self._maximum_short_timer_duration):
+            # Timer duration config values are not provided for DTS or MSSQL, so skip the
+            # LongTimerTask and create the TimerTask as normal
+
+            action = CreateTimerAction(fire_at)
+            return LongTimerTask(None, action, self)
 
         action = CreateTimerAction(fire_at)
         task = self._generate_task(action, task_constructor=TimerTask)
