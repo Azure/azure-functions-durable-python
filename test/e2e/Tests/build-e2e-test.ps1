@@ -32,7 +32,7 @@ if ($PSVersionTable.PSEdition -ne 'Core') {
 
 $ErrorActionPreference = "Stop"
 
-$ProjectBaseDirectory = "$PSScriptRoot\..\..\..\"
+$ProjectBaseDirectory = Join-Path $PSScriptRoot "..\..\.."
 $ProjectTemporaryPath = Join-Path ([System.IO.Path]::GetTempPath()) "DurableTaskExtensionE2ETests"
 New-Item -Path $ProjectTemporaryPath -ItemType Directory -ErrorAction SilentlyContinue
 $E2EAppProjectDirectory = Join-Path $ProjectBaseDirectory "test\e2e\Apps\BasicPython"
