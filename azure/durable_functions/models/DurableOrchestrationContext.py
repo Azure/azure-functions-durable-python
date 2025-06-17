@@ -600,14 +600,15 @@ class DurableOrchestrationContext:
         TaskBase
             A Durable Timer Task that schedules the timer to wake up the activity
         """
-        if self._replay_schema.value >= ReplaySchema.V3.value:
-            if self._maximum_short_timer_duration and self._long_timer_interval_duration:
-                # These values not provided for DTS or MSSQL, so skip the LongTimerTask
-                # and create the TimerTask as normal
+        if (self._replay_schema.value >= ReplaySchema.V3.value
+                and self._maximum_short_timer_duration
+                and self._long_timer_interval_duration
+                and fire_at > self.current_utc_datetime + self._maximum_short_timer_duration):
+            # Timer duration config values are not provided for DTS or MSSQL, so skip the
+            # LongTimerTask and create the TimerTask as normal
 
-                if fire_at > self.current_utc_datetime + self._maximum_short_timer_duration:
-                    action = CreateTimerAction(fire_at)
-                    return LongTimerTask(None, action, self)
+            action = CreateTimerAction(fire_at)
+            return LongTimerTask(None, action, self)
 
         action = CreateTimerAction(fire_at)
         task = self._generate_task(action, task_constructor=TimerTask)
