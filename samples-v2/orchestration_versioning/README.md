@@ -23,7 +23,7 @@ Suborchestration version: 2.0
 Hello from B!
 ```
 
-What happens to existing orchestration instances that were started before the `defaultVersion` change? Waiting for an external event in the middle of the orchestrator provides a convenient opportunity to emulate a deployment while orchestration instances are still running:
+What happens to *existing orchestration instances* that were started *before* the `defaultVersion` change? Waiting for an external event in the middle of the orchestrator provides a convenient opportunity to emulate a deployment while orchestration instances are still running:
 
 1. Create a new orchestration by invoking the HTTP trigger (`http_start`).
 2. Wait for the orchestration to reach the point where it is waiting for an external event.
@@ -41,4 +41,4 @@ Hello from A!
 
 Note that the value returned by `context.version` is permanently associated with the orchestrator instance and is not impacted by the `defaultVersion` change. As a result, the orchestrator follows the old execution path to guarantee deterministic replay behavior.
 
-However, the suborchestration version is `2.0` because it was invoked this suborchestration was created *after* the `defaultVersion` change.
+However, the suborchestration version is `2.0` because this suborchestration was created *after* the `defaultVersion` change.
