@@ -100,3 +100,11 @@ def test_get_input_json_str():
     result = context.get_input()
 
     assert 'Seattle' == result['city']
+
+def test_version_equals_version_from_execution_started_event():
+    builder = ContextBuilder('test_function_context')
+    builder.history_events = []
+    builder.add_orchestrator_started_event()
+    builder.add_execution_started_event(name="TestOrchestrator", version="1.0")
+    context = DurableOrchestrationContext.from_json(builder.to_json_string())
+    assert context.version == "1.0"

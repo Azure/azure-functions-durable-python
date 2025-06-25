@@ -100,6 +100,8 @@ class DurableOrchestrationContext:
         self.open_tasks = defaultdict(list)
         self.deferred_tasks: Dict[Union[int, str], Tuple[HistoryEvent, bool, str]] = {}
 
+        self._version: str = self._extract_version_from_history(self._histories)
+
     @classmethod
     def from_json(cls, json_string: str):
         """Convert the value passed into a new instance of the class.
@@ -752,3 +754,25 @@ class DurableOrchestrationContext:
                 "https://github.com/Azure/azure-functions-durable-python.\n"\
                 "Error trace: " + e.message
             raise e
+
+    @property
+    def version(self) -> Optional[str]:
+        """Get the version assigned to the orchestration instance on creation.
+
+        Returns
+        -------
+        Optional[str]
+            The version assigned to the orchestration instance on creation, or None if not found.
+        """
+        return self._version
+
+    @staticmethod
+    def _extract_version_from_history(history_events: List[HistoryEvent]) -> Optional[str]:
+        """Extract the version from the execution started event in history.
+
+        Returns None if not found.
+        """
+        for event in history_events:
+            if event.event_type == HistoryEventType.EXECUTION_STARTED:
+                return event.Version
+        return None
