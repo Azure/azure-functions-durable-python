@@ -1,2 +1,8 @@
+# DO NOT include azure-functions-worker in this file
+# The Python Worker is managed by Azure Functions platform
+# Manually managing azure-functions-worker may cause unexpected issues
+
+azure-functions
+azure-functions-durable
 openai-agents>=0.2.3,<0.3
 eval-type-backport>=0.2.2; python_version < '3.10'
