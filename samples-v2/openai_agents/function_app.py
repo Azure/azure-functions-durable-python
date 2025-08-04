@@ -13,21 +13,6 @@ async def hello_orchestration_starter(req: func.HttpRequest, client):
     return response
 
 
-# Orchestrator
-@app.orchestration_trigger(context_name="context")
-def hello_orchestration_orchestrator(context):
-    result1 = yield context.call_activity("hello_orchestration_activity", "Seattle")
-    result2 = yield context.call_activity("hello_orchestration_activity", "Tokyo")
-    result3 = yield context.call_activity("hello_orchestration_activity", "London")
-
-    return [result1, result2, result3]
-
-# Activity
-@app.activity_trigger(input_name="city")
-def hello_orchestration_activity(city: str):
-    return "Hello " + city 
-
-
 @app.orchestration_trigger(context_name="context")
 def basic_hello_world_orchestrator(context):
     result = yield context.call_activity("openai_agent_activity")
