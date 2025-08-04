@@ -26,3 +26,17 @@ def hello_orchestration_orchestrator(context):
 @app.activity_trigger(input_name="city")
 def hello_orchestration_activity(city: str):
     return "Hello " + city 
+
+
+@app.orchestration_trigger(context_name="context")
+def basic_hello_world_orchestrator(context):
+    result = yield context.call_activity("openai_agent_activity")
+    return result
+
+# Activity for OpenAI agent execution
+@app.activity_trigger(input_name="input")
+async def openai_agent_activity(input: str):
+    # Import and call the main function from basic/hello_world.py
+    from basic.hello_world import main
+    result = await main()
+    return result
