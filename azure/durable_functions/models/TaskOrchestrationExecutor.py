@@ -9,7 +9,7 @@ import warnings
 from collections import namedtuple
 import json
 from ..models.entities.ResponseMessage import ResponseMessage
-from azure.functions._durable_functions import _deserialize_custom_object
+from azure.functions._durable_functions import _deserialize_custom_object, _serialize_custom_object
 
 
 class TaskOrchestrationExecutor:
@@ -276,12 +276,12 @@ class TaskOrchestrationExecutor:
             message contains in it the string representation of the orchestration's
             state
         """
-        if(self.output is not None):
+        if (self.output is not None):
             try:
                 # Attempt to serialize the output. If serialization fails, raise an
                 # error indicating that the orchestration output is not serializable,
                 # which is not permitted in durable Python functions.
-                json.dumps(self.output)
+                json.dumps(self.output, default=_serialize_custom_object)
             except Exception as e:
                 self.output = None
                 self.exception = e

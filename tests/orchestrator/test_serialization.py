@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from tests.test_utils.ContextBuilder import ContextBuilder
 from .orchestrator_test_utils \
@@ -26,6 +28,42 @@ def test_serialization_of_False():
     # Since we're essentially testing the `to_json` functionality,
     # we explicitely ensure that the output is set
     expected["output"] = False
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+
+@dataclass
+class CustomResult():
+  message: str
+
+  def to_json(self):
+      return {"message": self.message}
+
+  @classmethod
+  def from_json(cls, data):
+      return cls(message=data["message"])
+
+def generator_function_with_custom_class(context):
+    return CustomResult(message="Custom serialization test")
+
+def test_serialization_of_custom_class():
+    """Test that an orchestrator can return False."""
+
+    context_builder = ContextBuilder("serialize custom class")
+
+    result = get_orchestration_state_result(
+        context_builder, generator_function_with_custom_class)
+
+    expected_output = CustomResult(message="Custom serialization test")
+    expected_state = base_expected_state(output=expected_output)
+
+    expected_state._is_done = True
+    expected = expected_state.to_json()
+
+    # Since we're essentially testing the `to_json` functionality,
+    # we explicitely ensure that the output is set
+    expected["output"] = expected_output
 
     assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)

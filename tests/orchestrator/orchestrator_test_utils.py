@@ -1,5 +1,7 @@
 import json
 from typing import Callable, Iterator, Any, Dict, List
+
+from azure.functions._durable_functions import _deserialize_custom_object
 from jsonschema import validate
 
 from azure.durable_functions.models import DurableOrchestrationContext, DurableEntityContext
@@ -71,7 +73,7 @@ def get_orchestration_state_result(
         orchestrator = Orchestrator(user_code)
         result_of_handle = orchestrator.handle(
             DurableOrchestrationContext.from_json(context_as_string))
-    result = json.loads(result_of_handle)
+    result = json.loads(result_of_handle, object_hook=_deserialize_custom_object)
     return result
 
 def get_entity_state_result(
