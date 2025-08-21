@@ -55,7 +55,7 @@ setup(
     python_requires='>=3.9,<4',
     install_requires=[
         'azure-functions>=1.12.0',
-        'aiohttp>=3.12.9',
+        'aiohttp>=3.12.14',
         'requests==2.*',
         'python-dateutil>=2.8.0',
         'furl>=2.1.0',
