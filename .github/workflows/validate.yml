@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - dev
+      - durable-openai-agent
   pull_request:
     branches:
       - main
       - dev
+      - durable-openai-agent
 
 jobs:
   validate:
