@@ -42,3 +42,10 @@ async def orchestration_starter(req: func.HttpRequest, client):
     instance_id = await client.start_new(function_name)
     response = client.create_check_status_response(req, instance_id)
     return response
+
+
+@app.orchestration_trigger(context_name="context")
+@durable_openai_agent_orchestrator
+def hello_world(context):
+    import basic.hello_world
+    return basic.hello_world.main()
