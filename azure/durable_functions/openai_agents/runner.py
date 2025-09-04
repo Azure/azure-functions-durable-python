@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 
 class DurableOpenAIRunner:
+    """Runner for OpenAI agents using Durable Functions orchestration."""
+
     def __init__(self, context: DurableAIAgentContext) -> None:
         self._runner = DEFAULT_AGENT_RUNNER or AgentRunner()
         self.context = context
@@ -31,6 +33,7 @@ class DurableOpenAIRunner:
         input: Union[str, list[TResponseInputItem]],
         **kwargs: Any,
     ) -> RunResult:
+        """Run an agent synchronously with the given input and configuration."""
         # workaround for https://github.com/pydantic/pydantic/issues/9541
         # ValidatorIterator returned
         input_json = to_json(input)
@@ -49,14 +52,15 @@ class DurableOpenAIRunner:
         model_name = run_config.model or starting_agent.model
         if model_name is not None and not isinstance(model_name, str):
             raise ValueError(
-                "Durable Functions require a model name to be a string in the run config and/or agent."
+                "Durable Functions require a model name to be a string in the "
+                "run config and/or agent."
             )
-        
+
         updated_run_config = replace(
             run_config,
-            model = _DurableModelStub(
-                model_name = model_name,
-                context = self.context,
+            model=_DurableModelStub(
+                model_name=model_name,
+                context=self.context,
             ),
         )
 
@@ -77,6 +81,7 @@ class DurableOpenAIRunner:
         input: Union[str, list[TResponseInputItem]],
         **kwargs: Any,
     ) -> RunResult:
+        """Run an agent asynchronously. Not supported in Durable Functions."""
         raise RuntimeError("Durable Functions do not support asynchronous runs.")
 
     def run_streamed(
@@ -85,4 +90,5 @@ class DurableOpenAIRunner:
         input: Union[str, list[TResponseInputItem]],
         **kwargs: Any,
     ) -> RunResultStreaming:
+        """Run an agent with streaming. Not supported in Durable Functions."""
         raise RuntimeError("Durable Functions do not support streaming.")

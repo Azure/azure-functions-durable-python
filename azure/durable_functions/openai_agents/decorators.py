@@ -16,8 +16,8 @@ _registered_apps = set()
 
 
 def _setup_durable_openai_agent(app: func.FunctionApp):
-    """
-    Set up the Durable OpenAI Agent framework for the given FunctionApp.
+    """Set up the Durable OpenAI Agent framework for the given FunctionApp.
+
     This is automatically called when using the framework decorators.
     """
     app_id = id(app)
@@ -27,13 +27,13 @@ def _setup_durable_openai_agent(app: func.FunctionApp):
 
 
 def _find_function_app_in_module(module):
-    """
-    Find a FunctionApp instance in the given module.
+    """Find a FunctionApp instance in the given module.
+
     Returns the first FunctionApp instance found, or None if none found.
     """
     if not hasattr(module, '__dict__'):
         return None
-    
+
     for name, obj in module.__dict__.items():
         if isinstance(obj, func.FunctionApp):
             return obj
@@ -41,8 +41,8 @@ def _find_function_app_in_module(module):
 
 
 def _auto_setup_durable_openai_agent(decorated_func):
-    """
-    Automatically detect and setup the FunctionApp for Durable OpenAI Agents.
+    """Automatically detect and setup the FunctionApp for Durable OpenAI Agents.
+
     This finds the FunctionApp in the same module as the decorated function.
     """
     try:
@@ -50,7 +50,7 @@ def _auto_setup_durable_openai_agent(decorated_func):
         func_module = sys.modules.get(decorated_func.__module__)
         if func_module is None:
             return
-        
+
         # Find the FunctionApp instance in that module
         app = _find_function_app_in_module(func_module)
         if app is not None:
@@ -62,9 +62,10 @@ def _auto_setup_durable_openai_agent(decorated_func):
 
 
 def durable_openai_agent_orchestrator(func):
+    """Decorate Azure Durable Functions orchestrators that use OpenAI Agents."""
     # Auto-setup: Find and configure the FunctionApp when decorator is applied
     _auto_setup_durable_openai_agent(func)
-    
+
     @wraps(func)
     def wrapper(durable_orchestration_context: DurableOrchestrationContext):
         ensure_event_loop()

@@ -2,7 +2,6 @@ from __future__ import annotations
 import enum
 import json
 import logging
-from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any, AsyncIterator, Optional, Union, cast
 
@@ -32,7 +31,6 @@ from agents import (
 from agents.items import TResponseStreamEvent
 from openai import (
     APIStatusError,
-    AsyncOpenAI,
 )
 from openai.types.responses.tool_param import Mcp
 from openai.types.responses.response_prompt_param import ResponsePromptParam
@@ -44,7 +42,9 @@ try:
 except ImportError:
     # Fallback if ApplicationError is not available
     class ApplicationError(Exception):
-        def __init__(self, message: str, non_retryable: bool = False, next_retry_delay = None):
+        """Custom application error for handling retryable and non-retryable errors."""
+
+        def __init__(self, message: str, non_retryable: bool = False, next_retry_delay=None):
             super().__init__(message)
             self.non_retryable = non_retryable
             self.next_retry_delay = next_retry_delay
@@ -53,8 +53,11 @@ logger = logging.getLogger(__name__)
 
 
 class HandoffInput(BaseModel):
-    """Data conversion friendly representation of a Handoff. Contains only the fields which are needed by the model
-    execution to determine what to handoff to, not the actual handoff invocation, which remains in the workflow context.
+    """Data conversion friendly representation of a Handoff.
+
+    Contains only the fields which are needed by the model execution to
+    determine what to handoff to, not the actual handoff invocation,
+    which remains in the workflow context.
     """
 
     tool_name: str
@@ -65,8 +68,11 @@ class HandoffInput(BaseModel):
 
 
 class FunctionToolInput(BaseModel):
-    """Data conversion friendly representation of a FunctionTool. Contains only the fields which are needed by the model
-    execution to determine what tool to call, not the actual tool invocation, which remains in the workflow context.
+    """Data conversion friendly representation of a FunctionTool.
+
+    Contains only the fields which are needed by the model execution to
+    determine what tool to call, not the actual tool invocation,
+    which remains in the workflow context.
     """
 
     name: str
@@ -76,8 +82,11 @@ class FunctionToolInput(BaseModel):
 
 
 class HostedMCPToolInput(BaseModel):
-    """Data conversion friendly representation of a HostedMCPTool. Contains only the fields which are needed by the model
-    execution to determine what tool to call, not the actual tool invocation, which remains in the workflow context.
+    """Data conversion friendly representation of a HostedMCPTool.
+
+    Contains only the fields which are needed by the model execution to
+    determine what tool to call, not the actual tool invocation,
+    which remains in the workflow context.
     """
 
     tool_config: Mcp
@@ -110,7 +119,7 @@ class AgentOutputSchemaInput(AgentOutputSchemaBase, BaseModel):
         return self.strict_json_schema
 
     def json_schema(self) -> dict[str, Any]:
-        """The JSON schema of the output type."""
+        """Get the JSON schema of the output type."""
         if self.is_plain_text():
             raise UserError("Output type is plain text, so no JSON schema is available")
         if self.output_schema is None:
@@ -164,6 +173,8 @@ class ActivityModelInput(BaseModel):
 
 
 class ModelInvoker:
+    """Handles OpenAI model invocations for Durable Functions activities."""
+
     def __init__(self, model_provider: Optional[ModelProvider] = None):
         """Initialize the activity with a model provider."""
         self._model_provider = model_provider or OpenAIProvider()
@@ -333,7 +344,8 @@ class _DurableModelStub(Model):
             output_schema, AgentOutputSchema
         ):
             raise TypeError(
-                f"Only AgentOutputSchema is supported by Durable Model, got {type(output_schema).__name__}"
+                f"Only AgentOutputSchema is supported by Durable Model, "
+                f"got {type(output_schema).__name__}"
             )
         agent_output_schema = output_schema
         output_schema_input = (
@@ -364,7 +376,9 @@ class _DurableModelStub(Model):
 
         activity_input_json = activity_input.to_json()
 
-        response = self.context._get_activity_call_result("invoke_model_activity", activity_input_json)
+        response = self.context._get_activity_call_result(
+            "invoke_model_activity", activity_input_json
+        )
         json_response = json.loads(response)
         model_response = ModelResponse(**json_response)
         return model_response
@@ -387,16 +401,16 @@ class _DurableModelStub(Model):
 
 def create_invoke_model_activity(app: func.FunctionApp):
     """Create and register the invoke_model_activity function with the provided FunctionApp."""
-    
+
     @app.activity_trigger(input_name="input")
     async def invoke_model_activity(input: str):
         """Activity that handles OpenAI model invocations."""
         activity_input = ActivityModelInput.from_json(input)
-        
+
         model_invoker = ModelInvoker()
         result = await model_invoker.invoke_model_activity(activity_input)
 
         json_obj = ModelResponse.__pydantic_serializer__.to_json(result)
         return json_obj.decode()
-    
+
     return invoke_model_activity

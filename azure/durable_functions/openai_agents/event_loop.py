@@ -2,9 +2,8 @@ import asyncio
 
 
 def ensure_event_loop():
-    """
-    Ensure an event loop is available for sync execution context.
-    
+    """Ensure an event loop is available for sync execution context.
+
     This is necessary when calling Runner.run_sync from Azure Functions
     Durable orchestrators, which run in a synchronous context but need
     an event loop for internal async operations.
