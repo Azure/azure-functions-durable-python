@@ -12,6 +12,8 @@ from .exceptions import YieldException
 
 
 class DurableAIAgentContext:
+    """Context for AI agents running in Azure Durable Functions orchestration."""
+
     def __init__(self, context: DurableOrchestrationContext):
         self._context = context
         self._activities_called = 0
@@ -36,14 +38,17 @@ class DurableAIAgentContext:
             return result
 
     def call_activity(self, activity_name, input: str):
+        """Call an activity function and increment the activity counter."""
         task = self._context.call_activity(activity_name, input)
         self._activities_called += 1
         return task
 
     def set_custom_status(self, status: str):
+        """Set custom status for the orchestration."""
         self._context.set_custom_status(status)
 
     def wait_for_external_event(self, event_name: str):
+        """Wait for an external event in the orchestration."""
         return self._context.wait_for_external_event(event_name)
 
     def _yield_and_clear_tasks(self):
@@ -58,17 +63,18 @@ class DurableAIAgentContext:
         *,
         description: Optional[str] = None,
     ) -> Tool:
-        """
-        Convert an Azure Durable Functions activity to an OpenAI Agents SDK Tool.
+        """Convert an Azure Durable Functions activity to an OpenAI Agents SDK Tool.
 
-        Args:
+        Args
+        ----
             activity_func: The Azure Functions activity function to convert
             description: Optional description override for the tool
 
-        Returns:
+        Returns
+        -------
             Tool: An OpenAI Agents SDK Tool object
-        """
 
+        """
         activity_name = activity_func._function._name
 
         async def run_activity(ctx: RunContextWrapper[Any], input: str) -> Any:
