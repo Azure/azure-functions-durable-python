@@ -95,32 +95,25 @@ celerybeat-schedule
 # SageMath parsed files
 *.sage.py
 
-# Environments
-.env
-.venv
-env/
+# Virtual Environment (additional patterns)
+.myenv/
+.venv/
 venv/
 ENV/
 env.bak/
 venv.bak/
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# IDE and Editor Configuration
+.code/
+.vscode/
+.idea/
 
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
+# Test Reports and Results  
+*TEST_REPORT*.md
+*test_results*.json
+comprehensive_test_results.json
+COMPREHENSIVE_TEST_REPORT.md
+TEST_VALIDATION_REPORT.md
 
 # Azure Functions artifacts
 bin
