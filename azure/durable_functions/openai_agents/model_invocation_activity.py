@@ -1,4 +1,3 @@
-from __future__ import annotations
 import enum
 import json
 import logging
@@ -394,12 +393,12 @@ class _DurableModelStub(Model):
         tracing: ModelTracing,
         *,
         previous_response_id: Optional[str],
-        prompt: ResponsePromptParam | None,
+        prompt: Optional[ResponsePromptParam],
     ) -> AsyncIterator[TResponseStreamEvent]:
         raise NotImplementedError("Durable model doesn't support streams yet")
 
 
-def create_invoke_model_activity(app: func.FunctionApp):
+def create_invoke_model_activity(app: func.FunctionApp, model_provider: Optional[ModelProvider]):
     """Create and register the invoke_model_activity function with the provided FunctionApp."""
 
     @app.activity_trigger(input_name="input")
@@ -407,7 +406,7 @@ def create_invoke_model_activity(app: func.FunctionApp):
         """Activity that handles OpenAI model invocations."""
         activity_input = ActivityModelInput.from_json(input)
 
-        model_invoker = ModelInvoker()
+        model_invoker = ModelInvoker(model_provider=model_provider)
         result = await model_invoker.invoke_model_activity(activity_input)
 
         json_obj = ModelResponse.__pydantic_serializer__.to_json(result)
