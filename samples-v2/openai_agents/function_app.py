@@ -1,7 +1,8 @@
 import os
 
 import azure.functions as func
-from azure.durable_functions.openai_agents import durable_openai_agent_orchestrator
+import azure.durable_functions as df
+
 from azure.identity import DefaultAzureCredential
 from openai import AsyncAzureOpenAI
 
@@ -31,7 +32,7 @@ set_default_openai_client(openai_client)
 # endregion
 
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+app = df.DFApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 @app.route(route="orchestrators/{functionName}")
 @app.durable_client_input(client_name="client")
@@ -44,59 +45,59 @@ async def orchestration_starter(req: func.HttpRequest, client):
 
 
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def hello_world(context):
     import basic.hello_world
     return basic.hello_world.main()
 
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def agent_lifecycle_example(context):
     import basic.agent_lifecycle_example
     return basic.agent_lifecycle_example.main()
 
 
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def dynamic_system_prompt(context):
     import basic.dynamic_system_prompt
     return basic.dynamic_system_prompt.main()
 
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def lifecycle_example(context):
     import basic.lifecycle_example
     return basic.lifecycle_example.main()
 
 
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def local_image(context):
     import basic.local_image
     return basic.local_image.main()
 
 
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def non_strict_output_type(context):
     import basic.non_strict_output_type
     return basic.non_strict_output_type.main()
 
 
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def previous_response_id(context):
     import basic.previous_response_id
     return basic.previous_response_id.main()
 
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def remote_image(context):
     import basic.remote_image
     return basic.remote_image.main()
 
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def tools(context):
     import basic.tools
     return basic.tools.main()

@@ -5,7 +5,6 @@ from agents import Agent, Runner
 from azure.durable_functions.models import OrchestratorState
 from azure.durable_functions.models.actions import CallActivityAction
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
-from azure.durable_functions.openai_agents import durable_openai_agent_orchestrator
 from openai import BaseModel
 from tests.orchestrator.orchestrator_test_utils import get_orchestration_state_result, assert_valid_schema, \
     assert_orchestration_state_equals
@@ -15,7 +14,7 @@ app = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 @app.function_name("openai_agent_hello_world")
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def openai_agent_hello_world(context):
     agent = Agent(
         name="Assistant",
@@ -45,7 +44,7 @@ def get_weather(city: str) -> Weather:
 
 @app.function_name("openai_agent_use_tool")
 @app.orchestration_trigger(context_name="context")
-@durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator
 def openai_agent_use_tool(context):
     agent = Agent(
         name="Assistant",
