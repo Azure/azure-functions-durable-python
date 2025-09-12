@@ -1,4 +1,6 @@
 import inspect
+import json
+from typing import Any
 from agents import ModelProvider, ModelResponse
 from agents.run import set_default_agent_runner
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
@@ -8,6 +10,23 @@ from .runner import DurableOpenAIRunner
 from .exceptions import YieldException
 from .context import DurableAIAgentContext
 from .event_loop import ensure_event_loop
+
+
+def _durable_serializer(obj: Any) -> str:
+    # Strings are already "serialized"
+    if type(obj) is str:
+        return obj
+
+    # Serialize "Durable" and OpenAI models, and typed dictionaries
+    if callable(getattr(obj, "to_json", None)):
+        return obj.to_json()
+
+    # Serialize Pydantic models
+    if callable(getattr(obj, "model_dump_json", None)):
+        return obj.model_dump_json()
+
+    # Fallback to default JSON serialization
+    return json.dumps(obj)
 
 
 async def durable_openai_agent_activity(input: str, model_provider: ModelProvider):
@@ -60,14 +79,14 @@ def durable_openai_agent_orchestrator_generator(
                         value = next(gen)
         except StopIteration as e:
             yield from durable_ai_agent_context._yield_and_clear_tasks()
-            return e.value
+            return _durable_serializer(e.value)
         except YieldException as e:
             yield from durable_ai_agent_context._yield_and_clear_tasks()
             yield e.task
     else:
         try:
             result = func(durable_ai_agent_context)
-            return result
+            return _durable_serializer(result)
         except YieldException as e:
             yield from durable_ai_agent_context._yield_and_clear_tasks()
             yield e.task

@@ -1,6 +1,9 @@
+from typing import Optional, TypedDict
+
 import azure.durable_functions as df
 import azure.functions as func
 import json
+import pydantic
 from agents import Agent, Runner
 from azure.durable_functions.models import OrchestratorState
 from azure.durable_functions.models.actions import CallActivityAction
@@ -55,6 +58,60 @@ def openai_agent_use_tool(context):
     result = Runner.run_sync(agent, "Tell me the weather in Seattle.", )
 
     return result.final_output;
+
+@app.function_name("openai_agent_return_string_type")
+@app.orchestration_trigger(context_name="context")
+@app.durable_openai_agent_orchestrator
+def openai_agent_return_string_type(context):
+    return "Hello World"
+
+class DurableModel:
+    def __init__(self, property: str) -> None:
+        self._property = property
+
+    def to_json(self) -> str:
+        return json.dumps({"property": self._property})
+
+@app.function_name("openai_agent_return_durable_model_type")
+@app.orchestration_trigger(context_name="context")
+@app.durable_openai_agent_orchestrator
+def openai_agent_return_durable_model_type(context):
+    model = DurableModel(property="value")
+
+    return model
+
+class TypedDictionaryModel(TypedDict):
+    property: str
+
+@app.function_name("openai_agent_return_typed_dictionary_model_type")
+@app.orchestration_trigger(context_name="context")
+@app.durable_openai_agent_orchestrator
+def openai_agent_return_typed_dictionary_model_type(context):
+    model = TypedDictionaryModel(property="value")
+
+    return model
+
+class OpenAIPydanticModel(BaseModel):
+    property: str
+
+@app.function_name("openai_agent_return_openai_pydantic_model_type")
+@app.orchestration_trigger(context_name="context")
+@app.durable_openai_agent_orchestrator
+def openai_agent_return_openai_pydantic_model_type(context):
+    model = OpenAIPydanticModel(property="value")
+
+    return model
+
+class PydanticModel(pydantic.BaseModel):
+    property: str
+
+@app.function_name("openai_agent_return_pydantic_model_type")
+@app.orchestration_trigger(context_name="context")
+@app.durable_openai_agent_orchestrator
+def openai_agent_return_pydantic_model_type(context):
+    model = PydanticModel(property="value")
+
+    return model
 
 model_activity_name = "invoke_model_activity"
 
@@ -148,6 +205,76 @@ def test_openai_agent_use_tool_analysis_completed():
     add_activity_action(expected_state, "{\"input\":[{\"content\":\"Tell me the weather in Seattle.\",\"role\":\"user\"},{\"arguments\":\"{\\\"args\\\":\\\"Seattle, WA\\\"}\",\"call_id\":\"call_mEdywElQTNpxAdivuEFjO0cT\",\"name\":\"get_weather\",\"type\":\"function_call\",\"id\":\"fc_68b9ecc0ff9c819f863d6cf9e0a1b4e101011fd6f5f8c0a6\",\"status\":\"completed\"},{\"call_id\":\"call_mEdywElQTNpxAdivuEFjO0cT\",\"output\":\"{\\\"__class__\\\":\\\"Weather\\\",\\\"__module__\\\":\\\"function_app\\\",\\\"__data__\\\":\\\"{\\n \\\"city\\\": \\\"{\\\\\\\"args\\\\\\\":\\\\\\\"Seattle, WA\\\\\\\"}\\\",\\n \\\"temperature_range\\\": \\\"14-20C\\\",\\n \\\"conditions\\\": \\\"Sunny with wind.\\\"\\n}\\\"}\",\"type\":\"function_call_output\"}],\"model_settings\":{\"temperature\":null,\"top_p\":null,\"frequency_penalty\":null,\"presence_penalty\":null,\"tool_choice\":null,\"parallel_tool_calls\":null,\"truncation\":null,\"max_tokens\":null,\"reasoning\":null,\"metadata\":null,\"store\":null,\"include_usage\":null,\"response_include\":null,\"extra_query\":null,\"extra_body\":null,\"extra_headers\":null,\"extra_args\":null},\"tracing\":0,\"model_name\":null,\"system_instructions\":\"You only respond in haikus.\",\"tools\":[{\"name\":\"get_weather\",\"description\":\"\",\"params_json_schema\":{\"properties\":{\"city\":{\"title\":\"City\",\"type\":\"string\"}},\"required\":[\"city\"],\"title\":\"get_weather_args\",\"type\":\"object\",\"additionalProperties\":false},\"strict_json_schema\":true}],\"output_schema\":null,\"handoffs\":[],\"previous_response_id\":null,\"prompt\":null}")
     expected_state._is_done = True
     expected_state._output = 'The weather in Seattle, WA is currently sunny with some wind. Temperatures are ranging from 14°C to 20°C.'
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_openai_agent_string_serialization():
+    context_builder = ContextBuilder('test_openai_agent_string_serialization')
+
+    result = get_orchestration_state_result(
+        context_builder, openai_agent_return_string_type, uses_pystein=True)
+
+    expected_state = base_expected_state()
+    expected_state._is_done = True
+    expected_state._output = "Hello World"
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_openai_agent_durable_model_serialization():
+    context_builder = ContextBuilder('test_openai_agent_durable_model_serialization')
+
+    result = get_orchestration_state_result(
+        context_builder, openai_agent_return_durable_model_type, uses_pystein=True)
+
+    expected_state = base_expected_state()
+    expected_state._is_done = True
+    expected_state._output = DurableModel(property="value").to_json()
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_openai_agent_typed_dictionary_model_serialization():
+    context_builder = ContextBuilder('test_openai_agent_typed_dictionary_model_serialization')
+
+    result = get_orchestration_state_result(
+        context_builder, openai_agent_return_typed_dictionary_model_type, uses_pystein=True)
+
+    expected_state = base_expected_state()
+    expected_state._is_done = True
+    expected_state._output = json.dumps(TypedDictionaryModel(property="value"))
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_openai_agent_openai_pydantic_model_serialization():
+    context_builder = ContextBuilder('test_openai_agent_openai_pydantic_model_serialization')
+
+    result = get_orchestration_state_result(
+        context_builder, openai_agent_return_openai_pydantic_model_type, uses_pystein=True)
+
+    expected_state = base_expected_state()
+    expected_state._is_done = True
+    expected_state._output = OpenAIPydanticModel(property="value").to_json()
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_openai_agent_pydantic_model_serialization():
+    context_builder = ContextBuilder('test_openai_agent_pydantic_model_serialization')
+
+    result = get_orchestration_state_result(
+        context_builder, openai_agent_return_pydantic_model_type, uses_pystein=True)
+
+    expected_state = base_expected_state()
+    expected_state._is_done = True
+    expected_state._output = PydanticModel(property="value").model_dump_json()
     expected = expected_state.to_json()
 
     assert_valid_schema(result)
