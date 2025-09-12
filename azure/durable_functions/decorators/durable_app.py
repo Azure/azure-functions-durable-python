@@ -1,7 +1,7 @@
 #  Copyright (c) Microsoft Corporation. All rights reserved.
 #  Licensed under the MIT License.
 
-
+from azure.durable_functions.models.RetryOptions import RetryOptions
 from .metadata import OrchestrationTrigger, ActivityTrigger, EntityTrigger,\
     DurableClient
 from typing import Callable, Optional
@@ -270,7 +270,15 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
             self._create_invoke_model_activity(model_provider)
             self._is_durable_openai_agent_setup = True
 
-    def durable_openai_agent_orchestrator(self, _func=None, *, model_provider=None):
+    def durable_openai_agent_orchestrator(
+        self,
+        _func=None,
+        *,
+        model_provider=None,
+        model_retry_options: Optional[RetryOptions] = RetryOptions(
+            first_retry_interval_in_milliseconds=2000, max_number_of_attempts=5
+        ),
+    ):
         """Decorate Azure Durable Functions orchestrators that use OpenAI Agents.
 
         Parameters
@@ -292,7 +300,9 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
 
             @wraps(func)
             def generator_wrapper(context):
-                return durable_openai_agent_orchestrator_generator(func, context)
+                return durable_openai_agent_orchestrator_generator(
+                    func, context, model_retry_options
+                )
 
             return generator_wrapper
 

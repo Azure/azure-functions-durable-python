@@ -1,32 +1,14 @@
-import inspect
-import json
-from typing import Any
+from functools import partial
+from typing import Optional
 from agents import ModelProvider, ModelResponse
 from agents.run import set_default_agent_runner
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
-from azure.durable_functions.openai_agents.model_invocation_activity\
-    import ActivityModelInput, ModelInvoker
+from azure.durable_functions.models.RetryOptions import RetryOptions
+from .model_invocation_activity import ActivityModelInput, ModelInvoker
+from .task_tracker import TaskTracker
 from .runner import DurableOpenAIRunner
-from .exceptions import YieldException
 from .context import DurableAIAgentContext
 from .event_loop import ensure_event_loop
-
-
-def _durable_serializer(obj: Any) -> str:
-    # Strings are already "serialized"
-    if type(obj) is str:
-        return obj
-
-    # Serialize "Durable" and OpenAI models, and typed dictionaries
-    if callable(getattr(obj, "to_json", None)):
-        return obj.to_json()
-
-    # Serialize Pydantic models
-    if callable(getattr(obj, "model_dump_json", None)):
-        return obj.model_dump_json()
-
-    # Fallback to default JSON serialization
-    return json.dumps(obj)
 
 
 async def durable_openai_agent_activity(input: str, model_provider: ModelProvider):
@@ -42,53 +24,17 @@ async def durable_openai_agent_activity(input: str, model_provider: ModelProvide
 
 def durable_openai_agent_orchestrator_generator(
         func,
-        durable_orchestration_context: DurableOrchestrationContext):
+        durable_orchestration_context: DurableOrchestrationContext,
+        model_retry_options: Optional[RetryOptions],
+):
     """Adapts the synchronous OpenAI Agents function to an Durable orchestrator generator."""
     ensure_event_loop()
-    durable_ai_agent_context = DurableAIAgentContext(durable_orchestration_context)
+    task_tracker = TaskTracker(durable_orchestration_context)
+    durable_ai_agent_context = DurableAIAgentContext(
+        durable_orchestration_context, task_tracker, model_retry_options
+    )
     durable_openai_runner = DurableOpenAIRunner(context=durable_ai_agent_context)
     set_default_agent_runner(durable_openai_runner)
 
-    if inspect.isgeneratorfunction(func):
-        gen = iter(func(durable_ai_agent_context))
-        try:
-            # prime the subiterator
-            value = next(gen)
-            yield from durable_ai_agent_context._yield_and_clear_tasks()
-            while True:
-                try:
-                    # send whatever was sent into us down to the subgenerator
-                    yield from durable_ai_agent_context._yield_and_clear_tasks()
-                    sent = yield value
-                except GeneratorExit:
-                    # ensure the subgenerator is closed
-                    if hasattr(gen, "close"):
-                        gen.close()
-                    raise
-                except BaseException as exc:
-                    # forward thrown exceptions if possible
-                    if hasattr(gen, "throw"):
-                        value = gen.throw(type(exc), exc, exc.__traceback__)
-                    else:
-                        raise
-                else:
-                    # normal path: forward .send (or .__next__)
-                    if hasattr(gen, "send"):
-                        value = gen.send(sent)
-                    else:
-                        value = next(gen)
-        except StopIteration as e:
-            yield from durable_ai_agent_context._yield_and_clear_tasks()
-            return _durable_serializer(e.value)
-        except YieldException as e:
-            yield from durable_ai_agent_context._yield_and_clear_tasks()
-            yield e.task
-    else:
-        try:
-            result = func(durable_ai_agent_context)
-            return _durable_serializer(result)
-        except YieldException as e:
-            yield from durable_ai_agent_context._yield_and_clear_tasks()
-            yield e.task
-        finally:
-            yield from durable_ai_agent_context._yield_and_clear_tasks()
+    func_with_context = partial(func, durable_ai_agent_context)
+    return task_tracker.execute_orchestrator_function(func_with_context)

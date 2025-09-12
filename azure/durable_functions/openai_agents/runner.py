@@ -15,7 +15,7 @@ from agents.run import DEFAULT_AGENT_RUNNER, DEFAULT_MAX_TURNS, AgentRunner
 from pydantic_core import to_json
 
 from .context import DurableAIAgentContext
-from .model_invocation_activity import _DurableModelStub
+from .model_invocation_activity import DurableActivityModel
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +58,10 @@ class DurableOpenAIRunner:
 
         updated_run_config = replace(
             run_config,
-            model=_DurableModelStub(
+            model=DurableActivityModel(
                 model_name=model_name,
-                context=self.context,
+                task_tracker=self.context._task_tracker,
+                retry_options=self.context._model_retry_options,
             ),
         )
 

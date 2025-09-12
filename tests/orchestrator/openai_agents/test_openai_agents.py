@@ -1,9 +1,8 @@
-from typing import Optional, TypedDict
-
 import azure.durable_functions as df
 import azure.functions as func
 import json
 import pydantic
+from typing import TypedDict
 from agents import Agent, Runner
 from azure.durable_functions.models import OrchestratorState
 from azure.durable_functions.models.actions import CallActivityAction
@@ -17,7 +16,7 @@ app = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 @app.function_name("openai_agent_hello_world")
 @app.orchestration_trigger(context_name="context")
-@app.durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator(model_retry_options=None)
 def openai_agent_hello_world(context):
     agent = Agent(
         name="Assistant",
@@ -47,12 +46,12 @@ def get_weather(city: str) -> Weather:
 
 @app.function_name("openai_agent_use_tool")
 @app.orchestration_trigger(context_name="context")
-@app.durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator(model_retry_options=None)
 def openai_agent_use_tool(context):
     agent = Agent(
         name="Assistant",
         instructions="You only respond in haikus.",
-        tools=[context.activity_as_tool(get_weather)]
+        tools=[context.activity_as_tool(get_weather, retry_options=None)]
     )
 
     result = Runner.run_sync(agent, "Tell me the weather in Seattle.", )
@@ -61,7 +60,7 @@ def openai_agent_use_tool(context):
 
 @app.function_name("openai_agent_return_string_type")
 @app.orchestration_trigger(context_name="context")
-@app.durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator(model_retry_options=None)
 def openai_agent_return_string_type(context):
     return "Hello World"
 
@@ -74,7 +73,7 @@ class DurableModel:
 
 @app.function_name("openai_agent_return_durable_model_type")
 @app.orchestration_trigger(context_name="context")
-@app.durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator(model_retry_options=None)
 def openai_agent_return_durable_model_type(context):
     model = DurableModel(property="value")
 
@@ -85,7 +84,7 @@ class TypedDictionaryModel(TypedDict):
 
 @app.function_name("openai_agent_return_typed_dictionary_model_type")
 @app.orchestration_trigger(context_name="context")
-@app.durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator(model_retry_options=None)
 def openai_agent_return_typed_dictionary_model_type(context):
     model = TypedDictionaryModel(property="value")
 
@@ -96,7 +95,7 @@ class OpenAIPydanticModel(BaseModel):
 
 @app.function_name("openai_agent_return_openai_pydantic_model_type")
 @app.orchestration_trigger(context_name="context")
-@app.durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator(model_retry_options=None)
 def openai_agent_return_openai_pydantic_model_type(context):
     model = OpenAIPydanticModel(property="value")
 
@@ -107,7 +106,7 @@ class PydanticModel(pydantic.BaseModel):
 
 @app.function_name("openai_agent_return_pydantic_model_type")
 @app.orchestration_trigger(context_name="context")
-@app.durable_openai_agent_orchestrator
+@app.durable_openai_agent_orchestrator(model_retry_options=None)
 def openai_agent_return_pydantic_model_type(context):
     model = PydanticModel(property="value")
 

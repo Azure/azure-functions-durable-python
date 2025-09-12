@@ -4,7 +4,7 @@ import logging
 from datetime import timedelta
 from typing import Any, AsyncIterator, Optional, Union, cast
 
-import azure.functions as func
+from azure.durable_functions.models.RetryOptions import RetryOptions
 from pydantic import BaseModel, Field
 from agents import (
     AgentOutputSchema,
@@ -34,7 +34,7 @@ from openai import (
 from openai.types.responses.tool_param import Mcp
 from openai.types.responses.response_prompt_param import ResponsePromptParam
 
-from .context import DurableAIAgentContext
+from .task_tracker import TaskTracker
 
 try:
     from azure.durable_functions import ApplicationError
@@ -283,14 +283,18 @@ class ModelInvoker:
             ) from e
 
 
-class _DurableModelStub(Model):
+class DurableActivityModel(Model):
+    """A model implementation that uses durable activities for model invocations."""
+
     def __init__(
         self,
         model_name: Optional[str],
-        context: DurableAIAgentContext,
+        task_tracker: TaskTracker,
+        retry_options: Optional[RetryOptions],
     ) -> None:
         self.model_name = model_name
-        self.context = context
+        self.task_tracker = task_tracker
+        self.retry_options = retry_options
 
     async def get_response(
         self,
@@ -305,6 +309,7 @@ class _DurableModelStub(Model):
         previous_response_id: Optional[str],
         prompt: Optional[ResponsePromptParam],
     ) -> ModelResponse:
+        """Get a response from the model."""
         def make_tool_info(tool: Tool) -> ToolInput:
             if isinstance(
                 tool,
@@ -375,9 +380,17 @@ class _DurableModelStub(Model):
 
         activity_input_json = activity_input.to_json()
 
-        response = self.context._get_activity_call_result(
-            "invoke_model_activity", activity_input_json
-        )
+        if self.retry_options:
+            response = self.task_tracker.get_activity_call_result_with_retry(
+                "invoke_model_activity",
+                self.retry_options,
+                activity_input_json,
+            )
+        else:
+            response = self.task_tracker.get_activity_call_result(
+                "invoke_model_activity", activity_input_json
+            )
+
         json_response = json.loads(response)
         model_response = ModelResponse(**json_response)
         return model_response
@@ -395,21 +408,5 @@ class _DurableModelStub(Model):
         previous_response_id: Optional[str],
         prompt: Optional[ResponsePromptParam],
     ) -> AsyncIterator[TResponseStreamEvent]:
+        """Stream a response from the model."""
         raise NotImplementedError("Durable model doesn't support streams yet")
-
-
-def create_invoke_model_activity(app: func.FunctionApp, model_provider: Optional[ModelProvider]):
-    """Create and register the invoke_model_activity function with the provided FunctionApp."""
-
-    @app.activity_trigger(input_name="input")
-    async def invoke_model_activity(input: str):
-        """Activity that handles OpenAI model invocations."""
-        activity_input = ActivityModelInput.from_json(input)
-
-        model_invoker = ModelInvoker(model_provider=model_provider)
-        result = await model_invoker.invoke_model_activity(activity_input)
-
-        json_obj = ModelResponse.__pydantic_serializer__.to_json(result)
-        return json_obj.decode()
-
-    return invoke_model_activity
