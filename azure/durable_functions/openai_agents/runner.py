@@ -23,9 +23,10 @@ logger = logging.getLogger(__name__)
 class DurableOpenAIRunner:
     """Runner for OpenAI agents using Durable Functions orchestration."""
 
-    def __init__(self, context: DurableAIAgentContext) -> None:
+    def __init__(self, context: DurableAIAgentContext, activity_name: str) -> None:
         self._runner = DEFAULT_AGENT_RUNNER or AgentRunner()
         self.context = context
+        self.activity_name = activity_name
 
     def run_sync(
         self,
@@ -62,6 +63,7 @@ class DurableOpenAIRunner:
                 model_name=model_name,
                 task_tracker=self.context._task_tracker,
                 retry_options=self.context._model_retry_options,
+                activity_name=self.activity_name,
             ),
         )
 

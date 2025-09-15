@@ -112,7 +112,7 @@ def openai_agent_return_pydantic_model_type(context):
 
     return model
 
-model_activity_name = "invoke_model_activity"
+model_activity_name = "run_model"
 
 def base_expected_state(output=None, replay_schema: ReplaySchema = ReplaySchema.V1) -> OrchestratorState:
     return OrchestratorState(is_done=False, actions=[], output=output, replay_schema=replay_schema)

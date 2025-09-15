@@ -26,6 +26,7 @@ def durable_openai_agent_orchestrator_generator(
         func,
         durable_orchestration_context: DurableOrchestrationContext,
         model_retry_options: Optional[RetryOptions],
+        activity_name: str,
 ):
     """Adapts the synchronous OpenAI Agents function to an Durable orchestrator generator."""
     ensure_event_loop()
@@ -33,7 +34,8 @@ def durable_openai_agent_orchestrator_generator(
     durable_ai_agent_context = DurableAIAgentContext(
         durable_orchestration_context, task_tracker, model_retry_options
     )
-    durable_openai_runner = DurableOpenAIRunner(context=durable_ai_agent_context)
+    durable_openai_runner = DurableOpenAIRunner(
+        context=durable_ai_agent_context, activity_name=activity_name)
     set_default_agent_runner(durable_openai_runner)
 
     func_with_context = partial(func, durable_ai_agent_context)

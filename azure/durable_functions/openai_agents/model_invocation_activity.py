@@ -291,10 +291,12 @@ class DurableActivityModel(Model):
         model_name: Optional[str],
         task_tracker: TaskTracker,
         retry_options: Optional[RetryOptions],
+        activity_name: str,
     ) -> None:
         self.model_name = model_name
         self.task_tracker = task_tracker
         self.retry_options = retry_options
+        self.activity_name = activity_name
 
     async def get_response(
         self,
@@ -382,13 +384,13 @@ class DurableActivityModel(Model):
 
         if self.retry_options:
             response = self.task_tracker.get_activity_call_result_with_retry(
-                "invoke_model_activity",
+                self.activity_name,
                 self.retry_options,
                 activity_input_json,
             )
         else:
             response = self.task_tracker.get_activity_call_result(
-                "invoke_model_activity", activity_input_json
+                self.activity_name, activity_input_json
             )
 
         json_response = json.loads(response)

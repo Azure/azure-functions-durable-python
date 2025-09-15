@@ -253,21 +253,21 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
 
         return wrap
 
-    def _create_invoke_model_activity(self, model_provider):
+    def _create_invoke_model_activity(self, model_provider, activity_name):
         """Create and register the invoke_model_activity function with the provided FunctionApp."""
 
-        @self.activity_trigger(input_name="input")
-        async def invoke_model_activity(input: str):
+        @self.activity_trigger(input_name="input", activity=activity_name)
+        async def run_model_activity(input: str):
             from azure.durable_functions.openai_agents.orchestrator_generator\
                 import durable_openai_agent_activity
 
             return await durable_openai_agent_activity(input, model_provider)
 
-        return invoke_model_activity
+        return run_model_activity
 
-    def _setup_durable_openai_agent(self, model_provider):
+    def _setup_durable_openai_agent(self, model_provider, activity_name):
         if not self._is_durable_openai_agent_setup:
-            self._create_invoke_model_activity(model_provider)
+            self._create_invoke_model_activity(model_provider, activity_name)
             self._is_durable_openai_agent_setup = True
 
     def durable_openai_agent_orchestrator(
@@ -294,14 +294,16 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
         if model_provider is not None and type(model_provider) is not ModelProvider:
             raise TypeError("Provided model provider must be of type ModelProvider")
 
-        self._setup_durable_openai_agent(model_provider)
+        activity_name = "run_model"
+
+        self._setup_durable_openai_agent(model_provider, activity_name)
 
         def generator_wrapper_wrapper(func):
 
             @wraps(func)
             def generator_wrapper(context):
                 return durable_openai_agent_orchestrator_generator(
-                    func, context, model_retry_options
+                    func, context, model_retry_options, activity_name
                 )
 
             return generator_wrapper
