@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, TYPE_CHECKING
 
 from azure.durable_functions.models.DurableOrchestrationContext import (
     DurableOrchestrationContext,
@@ -11,8 +11,39 @@ from agents.tool import FunctionTool
 from .task_tracker import TaskTracker
 
 
-class DurableAIAgentContext:
-    """Context for AI agents running in Azure Durable Functions orchestration."""
+if TYPE_CHECKING:
+    # At type-check time we want all members / signatures for IDE & linters.
+    _BaseDurableContext = DurableOrchestrationContext
+else:
+    class _BaseDurableContext:  # lightweight runtime stub
+        """Runtime stub base class for delegation; real context is wrapped.
+
+        At runtime we avoid inheriting from DurableOrchestrationContext so that
+        attribute lookups for its members are delegated via __getattr__ to the
+        wrapped ``_context`` instance.
+        """
+
+        __slots__ = ()
+
+
+class DurableAIAgentContext(_BaseDurableContext):
+    """Context for AI agents running in Azure Durable Functions orchestration.
+
+    Design
+    ------
+    * Static analysis / IDEs: Appears to subclass ``DurableOrchestrationContext`` so
+      you get autocompletion and type hints (under TYPE_CHECKING branch).
+    * Runtime: Inherits from a trivial stub. All durable orchestration operations
+      are delegated to the real ``DurableOrchestrationContext`` instance provided
+      as ``context`` and stored in ``_context``.
+
+    Consequences
+    ------------
+    * ``isinstance(DurableAIAgentContext, DurableOrchestrationContext)`` is **False** at
+      runtime (expected).
+    * Delegation via ``__getattr__`` works for every member of the real context.
+    * No reliance on internal initialization side-effects of the durable SDK.
+    """
 
     def __init__(
         self,
@@ -37,14 +68,6 @@ class DurableAIAgentContext:
         task = self._context.call_activity_with_retry(activity_name, retry_options, input)
         self._task_tracker.record_activity_call()
         return task
-
-    def set_custom_status(self, status: str):
-        """Set custom status for the orchestration."""
-        self._context.set_custom_status(status)
-
-    def wait_for_external_event(self, event_name: str):
-        """Wait for an external event in the orchestration."""
-        return self._context.wait_for_external_event(event_name)
 
     def create_activity_tool(
         self,
@@ -101,3 +124,14 @@ class DurableAIAgentContext:
             on_invoke_tool=run_activity,
             strict_json_schema=True,
         )
+
+    def __getattr__(self, name):
+        """Delegate missing attributes to the underlying DurableOrchestrationContext."""
+        try:
+            return getattr(self._context, name)
+        except AttributeError:
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+    def __dir__(self):
+        """Improve introspection and tab-completion by including delegated attributes."""
+        return sorted(set(dir(type(self)) + list(self.__dict__) + dir(self._context)))
