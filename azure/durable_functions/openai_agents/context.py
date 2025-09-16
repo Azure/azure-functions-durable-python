@@ -46,7 +46,7 @@ class DurableAIAgentContext:
         """Wait for an external event in the orchestration."""
         return self._context.wait_for_external_event(event_name)
 
-    def activity_as_tool(
+    def create_activity_tool(
         self,
         activity_func: Callable,
         *,
@@ -68,7 +68,14 @@ class DurableAIAgentContext:
             Tool: An OpenAI Agents SDK Tool object
 
         """
-        activity_name = activity_func._function._name
+        if activity_func._function is None:
+            raise ValueError("The provided function is not a valid Azure Function.")
+
+        if (activity_func._function._trigger is not None
+                and activity_func._function._trigger.activity is not None):
+            activity_name = activity_func._function._trigger.activity
+        else:
+            activity_name = activity_func._function._name
 
         async def run_activity(ctx: RunContextWrapper[Any], input: str) -> Any:
             if retry_options:
@@ -81,7 +88,6 @@ class DurableAIAgentContext:
 
         schema = function_schema(
             func=activity_func._function._func,
-            name_override=activity_name,
             docstring_style=None,
             description_override=description,
             use_docstring_info=True,

@@ -51,7 +51,26 @@ def openai_agent_use_tool(context):
     agent = Agent(
         name="Assistant",
         instructions="You only respond in haikus.",
-        tools=[context.activity_as_tool(get_weather, retry_options=None)]
+        tools=[context.create_activity_tool(get_weather, retry_options=None)]
+    )
+
+    result = Runner.run_sync(agent, "Tell me the weather in Seattle.", )
+
+    return result.final_output;
+
+@app.activity_trigger(input_name="city", activity="get_weather_with_explicit_name")
+def get_named_weather(city: str) -> Weather:
+    print("[debug] get_weather called")
+    return Weather(city=city, temperature_range="14-20C", conditions="Sunny with wind.")
+
+@app.function_name("openai_agent_use_tool_with_explicit_name")
+@app.orchestration_trigger(context_name="context")
+@app.durable_openai_agent_orchestrator(model_retry_options=None)
+def openai_agent_use_tool_with_explicit_name(context):
+    agent = Agent(
+        name="Assistant",
+        instructions="You only respond in haikus.",
+        tools=[context.create_activity_tool(get_named_weather, retry_options=None)]
     )
 
     result = Runner.run_sync(agent, "Tell me the weather in Seattle.", )
@@ -167,6 +186,21 @@ def test_openai_agent_use_tool_activity_start():
     expected_state = base_expected_state()
     add_activity_action(expected_state, "{\"input\":[{\"content\":\"Tell me the weather in Seattle.\",\"role\":\"user\"}],\"model_settings\":{\"temperature\":null,\"top_p\":null,\"frequency_penalty\":null,\"presence_penalty\":null,\"tool_choice\":null,\"parallel_tool_calls\":null,\"truncation\":null,\"max_tokens\":null,\"reasoning\":null,\"metadata\":null,\"store\":null,\"include_usage\":null,\"response_include\":null,\"extra_query\":null,\"extra_body\":null,\"extra_headers\":null,\"extra_args\":null},\"tracing\":0,\"model_name\":null,\"system_instructions\":\"You only respond in haikus.\",\"tools\":[{\"name\":\"get_weather\",\"description\":\"\",\"params_json_schema\":{\"properties\":{\"city\":{\"title\":\"City\",\"type\":\"string\"}},\"required\":[\"city\"],\"title\":\"get_weather_args\",\"type\":\"object\",\"additionalProperties\":false},\"strict_json_schema\":true}],\"output_schema\":null,\"handoffs\":[],\"previous_response_id\":null,\"prompt\":null}")
     add_activity_action(expected_state, "{\"args\":\"Seattle, WA\"}", activity_name="get_weather")
+    expected = expected_state.to_json()
+
+    assert_valid_schema(result)
+    assert_orchestration_state_equals(expected, result)
+
+def test_openai_agent_use_explicitly_named_tool_activity_start():
+    context_builder = ContextBuilder('test_openai_agent_use_tool_start')
+    add_activity_completed_events(context_builder, 0, '{"output":[{"arguments":"{\\"args\\":\\"Seattle, WA\\"}","call_id":"call_mEdywElQTNpxAdivuEFjO0cT","name":"get_named_weather","type":"function_call","id":"fc_68b9ecc0ff9c819f863d6cf9e0a1b4e101011fd6f5f8c0a6","status":"completed"}],"usage":{"requests":1,"input_tokens":57,"input_tokens_details":{"cached_tokens":0},"output_tokens":17,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":74},"response_id":"resp_68b9ecc092e0819fb79b97c11aacef2001011fd6f5f8c0a6"}')
+
+    result = get_orchestration_state_result(
+        context_builder, openai_agent_use_tool_with_explicit_name, uses_pystein=True)
+
+    expected_state = base_expected_state()
+    add_activity_action(expected_state, "{\"input\":[{\"content\":\"Tell me the weather in Seattle.\",\"role\":\"user\"}],\"model_settings\":{\"temperature\":null,\"top_p\":null,\"frequency_penalty\":null,\"presence_penalty\":null,\"tool_choice\":null,\"parallel_tool_calls\":null,\"truncation\":null,\"max_tokens\":null,\"reasoning\":null,\"metadata\":null,\"store\":null,\"include_usage\":null,\"response_include\":null,\"extra_query\":null,\"extra_body\":null,\"extra_headers\":null,\"extra_args\":null},\"tracing\":0,\"model_name\":null,\"system_instructions\":\"You only respond in haikus.\",\"tools\":[{\"name\":\"get_named_weather\",\"description\":\"\",\"params_json_schema\":{\"properties\":{\"city\":{\"title\":\"City\",\"type\":\"string\"}},\"required\":[\"city\"],\"title\":\"get_named_weather_args\",\"type\":\"object\",\"additionalProperties\":false},\"strict_json_schema\":true}],\"output_schema\":null,\"handoffs\":[],\"previous_response_id\":null,\"prompt\":null}")
+    add_activity_action(expected_state, "{\"args\":\"Seattle, WA\"}", activity_name="get_weather_with_explicit_name")
     expected = expected_state.to_json()
 
     assert_valid_schema(result)
