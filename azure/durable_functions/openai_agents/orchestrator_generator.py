@@ -12,7 +12,7 @@ from .event_loop import ensure_event_loop
 from .usage_telemetry import UsageTelemetry
 
 
-async def durable_openai_agent_activity(input: str, model_provider: ModelProvider):
+async def durable_openai_agent_activity(input: str, model_provider: ModelProvider) -> str:
     """Activity logic that handles OpenAI model invocations."""
     activity_input = ActivityModelInput.from_json(input)
 
