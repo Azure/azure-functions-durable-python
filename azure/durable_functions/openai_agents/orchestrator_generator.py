@@ -9,6 +9,7 @@ from .task_tracker import TaskTracker
 from .runner import DurableOpenAIRunner
 from .context import DurableAIAgentContext
 from .event_loop import ensure_event_loop
+from .usage_telemetry import UsageTelemetry
 
 
 async def durable_openai_agent_activity(input: str, model_provider: ModelProvider):
@@ -29,6 +30,9 @@ def durable_openai_agent_orchestrator_generator(
         activity_name: str,
 ):
     """Adapts the synchronous OpenAI Agents function to an Durable orchestrator generator."""
+    # Log versions the first time this generator is invoked
+    UsageTelemetry.log_usage_once()
+
     ensure_event_loop()
     task_tracker = TaskTracker(durable_orchestration_context)
     durable_ai_agent_context = DurableAIAgentContext(
