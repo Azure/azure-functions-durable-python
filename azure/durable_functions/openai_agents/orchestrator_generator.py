@@ -19,8 +19,27 @@ async def durable_openai_agent_activity(input: str, model_provider: ModelProvide
     model_invoker = ModelInvoker(model_provider=model_provider)
     result = await model_invoker.invoke_model_activity(activity_input)
 
-    json_obj = ModelResponse.__pydantic_serializer__.to_json(result)
-    return json_obj.decode()
+    # Use safe/public Pydantic API when possible. Prefer model_dump_json if result is a BaseModel
+    # Otherwise handle common types (str/bytes/dict/list) and fall back to json.dumps.
+    import json as _json
+
+    if hasattr(result, "model_dump_json"):
+        # Pydantic v2 BaseModel
+        json_str = result.model_dump_json()
+    else:
+        if isinstance(result, bytes):
+            json_str = result.decode()
+        elif isinstance(result, str):
+            json_str = result
+        else:
+            # Try the internal serializer as a last resort, but fall back to json.dumps
+            try:
+                json_bytes = ModelResponse.__pydantic_serializer__.to_json(result)
+                json_str = json_bytes.decode()
+            except Exception:
+                json_str = _json.dumps(result)
+
+    return json_str
 
 
 def durable_openai_agent_orchestrator_generator(

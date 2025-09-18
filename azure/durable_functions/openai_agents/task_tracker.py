@@ -52,13 +52,13 @@ class TaskTracker:
         result = json.loads(result_json)
         return result
 
-    def get_activity_call_result(self, activity_name, input: str):
+    def get_activity_call_result(self, activity_name, input: Any):
         """Call an activity and return its result or raise ``YieldException`` if pending."""
         task = self._context.call_activity(activity_name, input)
         return self._get_activity_result_or_raise(task)
 
     def get_activity_call_result_with_retry(
-        self, activity_name, retry_options: RetryOptions, input: str
+        self, activity_name, retry_options: RetryOptions, input: Any
     ):
         """Call an activity with retry and return its result or raise YieldException if pending."""
         task = self._context.call_activity_with_retry(activity_name, retry_options, input)

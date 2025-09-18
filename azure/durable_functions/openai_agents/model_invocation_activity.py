@@ -163,7 +163,16 @@ class ActivityModelInput(BaseModel):
 
     def to_json(self) -> str:
         """Convert the ActivityModelInput to a JSON string."""
-        return self.model_dump_json()
+        try:
+            return self.model_dump_json(warnings=False)
+        except Exception:
+            # Fallback to basic JSON serialization
+            try:
+                return json.dumps(self.model_dump(warnings=False), default=str)
+            except Exception as fallback_error:
+                raise ValueError(
+                    f"Unable to serialize ActivityModelInput: {fallback_error}"
+                ) from fallback_error
 
     @classmethod
     def from_json(cls, json_str: str) -> 'ActivityModelInput':
@@ -310,6 +319,7 @@ class DurableActivityModel(Model):
         *,
         previous_response_id: Optional[str],
         prompt: Optional[ResponsePromptParam],
+        conversation_id: Optional[str] = None,
     ) -> ModelResponse:
         """Get a response from the model."""
         def make_tool_info(tool: Tool) -> ToolInput:

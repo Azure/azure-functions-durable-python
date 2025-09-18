@@ -1,4 +1,5 @@
 import os
+import random
 
 import azure.functions as func
 import azure.durable_functions as df
@@ -102,4 +103,13 @@ def tools(context):
     import basic.tools
     return basic.tools.main()
 
+@app.activity_trigger(input_name="max")
+async def random_number_tool(max: int) -> int:
+    """Return a random integer between 0 and the given maximum."""
+    return random.randint(0, max)
 
+@app.orchestration_trigger(context_name="context")
+@app.durable_openai_agent_orchestrator
+def message_filter(context):
+    import handoffs.message_filter
+    return handoffs.message_filter.main(context.create_activity_tool(random_number_tool))

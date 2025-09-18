@@ -22,7 +22,8 @@ ORCHESTRATORS = [
     "non_strict_output_type",
     "previous_response_id",
     "remote_image",
-    "tools"
+    "tools",
+    "message_filter",
 ]
 
 BASE_URL = "http://localhost:7071/api/orchestrators"

@@ -30,6 +30,81 @@ class TestDurableAIAgentContext:
         task_tracker.get_activity_call_result_with_retry = Mock(return_value="retry_activity_result")
         return task_tracker
 
+    def _create_mock_activity_func(self, name="test_activity", input_name=None,
+                                   activity_name=None):
+        """Create a mock activity function with configurable parameters."""
+        mock_activity_func = Mock()
+        mock_activity_func._function._name = name
+        mock_activity_func._function._func = lambda x: x
+
+        if input_name is not None:
+            # Create trigger with input_name
+            mock_activity_func._function._trigger = Mock()
+            mock_activity_func._function._trigger.activity = activity_name
+            mock_activity_func._function._trigger.name = input_name
+        else:
+            # No trigger means no input_name
+            mock_activity_func._function._trigger = None
+
+        return mock_activity_func
+
+    def _setup_activity_tool_mocks(self, mock_function_tool, mock_function_schema,
+                                   activity_name="test_activity", description=""):
+        """Setup common mocks for function_schema and FunctionTool."""
+        mock_schema = Mock()
+        mock_schema.name = activity_name
+        mock_schema.description = description
+        mock_schema.params_json_schema = {"type": "object"}
+        mock_function_schema.return_value = mock_schema
+
+        mock_tool = Mock(spec=FunctionTool)
+        mock_function_tool.return_value = mock_tool
+
+        return mock_tool
+
+    def _invoke_activity_tool(self, run_activity, input_data):
+        """Helper to invoke the activity tool with asyncio."""
+        mock_ctx = Mock()
+        import asyncio
+        return asyncio.run(run_activity(mock_ctx, input_data))
+
+    def _test_activity_tool_input_processing(self, input_name=None, input_data="",
+                                           expected_input_parameter_value="",
+                                           retry_options=None,
+                                           activity_name="test_activity"):
+        """Framework method that runs a complete input processing test."""
+        with patch('azure.durable_functions.openai_agents.context.function_schema') \
+             as mock_function_schema, \
+             patch('azure.durable_functions.openai_agents.context.FunctionTool') \
+             as mock_function_tool:
+
+            # Setup
+            orchestration_context = self._create_mock_orchestration_context()
+            task_tracker = self._create_mock_task_tracker()
+            mock_activity_func = self._create_mock_activity_func(
+                name=activity_name, input_name=input_name)
+            self._setup_activity_tool_mocks(
+                mock_function_tool, mock_function_schema, activity_name)
+
+            # Create context and tool
+            ai_context = DurableAIAgentContext(orchestration_context, task_tracker, None)
+            ai_context.create_activity_tool(mock_activity_func, retry_options=retry_options)
+
+            # Get and invoke the run_activity function
+            call_args = mock_function_tool.call_args
+            run_activity = call_args[1]['on_invoke_tool']
+            self._invoke_activity_tool(run_activity, input_data)
+
+            # Verify the expected call was made
+            if retry_options:
+                task_tracker.get_activity_call_result_with_retry.assert_called_once_with(
+                    activity_name, retry_options, expected_input_parameter_value
+                )
+            else:
+                task_tracker.get_activity_call_result.assert_called_once_with(
+                    activity_name, expected_input_parameter_value
+                )
+
     def test_init_creates_context_successfully(self):
         """Test that __init__ creates a DurableAIAgentContext successfully."""
         orchestration_context = self._create_mock_orchestration_context()
@@ -275,6 +350,60 @@ class TestDurableAIAgentContext:
             "activity_name_from_trigger", "test_input"
         )
         assert result == "activity_result"
+
+    def test_create_activity_tool_parses_json_input_with_input_name(self):
+        """Test JSON input parsing and named value extraction with input_name."""
+        self._test_activity_tool_input_processing(
+            input_name="max",
+            input_data='{"max": 100}',
+            expected_input_parameter_value=100,
+            activity_name="random_number_tool"
+        )
+
+    def test_create_activity_tool_handles_non_json_input_gracefully(self):
+        """Test non-JSON input passes through unchanged with input_name."""
+        self._test_activity_tool_input_processing(
+            input_name="param",
+            input_data="not json",
+            expected_input_parameter_value="not json"
+        )
+
+    def test_create_activity_tool_handles_json_missing_named_parameter(self):
+        """Test JSON input without named parameter passes through unchanged."""
+        json_input = '{"other_param": 200}'
+        self._test_activity_tool_input_processing(
+            input_name="expected_param",
+            input_data=json_input,
+            expected_input_parameter_value=json_input
+        )
+
+    def test_create_activity_tool_handles_malformed_json_gracefully(self):
+        """Test malformed JSON passes through unchanged."""
+        malformed_json = '{"param": 100'  # Missing closing brace
+        self._test_activity_tool_input_processing(
+            input_name="param",
+            input_data=malformed_json,
+            expected_input_parameter_value=malformed_json
+        )
+
+    def test_create_activity_tool_json_parsing_works_with_retry_options(self):
+        """Test JSON parsing works correctly with retry options."""
+        retry_options = RetryOptions(1000, 3)
+        self._test_activity_tool_input_processing(
+            input_name="value",
+            input_data='{"value": "test_data"}',
+            expected_input_parameter_value="test_data",
+            retry_options=retry_options
+        )
+
+    def test_create_activity_tool_no_input_name_passes_through_json(self):
+        """Test JSON input passes through unchanged when no input_name."""
+        json_input = '{"param": 100}'
+        self._test_activity_tool_input_processing(
+            input_name=None,  # No input_name
+            input_data=json_input,
+            expected_input_parameter_value=json_input
+        )
 
     def test_context_delegation_methods_work(self):
         """Test that common context methods work through delegation."""

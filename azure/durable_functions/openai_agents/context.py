@@ -1,3 +1,4 @@
+import json
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 
 from azure.durable_functions.models.DurableOrchestrationContext import (
@@ -138,13 +139,29 @@ class DurableAIAgentContext(_BaseDurableContext):
         else:
             activity_name = activity_func._function._name
 
+        input_name = None
+        if (activity_func._function._trigger is not None
+                and hasattr(activity_func._function._trigger, 'name')):
+            input_name = activity_func._function._trigger.name
+
         async def run_activity(ctx: RunContextWrapper[Any], input: str) -> Any:
+            # Parse JSON input and extract the named value if input_name is specified
+            activity_input = input
+            if input_name:
+                try:
+                    parsed_input = json.loads(input)
+                    if isinstance(parsed_input, dict) and input_name in parsed_input:
+                        activity_input = parsed_input[input_name]
+                    # If parsing fails or the named parameter is not found, pass the original input
+                except (json.JSONDecodeError, TypeError):
+                    pass
+
             if retry_options:
                 result = self._task_tracker.get_activity_call_result_with_retry(
-                    activity_name, retry_options, input
+                    activity_name, retry_options, activity_input
                 )
             else:
-                result = self._task_tracker.get_activity_call_result(activity_name, input)
+                result = self._task_tracker.get_activity_call_result(activity_name, activity_input)
             return result
 
         schema = function_schema(
