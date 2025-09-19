@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+#  Copyright (c) Microsoft Corporation. All rights reserved.
+#  Licensed under the MIT License.
 """
 Test script for OpenAI Agents with Durable Functions Extension
 This script tests all orchestrators as specified in the instructions document.

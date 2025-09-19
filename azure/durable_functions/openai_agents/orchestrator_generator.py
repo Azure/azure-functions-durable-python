@@ -1,10 +1,12 @@
+#  Copyright (c) Microsoft Corporation. All rights reserved.
+#  Licensed under the MIT License.
 from functools import partial
 from typing import Optional
 from agents import ModelProvider, ModelResponse
 from agents.run import set_default_agent_runner
 from azure.durable_functions.models.DurableOrchestrationContext import DurableOrchestrationContext
 from azure.durable_functions.models.RetryOptions import RetryOptions
-from .model_invocation_activity import ActivityModelInput, ModelInvoker
+from .model_invocation_activity import DurableModelActivityInput, ModelInvoker
 from .task_tracker import TaskTracker
 from .runner import DurableOpenAIRunner
 from .context import DurableAIAgentContext
@@ -14,7 +16,7 @@ from .usage_telemetry import UsageTelemetry
 
 async def durable_openai_agent_activity(input: str, model_provider: ModelProvider) -> str:
     """Activity logic that handles OpenAI model invocations."""
-    activity_input = ActivityModelInput.from_json(input)
+    activity_input = DurableModelActivityInput.from_json(input)
 
     model_invoker = ModelInvoker(model_provider=model_provider)
     result = await model_invoker.invoke_model_activity(activity_input)

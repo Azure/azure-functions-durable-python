@@ -1,6 +1,7 @@
+#  Copyright (c) Microsoft Corporation. All rights reserved.
+#  Licensed under the MIT License.
 import enum
 import json
-import logging
 from typing import Any, AsyncIterator, Optional, Union, cast
 
 from azure.durable_functions.models.RetryOptions import RetryOptions
@@ -8,134 +9,81 @@ from pydantic import BaseModel, Field
 from agents import (
     AgentOutputSchema,
     AgentOutputSchemaBase,
-    CodeInterpreterTool,
-    FileSearchTool,
-    FunctionTool,
     Handoff,
-    HostedMCPTool,
-    ImageGenerationTool,
     Model,
     ModelProvider,
     ModelResponse,
     ModelSettings,
     ModelTracing,
     OpenAIProvider,
-    RunContextWrapper,
     Tool,
     TResponseInputItem,
     UserError,
-    WebSearchTool,
 )
 from agents.items import TResponseStreamEvent
-from openai.types.responses.tool_param import Mcp
 from openai.types.responses.response_prompt_param import ResponsePromptParam
 
 from .task_tracker import TaskTracker
-
-try:
-    from azure.durable_functions import ApplicationError
-except ImportError:
-    # Fallback if ApplicationError is not available
-    class ApplicationError(Exception):
-        """Custom application error for handling retryable and non-retryable errors."""
-
-        def __init__(self, message: str, non_retryable: bool = False, next_retry_delay=None):
-            super().__init__(message)
-            self.non_retryable = non_retryable
-            self.next_retry_delay = next_retry_delay
-
-logger = logging.getLogger(__name__)
+from .tools import (
+    DurableTool,
+    create_tool_from_durable_tool,
+    convert_tool_to_durable_tool,
+)
+from .handoffs import DurableHandoff
 
 
-class HandoffInput(BaseModel):
-    """Data conversion friendly representation of a Handoff.
-
-    Contains only the fields which are needed by the model execution to
-    determine what to handoff to, not the actual handoff invocation,
-    which remains in the workflow context.
-    """
-
-    tool_name: str
-    tool_description: str
-    input_json_schema: dict[str, Any]
-    agent_name: str
-    strict_json_schema: bool = True
-
-
-class FunctionToolInput(BaseModel):
-    """Data conversion friendly representation of a FunctionTool.
-
-    Contains only the fields which are needed by the model execution to
-    determine what tool to call, not the actual tool invocation,
-    which remains in the workflow context.
-    """
-
-    name: str
-    description: str
-    params_json_schema: dict[str, Any]
-    strict_json_schema: bool = True
-
-
-class HostedMCPToolInput(BaseModel):
-    """Data conversion friendly representation of a HostedMCPTool.
-
-    Contains only the fields which are needed by the model execution to
-    determine what tool to call, not the actual tool invocation,
-    which remains in the workflow context.
-    """
-
-    tool_config: Mcp
-
-
-ToolInput = Union[
-    FunctionToolInput,
-    FileSearchTool,
-    WebSearchTool,
-    ImageGenerationTool,
-    CodeInterpreterTool,
-    HostedMCPToolInput,
-]
-
-
-class AgentOutputSchemaInput(AgentOutputSchemaBase, BaseModel):
-    """Data conversion friendly representation of AgentOutputSchema."""
+class DurableAgentOutputSchema(AgentOutputSchemaBase, BaseModel):
+    """Serializable representation of agent output schema."""
 
     output_type_name: Optional[str] = None
-    is_wrapped: bool
     output_schema: Optional[dict[str, Any]] = None
     strict_json_schema: bool
 
     def is_plain_text(self) -> bool:
         """Whether the output type is plain text (versus a JSON object)."""
-        return self.output_type_name is None or self.output_type_name == "str"
-
-    def is_strict_json_schema(self) -> bool:
-        """Whether the JSON schema is in strict mode."""
-        return self.strict_json_schema
-
-    def json_schema(self) -> dict[str, Any]:
-        """Get the JSON schema of the output type."""
-        if self.is_plain_text():
-            raise UserError("Output type is plain text, so no JSON schema is available")
-        if self.output_schema is None:
-            raise UserError("Output schema is not defined")
-        return self.output_schema
-
-    def validate_json(self, json_str: str) -> Any:
-        """Validate the JSON string against the schema."""
-        raise NotImplementedError()
+        return self.output_type_name in (None, "str")
 
     def name(self) -> str:
         """Get the name of the output type."""
         if self.output_type_name is None:
-            raise ValueError("output_type_name is None")
+            raise ValueError("Output type name has not been specified")
         return self.output_type_name
 
+    def json_schema(self) -> dict[str, Any]:
+        """Return the JSON schema of the output.
 
-class ModelTracingInput(enum.IntEnum):
-    """Conversion friendly representation of ModelTracing.
+        Will only be called if the output type is not plain text.
+        """
+        if self.is_plain_text():
+            raise UserError("Cannot provide JSON schema for plain text output types")
+        if self.output_schema is None:
+            raise UserError("Output schema definition is missing")
+        return self.output_schema
 
-    Needed as ModelTracing is enum.Enum instead of IntEnum
+    def is_strict_json_schema(self) -> bool:
+        """Check if the JSON schema is in strict mode.
+
+        Strict mode constrains the JSON schema features, but guarantees valid JSON.
+        See here for details:
+        https://platform.openai.com/docs/guides/structured-outputs#supported-schemas
+        """
+        return self.strict_json_schema
+
+    def validate_json(self, json_str: str) -> Any:
+        """Validate a JSON string against the output type.
+
+        You must return the validated object, or raise a `ModelBehaviorError` if
+        the JSON is invalid.
+        """
+        raise NotImplementedError()
+
+
+class ModelTracingLevel(enum.IntEnum):
+    """Serializable IntEnum representation of ModelTracing for Azure Durable Functions.
+
+    Values must match ModelTracing from the OpenAI SDK. This separate enum is required
+    because ModelTracing is a standard Enum while Pydantic serialization requires IntEnum
+    for proper JSON serialization in activity inputs.
     """
 
     DISABLED = 0
@@ -143,22 +91,22 @@ class ModelTracingInput(enum.IntEnum):
     ENABLED_WITHOUT_DATA = 2
 
 
-class ActivityModelInput(BaseModel):
-    """Input for the invoke_model_activity activity."""
+class DurableModelActivityInput(BaseModel):
+    """Serializable input for the durable model invocation activity."""
 
     input: Union[str, list[TResponseInputItem]]
     model_settings: ModelSettings
-    tracing: ModelTracingInput
+    tracing: ModelTracingLevel
     model_name: Optional[str] = None
     system_instructions: Optional[str] = None
-    tools: list[ToolInput] = Field(default_factory=list)
-    output_schema: Optional[AgentOutputSchemaInput] = None
-    handoffs: list[HandoffInput] = Field(default_factory=list)
+    tools: list[DurableTool] = Field(default_factory=list)
+    output_schema: Optional[DurableAgentOutputSchema] = None
+    handoffs: list[DurableHandoff] = Field(default_factory=list)
     previous_response_id: Optional[str] = None
     prompt: Optional[Any] = None
 
     def to_json(self) -> str:
-        """Convert the ActivityModelInput to a JSON string."""
+        """Convert to a JSON string."""
         try:
             return self.model_dump_json(warnings=False)
         except Exception:
@@ -167,12 +115,12 @@ class ActivityModelInput(BaseModel):
                 return json.dumps(self.model_dump(warnings=False), default=str)
             except Exception as fallback_error:
                 raise ValueError(
-                    f"Unable to serialize ActivityModelInput: {fallback_error}"
+                    f"Unable to serialize DurableModelActivityInput: {fallback_error}"
                 ) from fallback_error
 
     @classmethod
-    def from_json(cls, json_str: str) -> 'ActivityModelInput':
-        """Create an ActivityModelInput instance from a JSON string."""
+    def from_json(cls, json_str: str) -> 'DurableModelActivityInput':
+        """Create from a JSON string."""
         return cls.model_validate_json(json_str)
 
 
@@ -183,65 +131,28 @@ class ModelInvoker:
         """Initialize the activity with a model provider."""
         self._model_provider = model_provider or OpenAIProvider()
 
-    async def invoke_model_activity(self, input: ActivityModelInput) -> ModelResponse:
+    async def invoke_model_activity(self, input: DurableModelActivityInput) -> ModelResponse:
         """Activity that invokes a model with the given input."""
         model = self._model_provider.get_model(input.model_name)
 
-        async def empty_on_invoke_tool(ctx: RunContextWrapper[Any], input: str) -> str:
-            return ""
+        # Avoid https://github.com/pydantic/pydantic/issues/9541
+        normalized_input = json.loads(json.dumps(input.input, default=str))
 
-        async def empty_on_invoke_handoff(
-            ctx: RunContextWrapper[Any], input: str
-        ) -> Any:
-            return None
+        # Convert durable tools to agent tools
+        tools = [
+            create_tool_from_durable_tool(durable_tool)
+            for durable_tool in input.tools
+        ]
 
-        # workaround for https://github.com/pydantic/pydantic/issues/9541
-        # ValidatorIterator returned
-        input_json = json.dumps(input.input, default=str)
-        input_input = json.loads(input_json)
-
-        def make_tool(tool: ToolInput) -> Tool:
-            if isinstance(
-                tool,
-                (
-                    FileSearchTool,
-                    WebSearchTool,
-                    ImageGenerationTool,
-                    CodeInterpreterTool,
-                ),
-            ):
-                return tool
-            elif isinstance(tool, HostedMCPToolInput):
-                return HostedMCPTool(
-                    tool_config=tool.tool_config,
-                )
-            elif isinstance(tool, FunctionToolInput):
-                return FunctionTool(
-                    name=tool.name,
-                    description=tool.description,
-                    params_json_schema=tool.params_json_schema,
-                    on_invoke_tool=empty_on_invoke_tool,
-                    strict_json_schema=tool.strict_json_schema,
-                )
-            else:
-                raise UserError(f"Unknown tool type: {tool.name}")
-
-        tools = [make_tool(x) for x in input.tools]
-        handoffs: list[Handoff[Any, Any]] = [
-            Handoff(
-                tool_name=x.tool_name,
-                tool_description=x.tool_description,
-                input_json_schema=x.input_json_schema,
-                agent_name=x.agent_name,
-                strict_json_schema=x.strict_json_schema,
-                on_invoke_handoff=empty_on_invoke_handoff,
-            )
-            for x in input.handoffs
+        # Convert handoff descriptors to agent handoffs
+        handoffs = [
+            durable_handoff.to_handoff()
+            for durable_handoff in input.handoffs
         ]
 
         return await model.get_response(
             system_instructions=input.system_instructions,
-            input=input_input,
+            input=normalized_input,
             model_settings=input.model_settings,
             tools=tools,
             output_schema=input.output_schema,
@@ -282,40 +193,11 @@ class DurableActivityModel(Model):
         conversation_id: Optional[str] = None,
     ) -> ModelResponse:
         """Get a response from the model."""
-        def make_tool_info(tool: Tool) -> ToolInput:
-            if isinstance(
-                tool,
-                (
-                    FileSearchTool,
-                    WebSearchTool,
-                    ImageGenerationTool,
-                    CodeInterpreterTool,
-                ),
-            ):
-                return tool
-            elif isinstance(tool, HostedMCPTool):
-                return HostedMCPToolInput(tool_config=tool.tool_config)
-            elif isinstance(tool, FunctionTool):
-                return FunctionToolInput(
-                    name=tool.name,
-                    description=tool.description,
-                    params_json_schema=tool.params_json_schema,
-                    strict_json_schema=tool.strict_json_schema,
-                )
-            else:
-                raise ValueError(f"Unsupported tool type: {tool.name}")
+        # Convert agent tools to Durable tools
+        durable_tools = [convert_tool_to_durable_tool(tool) for tool in tools]
 
-        tool_infos = [make_tool_info(x) for x in tools]
-        handoff_infos = [
-            HandoffInput(
-                tool_name=x.tool_name,
-                tool_description=x.tool_description,
-                input_json_schema=x.input_json_schema,
-                agent_name=x.agent_name,
-                strict_json_schema=x.strict_json_schema,
-            )
-            for x in handoffs
-        ]
+        # Convert agent handoffs to Durable handoff descriptors
+        durable_handoffs = [DurableHandoff.from_handoff(handoff) for handoff in handoffs]
         if output_schema is not None and not isinstance(
             output_schema, AgentOutputSchema
         ):
@@ -323,29 +205,30 @@ class DurableActivityModel(Model):
                 f"Only AgentOutputSchema is supported by Durable Model, "
                 f"got {type(output_schema).__name__}"
             )
-        agent_output_schema = output_schema
+
         output_schema_input = (
             None
-            if agent_output_schema is None
-            else AgentOutputSchemaInput(
-                output_type_name=agent_output_schema.name(),
-                is_wrapped=agent_output_schema._is_wrapped,
-                output_schema=agent_output_schema.json_schema()
-                if not agent_output_schema.is_plain_text()
-                else None,
-                strict_json_schema=agent_output_schema.is_strict_json_schema(),
+            if output_schema is None
+            else DurableAgentOutputSchema(
+                output_type_name=output_schema.name(),
+                output_schema=(
+                    output_schema.json_schema()
+                    if not output_schema.is_plain_text()
+                    else None
+                ),
+                strict_json_schema=output_schema.is_strict_json_schema(),
             )
         )
 
-        activity_input = ActivityModelInput(
+        activity_input = DurableModelActivityInput(
             model_name=self.model_name,
             system_instructions=system_instructions,
             input=cast(Union[str, list[TResponseInputItem]], input),
             model_settings=model_settings,
-            tools=tool_infos,
+            tools=durable_tools,
             output_schema=output_schema_input,
-            handoffs=handoff_infos,
-            tracing=ModelTracingInput.DISABLED,  # ModelTracingInput(tracing.value),
+            handoffs=durable_handoffs,
+            tracing=ModelTracingLevel.DISABLED,  # ModelTracingLevel(tracing.value),
             previous_response_id=previous_response_id,
             prompt=prompt,
         )
@@ -360,7 +243,8 @@ class DurableActivityModel(Model):
             )
         else:
             response = self.task_tracker.get_activity_call_result(
-                self.activity_name, activity_input_json
+                self.activity_name,
+                activity_input_json
             )
 
         json_response = json.loads(response)

@@ -1,3 +1,5 @@
+#  Copyright (c) Microsoft Corporation. All rights reserved.
+#  Licensed under the MIT License.
 import json
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 

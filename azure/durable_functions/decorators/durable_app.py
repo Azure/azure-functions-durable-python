@@ -2,7 +2,7 @@
 #  Licensed under the MIT License.
 
 from azure.durable_functions.models.RetryOptions import RetryOptions
-from .metadata import OrchestrationTrigger, ActivityTrigger, EntityTrigger,\
+from .metadata import OrchestrationTrigger, ActivityTrigger, EntityTrigger, \
     DurableClient
 from typing import Callable, Optional
 from azure.durable_functions.entity import Entity

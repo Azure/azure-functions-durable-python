@@ -1,3 +1,5 @@
+#  Copyright (c) Microsoft Corporation. All rights reserved.
+#  Licensed under the MIT License.
 import pytest
 import json
 from unittest.mock import Mock
