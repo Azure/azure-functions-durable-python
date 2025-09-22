@@ -1,6 +1,8 @@
 #  Copyright (c) Microsoft Corporation. All rights reserved.
 #  Licensed under the MIT License.
-from .metadata import OrchestrationTrigger, ActivityTrigger, EntityTrigger,\
+
+from azure.durable_functions.models.RetryOptions import RetryOptions
+from .metadata import OrchestrationTrigger, ActivityTrigger, EntityTrigger, \
     DurableClient
 from typing import Callable, Optional
 from azure.durable_functions.entity import Entity
@@ -45,6 +47,7 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
             New instance of a Durable Functions app
         """
         super().__init__(auth_level=http_auth_level)
+        self._is_durable_openai_agent_setup = False
 
     def _configure_entity_callable(self, wrap) -> Callable:
         """Obtain decorator to construct an Entity class from a user-defined Function.
@@ -249,6 +252,66 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
             return decorator()
 
         return wrap
+
+    def _create_invoke_model_activity(self, model_provider, activity_name):
+        """Create and register the invoke_model_activity function with the provided FunctionApp."""
+
+        @self.activity_trigger(input_name="input", activity=activity_name)
+        async def run_model_activity(input: str):
+            from azure.durable_functions.openai_agents.orchestrator_generator\
+                import durable_openai_agent_activity
+
+            return await durable_openai_agent_activity(input, model_provider)
+
+        return run_model_activity
+
+    def _setup_durable_openai_agent(self, model_provider, activity_name):
+        if not self._is_durable_openai_agent_setup:
+            self._create_invoke_model_activity(model_provider, activity_name)
+            self._is_durable_openai_agent_setup = True
+
+    def durable_openai_agent_orchestrator(
+        self,
+        _func=None,
+        *,
+        model_provider=None,
+        model_retry_options: Optional[RetryOptions] = RetryOptions(
+            first_retry_interval_in_milliseconds=2000, max_number_of_attempts=5
+        ),
+    ):
+        """Decorate Azure Durable Functions orchestrators that use OpenAI Agents.
+
+        Parameters
+        ----------
+        model_provider: Optional[ModelProvider]
+            Use a non-default ModelProvider instead of the default OpenAIProvider,
+            such as when testing.
+        """
+        from agents import ModelProvider
+        from azure.durable_functions.openai_agents.orchestrator_generator\
+            import durable_openai_agent_orchestrator_generator
+
+        if model_provider is not None and type(model_provider) is not ModelProvider:
+            raise TypeError("Provided model provider must be of type ModelProvider")
+
+        activity_name = "run_model"
+
+        self._setup_durable_openai_agent(model_provider, activity_name)
+
+        def generator_wrapper_wrapper(func):
+
+            @wraps(func)
+            def generator_wrapper(context):
+                return durable_openai_agent_orchestrator_generator(
+                    func, context, model_retry_options, activity_name
+                )
+
+            return generator_wrapper
+
+        if _func is None:
+            return generator_wrapper_wrapper
+        else:
+            return generator_wrapper_wrapper(_func)
 
 
 class DFApp(Blueprint, FunctionRegister):

@@ -79,3 +79,11 @@ try:
     __all__.append('Blueprint')
 except ModuleNotFoundError:
     pass
+
+# Import OpenAI Agents integration (optional dependency)
+try:
+    from . import openai_agents # noqa
+    __all__.append('openai_agents')
+except ImportError:
+    # OpenAI agents integration requires additional dependencies
+    pass
