@@ -28,3 +28,8 @@ Follow these instructions to get started with Durable Functions in Python:
 ## Tooling
 
 * Python Durable Functions requires [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local) version 3.0.2630 or higher.
+
+## Durable OpenAI Agents (Preview)
+
+Build resilient, stateful AI agents backed by Durable Functions orchestration—see the full documentation at [docs/openai_agents/README.md](docs/openai_agents/README.md).
+
