@@ -68,7 +68,7 @@ setup(
         'pytest==7.1.2',
         'python-dateutil==2.8.0',
         'requests==2.22.0',
-        'jsonschema==3.2.0',
+        'jsonschema==4.25.1',
         'aiohttp==3.6.2',
         'azure-functions>=1.2.0',
         'nox==2019.11.9',
