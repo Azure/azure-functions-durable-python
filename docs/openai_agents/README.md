@@ -18,3 +18,5 @@ The Durable OpenAI Agents integration combines the familiar OpenAI Agents SDK wi
 
 - [Getting Started](getting-started.md) - Setup and your first durable agent
 - [Reference](reference.md) - Complete reference documentation
+
+> Compatibility note: The Durable OpenAI Agents integration has been validated with the OpenAI packages pinned in the sample application's `samples-v2/openai_agents/requirements.txt` (currently `openai==1.107.3` and `openai-agents==0.3.0`). Because the OpenAI packages release frequently and may introduce breaking API or behavioral changes, we recommend pinning to those versions if you face unexpected issues before reporting a bug.

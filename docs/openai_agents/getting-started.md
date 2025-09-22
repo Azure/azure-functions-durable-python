@@ -56,6 +56,8 @@ Then install them:
 pip install -r requirements.txt
 ```
 
+> Compatibility note: This integration has been tested with the exact OpenAI package versions defined in the sample app at `samples-v2/openai_agents/requirements.txt` (currently `openai==1.107.3` and `openai-agents==0.3.0`). The OpenAI ecosystem evolves quickly and newer releases may introduce breaking changes. If you encounter unexpected errors, try pinning to those specific versions first to verify whether the issue is due to a version mismatch before filing an issue.
+
 ### Configuring Durable Task Scheduler Backend
 
 **Durable Task Scheduler is the preferred backend** for this integration as it provides enhanced performance, better observability, and simplified local development. While not a hard requirement, it's strongly recommended for production workloads.
