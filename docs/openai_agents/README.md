@@ -19,4 +19,4 @@ The Durable OpenAI Agents integration combines the familiar OpenAI Agents SDK wi
 - [Getting Started](getting-started.md) - Setup and your first durable agent
 - [Reference](reference.md) - Complete reference documentation
 
-> Compatibility note: This integration is validated with the exact OpenAI package versions pinned in the sample app at `samples-v2/openai_agents/requirements.txt` (currently `openai==1.107.3` and `openai-agents==0.3.0`). The OpenAI ecosystem evolves quickly; if you hit unexpected issues, first pin to these versions to rule out a version mismatch before filing an issue.
+> Dependency & compatibility: The `azure-functions-durable` package does NOT declare `openai` or `openai-agents` as dependencies. If you need Durable OpenAI Agents, explicitly add `openai` and `openai-agents` to your `requirements.txt` (see `samples-v2/openai_agents/requirements.txt`). This integration is validated with the versions currently pinned there (`openai==1.107.3`, `openai-agents==0.3.0`). Because the OpenAI ecosystem changes rapidly, if you encounter issues, first pin to these versions to rule out a version mismatch before filing an issue.
