@@ -62,6 +62,18 @@ pip install -r requirements.txt
 
 **Durable Task Scheduler is the preferred backend** for this integration as it provides enhanced performance, better observability, and simplified local development. While not a hard requirement, it's strongly recommended for production workloads.
 
+> IMPORTANT: Ensure your function app is using the *preview* extension bundle version 4.34.0 or higher by specifying it in `host.json`:
+>
+> ```json
+> {
+>   "version": "2.0",
+>   "extensionBundle": {
+>     "id": "Microsoft.Azure.Functions.ExtensionBundle.Preview",
+>     "version": "[4.34.0, 5.0.0)"
+>   }
+> }
+> ```
+
 There are two ways to configure the backend locally:
 
 #### Using the Emulator (Recommended)
