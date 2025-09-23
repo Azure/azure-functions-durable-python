@@ -56,6 +56,8 @@ Then install them:
 pip install -r requirements.txt
 ```
 
+> Dependency & compatibility: The `azure-functions-durable` package does NOT declare `openai` or `openai-agents` as dependencies. If you need Durable OpenAI Agents, explicitly add `openai` and `openai-agents` to your `requirements.txt` (see `samples-v2/openai_agents/requirements.txt`). This integration is validated with the versions currently pinned there (`openai==1.107.3`, `openai-agents==0.3.0`). Because the OpenAI ecosystem changes rapidly, if you encounter issues, first pin to these versions to rule out a version mismatch before filing an issue.
+
 ### Configuring Durable Task Scheduler Backend
 
 **Durable Task Scheduler is the preferred backend** for this integration as it provides enhanced performance, better observability, and simplified local development. While not a hard requirement, it's strongly recommended for production workloads.
