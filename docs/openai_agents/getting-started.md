@@ -1,4 +1,4 @@
-# Getting Started with OpenAI Agents Integration for Reliability on Azure Functions (Preview)
+# Getting Started with the OpenAI Agents Integration for Reliability on Azure Functions (Preview)
 
 Getting started guide for implementing stateful AI agents using Azure Durable Functions orchestration with automatic checkpointing and replay semantics.
 
