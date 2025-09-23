@@ -5,6 +5,8 @@
     "FUNCTIONS_WORKER_RUNTIME": "python",
     "AZURE_OPENAI_ENDPOINT": "https://your-openai-service.openai.azure.com/",
     "AZURE_OPENAI_DEPLOYMENT": "your-gpt-deployment-name",
-    "AZURE_OPENAI_API_VERSION": "2025-03-01-preview"
+    "AZURE_OPENAI_API_VERSION": "2025-03-01-preview",
+    "DURABLE_TASK_SCHEDULER_CONNECTION_STRING": "http://localhost:8080;Authentication=None;",
+    "TASKHUB": "default"
   }
 }
