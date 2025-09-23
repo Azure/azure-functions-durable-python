@@ -10,7 +10,7 @@ def main():
     )
 
     result = Runner.run_sync(agent, "Tell me about recursion in programming.")
-    return result.final_output;
+    return result.final_output
     # Function calls itself,
     # Looping in smaller pieces,
     # Endless by design.
