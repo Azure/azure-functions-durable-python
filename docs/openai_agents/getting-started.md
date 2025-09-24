@@ -35,7 +35,7 @@ python -m venv venv
 # On macOS/Linux:
 source venv/bin/activate
 # On Windows:
-# venv\Scripts\activate
+venv\Scripts\activate
 ```
 
 ### Install Dependencies
@@ -61,6 +61,18 @@ pip install -r requirements.txt
 ### Configuring Durable Task Scheduler Backend
 
 **Durable Task Scheduler is the preferred backend** for this integration as it provides enhanced performance, better observability, and simplified local development. While not a hard requirement, it's strongly recommended for production workloads.
+
+IMPORTANT: Ensure your function app is using the *preview* extension bundle version 4.34.0 or higher by specifying it in `host.json`:
+
+```json
+{
+  "version": "2.0",
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle.Preview",
+    "version": "[4.34.0, 5.0.0)"
+  }
+}
+```
 
 There are two ways to configure the backend locally:
 
@@ -126,8 +138,9 @@ Update `local.settings.json` with your service configuration:
     "FUNCTIONS_WORKER_RUNTIME": "python",
     "AZURE_OPENAI_ENDPOINT": "https://<resource-name>.openai.azure.com/",
     "AZURE_OPENAI_DEPLOYMENT": "<deployment-name>",
+    "OPENAI_DEFAULT_MODEL": "<deployment-name>",
     "AZURE_OPENAI_API_VERSION": "2024-10-01-preview",
-    "DURABLE_TASK_SCHEDULER_CONNECTION_STRING": "http://localhost:8080;Authentication=None;",
+    "DURABLE_TASK_SCHEDULER_CONNECTION_STRING": "Endpoint=http://localhost:8080;Authentication=None;",
     "TASKHUB": "default"
   }
 }
