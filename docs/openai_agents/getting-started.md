@@ -1,4 +1,4 @@
-# Getting Started with Durable OpenAI Agents
+# Getting Started with the OpenAI Agents Integration for Reliability on Azure Functions (Preview)
 
 Getting started guide for implementing stateful AI agents using Azure Durable Functions orchestration with automatic checkpointing and replay semantics.
 
@@ -13,7 +13,7 @@ Getting started guide for implementing stateful AI agents using Azure Durable Fu
 
 ### Create an Azure Functions App
 
-This framework is designed specifically for **Azure Functions applications**. You need to create a Python Functions app to use Durable OpenAI Agents.
+This framework is designed specifically for **Azure Functions applications**. You need to create a Python Functions app to use the OpenAI Agents Integration for Reliability on Azure Functions (Preview).
 
 **For new users**: If you're new to Azure Functions, follow these guides to get started:
 - [Create your first Python function in Azure](https://learn.microsoft.com/en-us/azure/azure-functions/create-first-function-vs-code-python)
@@ -56,7 +56,7 @@ Then install them:
 pip install -r requirements.txt
 ```
 
-> Dependency & compatibility: The `azure-functions-durable` package does NOT declare `openai` or `openai-agents` as dependencies. If you need Durable OpenAI Agents, explicitly add `openai` and `openai-agents` to your `requirements.txt` (see `samples-v2/openai_agents/requirements.txt`). This integration is validated with the versions currently pinned there (`openai==1.107.3`, `openai-agents==0.3.0`). Because the OpenAI ecosystem changes rapidly, if you encounter issues, first pin to these versions to rule out a version mismatch before filing an issue.
+> Dependency & compatibility: The `azure-functions-durable` package does NOT declare `openai` or `openai-agents` as dependencies. If you need the OpenAI Agents Integration for Reliability on Azure Functions (Preview), explicitly add `openai` and `openai-agents` to your `requirements.txt` (see `samples-v2/openai_agents/requirements.txt`). This integration is validated with the versions currently pinned there (`openai==1.107.3`, `openai-agents==0.3.0`). Because the OpenAI ecosystem changes rapidly, if you encounter issues, first pin to these versions to rule out a version mismatch before filing an issue.
 
 ### Configuring Durable Task Scheduler Backend
 

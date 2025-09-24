@@ -1,6 +1,6 @@
 # Reference Documentation
 
-Complete reference for Durable OpenAI Agents integration.
+Complete reference for the OpenAI Agents Integration for Reliability on Azure Functions (Preview) integration.
 
 ## Durable Orchestration
 
