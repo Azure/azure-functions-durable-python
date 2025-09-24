@@ -10,7 +10,7 @@ import asyncio
 from agents import Agent, OpenAIConversationsSession, Runner
 
 
-async def main():
+def main():
     # Create an agent
     agent = Agent(
         name="Assistant",
@@ -26,7 +26,7 @@ async def main():
     # First turn
     print("First turn:")
     print("User: What city is the Golden Gate Bridge in?")
-    result = await Runner.run(
+    result = Runner.run_sync(
         agent,
         "What city is the Golden Gate Bridge in?",
         session=session,
@@ -37,14 +37,14 @@ async def main():
     # Second turn - the agent will remember the previous conversation
     print("Second turn:")
     print("User: What state is it in?")
-    result = await Runner.run(agent, "What state is it in?", session=session)
+    result = Runner.run_sync(agent, "What state is it in?", session=session)
     print(f"Assistant: {result.final_output}")
     print()
 
     # Third turn - continuing the conversation
     print("Third turn:")
     print("User: What's the population of that state?")
-    result = await Runner.run(
+    result = Runner.run_sync(
         agent,
         "What's the population of that state?",
         session=session,
@@ -72,7 +72,3 @@ async def main():
     all_items = await session.get_items()
     # print(all_items)
     print(f"Total items in session: {len(all_items)}")
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

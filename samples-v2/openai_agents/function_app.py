@@ -115,3 +115,9 @@ async def random_number_tool(max: int) -> int:
 def message_filter(context):
     import handoffs.message_filter
     return handoffs.message_filter.main(context.create_activity_tool(random_number_tool))
+
+@app.orchestration_trigger(context_name="context")
+@app.durable_openai_agent_orchestrator
+def openai_session_example(context):
+    import memory.openai_session_example
+    return memory.openai_session_example.main()
