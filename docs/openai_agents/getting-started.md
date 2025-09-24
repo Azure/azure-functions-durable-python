@@ -138,6 +138,7 @@ Update `local.settings.json` with your service configuration:
     "FUNCTIONS_WORKER_RUNTIME": "python",
     "AZURE_OPENAI_ENDPOINT": "https://<resource-name>.openai.azure.com/",
     "AZURE_OPENAI_DEPLOYMENT": "<deployment-name>",
+    "OPENAI_DEFAULT_MODEL": "<deployment-name>",
     "AZURE_OPENAI_API_VERSION": "2024-10-01-preview",
     "DURABLE_TASK_SCHEDULER_CONNECTION_STRING": "Endpoint=http://localhost:8080;Authentication=None;",
     "TASKHUB": "default"
