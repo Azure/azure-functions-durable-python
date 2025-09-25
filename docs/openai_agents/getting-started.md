@@ -1,4 +1,4 @@
-# Getting Started with the OpenAI Agents Integration for Reliability on Azure Functions (Preview)
+# Getting Started with the OpenAI Agent SDK Integration with Azure Durable Functions (Preview)
 
 Getting started guide for implementing stateful AI agents using Azure Durable Functions orchestration with automatic checkpointing and replay semantics.
 
@@ -13,7 +13,7 @@ Getting started guide for implementing stateful AI agents using Azure Durable Fu
 
 ### Create an Azure Functions App
 
-This framework is designed specifically for **Azure Functions applications**. You need to create a Python Functions app to use the OpenAI Agents Integration for Reliability on Azure Functions (Preview).
+This framework is designed specifically for **Azure Functions applications**. You need to create a Python Functions app to use the OpenAI Agent SDK Integration with Azure Durable Functions (Preview).
 
 **For new users**: If you're new to Azure Functions, follow these guides to get started:
 - [Create your first Python function in Azure](https://learn.microsoft.com/en-us/azure/azure-functions/create-first-function-vs-code-python)
