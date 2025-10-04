@@ -74,7 +74,9 @@ class DurableOrchestrationClient:
             The ID of the new orchestration instance if successful, None if not.
         """
         request_url = self._get_start_new_url(
-            instance_id=instance_id, orchestration_function_name=orchestration_function_name, version=version)
+            instance_id=instance_id,
+            orchestration_function_name=orchestration_function_name,
+            version=version)
 
         trace_parent, trace_state = DurableOrchestrationClient._get_current_activity_context()
 
@@ -648,10 +650,10 @@ class DurableOrchestrationClient:
         instance_path = f'/{instance_id}' if instance_id is not None else ''
         request_url = f'{self._orchestration_bindings.rpc_base_url}orchestrators/' \
                       f'{orchestration_function_name}{instance_path}'
-        
+
         if version is not None:
             request_url += f'?version={version}'
-        
+
         return request_url
 
     def _get_raise_event_url(

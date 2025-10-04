@@ -358,7 +358,8 @@ class DurableOrchestrationContext:
         if isinstance(name, FunctionBuilder):
             name = self._get_function_name(name, OrchestrationTrigger)
 
-        action = CallSubOrchestratorWithRetryAction(name, retry_options, input_, instance_id, version)
+        action = CallSubOrchestratorWithRetryAction(
+            name, retry_options, input_, instance_id, version)
         task = self._generate_task(action, retry_options)
         return task
 
