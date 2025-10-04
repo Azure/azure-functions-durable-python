@@ -82,6 +82,17 @@ def test_get_start_new_url(binding_string):
     assert expected_url == start_new_url
 
 
+def test_get_start_new_url_with_version(binding_string):
+    client = DurableOrchestrationClient(binding_string)
+    instance_id = "2e2568e7-a906-43bd-8364-c81733c5891e"
+    function_name = "my_function"
+    version = "2.0"
+    start_new_url = client._get_start_new_url(instance_id, function_name, version)
+    expected_url = replace_stand_in_bits(
+        f"{RPC_BASE_URL}orchestrators/{function_name}/{instance_id}?version={version}")
+    assert expected_url == start_new_url
+
+
 def test_get_input_returns_none_when_none_supplied():
     result = DurableOrchestrationClient._get_json_input(None)
     assert result is None
