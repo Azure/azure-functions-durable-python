@@ -652,7 +652,7 @@ class DurableOrchestrationClient:
                       f'{orchestration_function_name}{instance_path}'
 
         if version is not None:
-            request_url += f'?version={version}'
+            request_url += f'?version={quote(version)}'
 
         return request_url
 
