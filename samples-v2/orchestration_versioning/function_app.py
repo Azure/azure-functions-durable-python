@@ -8,9 +8,17 @@ myApp = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 @myApp.durable_client_input(client_name="client")
 async def http_start(req: func.HttpRequest, client):
     function_name = req.route_params.get('functionName')
-    instance_id = await client.start_new(function_name)
     
-    logging.info(f"Started orchestration with ID = '{instance_id}'.")
+    # Get optional version from query parameter
+    version = req.params.get('version')
+    
+    if version:
+        instance_id = await client.start_new(function_name, version=version)
+        logging.info(f"Started orchestration with ID = '{instance_id}' and version = '{version}'.")
+    else:
+        instance_id = await client.start_new(function_name)
+        logging.info(f"Started orchestration with ID = '{instance_id}'.")
+    
     return client.create_check_status_response(req, instance_id)
 
 @myApp.orchestration_trigger(context_name="context")
@@ -29,18 +37,27 @@ def my_orchestrator(context: df.DurableOrchestrationContext):
     yield context.wait_for_external_event("Continue")
     context.set_custom_status("Continue event received")
     
-    # New sub-orchestrations will use the current defaultVersion specified in host.json
-    sub_result = yield context.call_sub_orchestrator('my_sub_orchestrator')
-    return [f'Orchestration version: {context.version}', f'Suborchestration version: {sub_result}', activity_result]
+    # You can explicitly pass a version to sub-orchestrators
+    sub_result_with_version = yield context.call_sub_orchestrator('my_sub_orchestrator', version="0.9")
+    
+    # Without specifying version, the sub-orchestrator will use the current defaultVersion
+    sub_result_default = yield context.call_sub_orchestrator('my_sub_orchestrator')
+    
+    return [
+        f'Orchestration version: {context.version}', 
+        f'Suborchestration version (explicit): {sub_result_with_version}',
+        f'Suborchestration version (default): {sub_result_default}',
+        activity_result
+    ]
 
 @myApp.orchestration_trigger(context_name="context")
 def my_sub_orchestrator(context: df.DurableOrchestrationContext):
     return context.version
 
-@myApp.activity_trigger()
-def activity_a() -> str:
+@myApp.activity_trigger(input_name="input")
+def activity_a(input: str) -> str:
     return f"Hello from A!"
 
-@myApp.activity_trigger()
-def activity_b() -> str:
+@myApp.activity_trigger(input_name="input")
+def activity_b(input: str) -> str:
     return f"Hello from B!"

@@ -285,7 +285,8 @@ class DurableOrchestrationContext:
 
     def call_sub_orchestrator(self,
                               name: Union[str, Callable], input_: Optional[Any] = None,
-                              instance_id: Optional[str] = None) -> TaskBase:
+                              instance_id: Optional[str] = None,
+                              version: Optional[str] = None) -> TaskBase:
         """Schedule sub-orchestration function named `name` for execution.
 
         Parameters
@@ -296,6 +297,9 @@ class DurableOrchestrationContext:
             The JSON-serializable input to pass to the orchestrator function.
         instance_id: Optional[str]
             A unique ID to use for the sub-orchestration instance.
+        version: Optional[str]
+            The version to assign to the sub-orchestration instance. If not specified,
+            the defaultVersion from host.json will be used.
 
         Returns
         -------
@@ -313,14 +317,15 @@ class DurableOrchestrationContext:
         if isinstance(name, FunctionBuilder):
             name = self._get_function_name(name, OrchestrationTrigger)
 
-        action = CallSubOrchestratorAction(name, input_, instance_id)
+        action = CallSubOrchestratorAction(name, input_, instance_id, version)
         task = self._generate_task(action)
         return task
 
     def call_sub_orchestrator_with_retry(self,
                                          name: Union[str, Callable], retry_options: RetryOptions,
                                          input_: Optional[Any] = None,
-                                         instance_id: Optional[str] = None) -> TaskBase:
+                                         instance_id: Optional[str] = None,
+                                         version: Optional[str] = None) -> TaskBase:
         """Schedule sub-orchestration function named `name` for execution, with retry-options.
 
         Parameters
@@ -333,6 +338,9 @@ class DurableOrchestrationContext:
             The JSON-serializable input to pass to the activity function. Defaults to None.
         instance_id: str
             The instance ID of the sub-orchestrator to call.
+        version: Optional[str]
+            The version to assign to the sub-orchestration instance. If not specified,
+            the defaultVersion from host.json will be used.
 
         Returns
         -------
@@ -350,7 +358,8 @@ class DurableOrchestrationContext:
         if isinstance(name, FunctionBuilder):
             name = self._get_function_name(name, OrchestrationTrigger)
 
-        action = CallSubOrchestratorWithRetryAction(name, retry_options, input_, instance_id)
+        action = CallSubOrchestratorWithRetryAction(
+            name, retry_options, input_, instance_id, version)
         task = self._generate_task(action, retry_options)
         return task
 

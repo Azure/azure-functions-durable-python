@@ -33,7 +33,7 @@ What happens to *existing orchestration instances* that were started *before* th
 6. Trigger the external event.
 7. Observe that the orchestration output.
 
-```
+```text
 Orchestration version: 1.0
 Suborchestration version: 2.0
 Hello from A!
@@ -42,3 +42,33 @@ Hello from A!
 Note that the value returned by `context.version` is permanently associated with the orchestrator instance and is not impacted by the `defaultVersion` change. As a result, the orchestrator follows the old execution path to guarantee deterministic replay behavior.
 
 However, the suborchestration version is `2.0` because this suborchestration was created *after* the `defaultVersion` change.
+
+## Overriding Version Programmatically
+
+In addition to using `defaultVersion` in `host.json`, you can also specify a version explicitly when starting an orchestration using the `version` parameter of `client.start_new()`:
+
+```python
+# Start with a specific version
+instance_id = await client.start_new("my_orchestrator", version="1.5")
+```
+
+You can also specify a version when calling sub-orchestrators from within an orchestrator function:
+
+```python
+# Call sub-orchestrator with specific version
+sub_result = yield context.call_sub_orchestrator('my_sub_orchestrator', version="1.5")
+
+# Call sub-orchestrator with retry and specific version
+sub_result = yield context.call_sub_orchestrator_with_retry(
+    'my_sub_orchestrator',
+    retry_options=retry_options,
+    version="2.0"
+)
+```
+
+When a version is explicitly provided, it takes precedence over the `defaultVersion` in `host.json`. This allows you to:
+
+- Test new orchestration versions without changing configuration
+- Run multiple versions simultaneously
+- Gradually roll out new versions by controlling which requests use which version
+- Running A/B tests with different sub-orchestrator implementations

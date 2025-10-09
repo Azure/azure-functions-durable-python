@@ -13,11 +13,12 @@ class CallSubOrchestratorWithRetryAction(Action):
 
     def __init__(self, function_name: str, retry_options: RetryOptions,
                  _input: Optional[Any] = None,
-                 instance_id: Optional[str] = None):
+                 instance_id: Optional[str] = None, version: Optional[str] = None):
         self.function_name: str = function_name
         self._input: str = dumps(_input, default=_serialize_custom_object)
         self.retry_options: RetryOptions = retry_options
         self.instance_id: Optional[str] = instance_id
+        self.version: Optional[str] = version
 
         if not self.function_name:
             raise ValueError("function_name cannot be empty")
@@ -41,4 +42,5 @@ class CallSubOrchestratorWithRetryAction(Action):
         add_attrib(json_dict, self, '_input', 'input')
         add_json_attrib(json_dict, self, 'retry_options', 'retryOptions')
         add_attrib(json_dict, self, 'instance_id', 'instanceId')
+        add_attrib(json_dict, self, 'version', 'version')
         return json_dict

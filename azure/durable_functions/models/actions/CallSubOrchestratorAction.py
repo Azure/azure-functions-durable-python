@@ -11,10 +11,11 @@ class CallSubOrchestratorAction(Action):
     """Defines the structure of the Call SubOrchestrator object."""
 
     def __init__(self, function_name: str, _input: Optional[Any] = None,
-                 instance_id: Optional[str] = None):
+                 instance_id: Optional[str] = None, version: Optional[str] = None):
         self.function_name: str = function_name
         self._input: str = dumps(_input, default=_serialize_custom_object)
         self.instance_id: Optional[str] = instance_id
+        self.version: Optional[str] = version
 
         if not self.function_name:
             raise ValueError("function_name cannot be empty")
@@ -37,4 +38,5 @@ class CallSubOrchestratorAction(Action):
         add_attrib(json_dict, self, 'function_name', 'functionName')
         add_attrib(json_dict, self, '_input', 'input')
         add_attrib(json_dict, self, 'instance_id', 'instanceId')
+        add_attrib(json_dict, self, 'version', 'version')
         return json_dict

@@ -48,7 +48,8 @@ class DurableOrchestrationClient:
     async def start_new(self,
                         orchestration_function_name: str,
                         instance_id: Optional[str] = None,
-                        client_input: Optional[Any] = None) -> str:
+                        client_input: Optional[Any] = None,
+                        version: Optional[str] = None) -> str:
         """Start a new instance of the specified orchestrator function.
 
         If an orchestration instance with the specified ID already exists, the
@@ -63,6 +64,9 @@ class DurableOrchestrationClient:
             the Durable Functions extension will generate a random GUID (recommended).
         client_input : Optional[Any]
             JSON-serializable input value for the orchestrator function.
+        version : Optional[str]
+            The version to assign to the orchestration instance. If not specified,
+            the defaultVersion from host.json will be used.
 
         Returns
         -------
@@ -70,7 +74,9 @@ class DurableOrchestrationClient:
             The ID of the new orchestration instance if successful, None if not.
         """
         request_url = self._get_start_new_url(
-            instance_id=instance_id, orchestration_function_name=orchestration_function_name)
+            instance_id=instance_id,
+            orchestration_function_name=orchestration_function_name,
+            version=version)
 
         trace_parent, trace_state = DurableOrchestrationClient._get_current_activity_context()
 
@@ -639,10 +645,15 @@ class DurableOrchestrationClient:
             raise Exception(result)
 
     def _get_start_new_url(
-            self, instance_id: Optional[str], orchestration_function_name: str) -> str:
+            self, instance_id: Optional[str], orchestration_function_name: str,
+            version: Optional[str] = None) -> str:
         instance_path = f'/{instance_id}' if instance_id is not None else ''
         request_url = f'{self._orchestration_bindings.rpc_base_url}orchestrators/' \
                       f'{orchestration_function_name}{instance_path}'
+
+        if version is not None:
+            request_url += f'?version={quote(version)}'
+
         return request_url
 
     def _get_raise_event_url(
