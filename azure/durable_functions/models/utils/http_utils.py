@@ -97,7 +97,7 @@ async def post_async_request(url: str,
             # More here: https://docs.aiohttp.org/en/stable/client_advanced.html
             data = await response.json(content_type=None)
             return [response.status, data]
-    except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+    except (aiohttp.ClientError, asyncio.TimeoutError):
         # On connection errors, close and recreate session for next request
         # This handles cases where the remote host process recycles
         global _client_session
@@ -128,7 +128,7 @@ async def get_async_request(url: str) -> List[Any]:
             if data is None:
                 data = ""
             return [response.status, data]
-    except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+    except (aiohttp.ClientError, asyncio.TimeoutError):
         # On connection errors, close and recreate session for next request
         # This handles cases where the remote host process recycles
         global _client_session
@@ -157,7 +157,7 @@ async def delete_async_request(url: str) -> List[Union[int, Any]]:
         async with session.delete(url) as response:
             data = await response.json(content_type=None)
             return [response.status, data]
-    except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+    except (aiohttp.ClientError, asyncio.TimeoutError):
         # On connection errors, close and recreate session for next request
         # This handles cases where the remote host process recycles
         global _client_session
