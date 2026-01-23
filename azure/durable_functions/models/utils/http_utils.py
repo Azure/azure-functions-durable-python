@@ -48,6 +48,17 @@ async def _get_session() -> aiohttp.ClientSession:
     return _client_session
 
 
+async def _handle_request_error():
+    """Handle connection errors by closing and resetting the session.
+
+    This handles cases where the remote host process recycles.
+    """
+    global _client_session
+    if _client_session is not None and not _client_session.closed:
+        await _client_session.close()
+        _client_session = None
+
+
 async def _close_session() -> None:
     """Close the shared ClientSession if it exists.
 
@@ -99,11 +110,7 @@ async def post_async_request(url: str,
             return [response.status, data]
     except (aiohttp.ClientError, asyncio.TimeoutError):
         # On connection errors, close and recreate session for next request
-        # This handles cases where the remote host process recycles
-        global _client_session
-        if _client_session is not None and not _client_session.closed:
-            await _client_session.close()
-            _client_session = None
+        await _handle_request_error()
         raise
 
 
@@ -130,11 +137,7 @@ async def get_async_request(url: str) -> List[Any]:
             return [response.status, data]
     except (aiohttp.ClientError, asyncio.TimeoutError):
         # On connection errors, close and recreate session for next request
-        # This handles cases where the remote host process recycles
-        global _client_session
-        if _client_session is not None and not _client_session.closed:
-            await _client_session.close()
-            _client_session = None
+        await _handle_request_error()
         raise
 
 
@@ -159,9 +162,5 @@ async def delete_async_request(url: str) -> List[Union[int, Any]]:
             return [response.status, data]
     except (aiohttp.ClientError, asyncio.TimeoutError):
         # On connection errors, close and recreate session for next request
-        # This handles cases where the remote host process recycles
-        global _client_session
-        if _client_session is not None and not _client_session.closed:
-            await _client_session.close()
-            _client_session = None
+        await _handle_request_error()
         raise
