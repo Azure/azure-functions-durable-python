@@ -54,8 +54,10 @@ async def _handle_request_error():
     global _client_session
     async with _session_lock:
         if _client_session is not None and not _client_session.closed:
-            await _client_session.close()
-            _client_session = None
+            try:
+                await _client_session.close()
+            finally:
+                _client_session = None
 
 
 async def _close_session() -> None:
@@ -67,8 +69,10 @@ async def _close_session() -> None:
 
     async with _session_lock:
         if _client_session is not None and not _client_session.closed:
-            await _client_session.close()
-            _client_session = None
+            try:
+                await _client_session.close()
+            finally:
+                _client_session = None
 
 
 async def post_async_request(url: str,
