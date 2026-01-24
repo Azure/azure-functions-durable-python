@@ -24,19 +24,17 @@ async def _get_session() -> aiohttp.ClientSession:
         async with _session_lock:
             # Check again after acquiring lock
             if _client_session is None or _client_session.closed:
-                # Configure timeout and connection pooling
+                # Configure timeout optimized for localhost IPC
                 timeout = aiohttp.ClientTimeout(
-                    total=60,  # Total timeout for entire request
-                    connect=30,  # Timeout for connection establishment
-                    sock_connect=30,  # Socket connection timeout
-                    sock_read=30  # Socket read timeout
+                    total=240,  # 4-minute total timeout for slow operations
+                    sock_connect=10,  # Fast connection over localhost
+                    sock_read=None  # Covered by total timeout
                 )
 
-                # Configure TCP connector with connection pooling
+                # Configure TCP connector optimized for localhost IPC
                 connector = aiohttp.TCPConnector(
-                    limit=100,  # Maximum number of connections
+                    limit=30,  # Maximum connections for single host
                     limit_per_host=30,  # Maximum connections per host
-                    ttl_dns_cache=300,  # DNS cache TTL in seconds
                     enable_cleanup_closed=True  # Enable cleanup of closed connections
                 )
 
@@ -54,9 +52,10 @@ async def _handle_request_error():
     This handles cases where the remote host process recycles.
     """
     global _client_session
-    if _client_session is not None and not _client_session.closed:
-        await _client_session.close()
-        _client_session = None
+    async with _session_lock:
+        if _client_session is not None and not _client_session.closed:
+            await _client_session.close()
+            _client_session = None
 
 
 async def _close_session() -> None:
@@ -66,9 +65,10 @@ async def _close_session() -> None:
     """
     global _client_session
 
-    if _client_session is not None and not _client_session.closed:
-        await _client_session.close()
-        _client_session = None
+    async with _session_lock:
+        if _client_session is not None and not _client_session.closed:
+            await _client_session.close()
+            _client_session = None
 
 
 async def post_async_request(url: str,

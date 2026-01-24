@@ -205,18 +205,17 @@ async def test_session_configured_with_timeouts():
         await http_utils.post_async_request("http://test.com",
                                             {"data": "test"})
 
-        # Verify timeout was configured
+        # Verify timeout was configured for localhost IPC
         mock_timeout_class.assert_called_once()
         timeout_call = mock_timeout_class.call_args
-        assert timeout_call.kwargs['total'] == 60
-        assert timeout_call.kwargs['connect'] == 30
-        assert timeout_call.kwargs['sock_connect'] == 30
-        assert timeout_call.kwargs['sock_read'] == 30
+        assert timeout_call.kwargs['total'] == 240
+        assert timeout_call.kwargs['sock_connect'] == 10
+        assert timeout_call.kwargs['sock_read'] is None
 
-        # Verify connector was configured
+        # Verify connector was configured for localhost IPC
         mock_connector_class.assert_called_once()
         connector_call = mock_connector_class.call_args
-        assert connector_call.kwargs['limit'] == 100
+        assert connector_call.kwargs['limit'] == 30
         assert connector_call.kwargs['limit_per_host'] == 30
 
 
