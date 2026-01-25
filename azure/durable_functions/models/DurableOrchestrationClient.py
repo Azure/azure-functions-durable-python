@@ -26,7 +26,16 @@ class DurableOrchestrationClient:
     orchestration instances.
     """
 
-    def __init__(self, context: str):
+    def __init__(self, context: str, function_invocation_id: Optional[str] = None):
+        """Initialize a DurableOrchestrationClient.
+
+        Parameters
+        ----------
+        context : str
+            The JSON-encoded client binding context.
+        function_invocation_id : Optional[str]
+            The function invocation ID for correlation with host-side logs.
+        """
         self.task_hub_name: str
         self._uniqueWebHookOrigins: List[str]
         self._event_name_placeholder: str = "{eventName}"
@@ -39,6 +48,7 @@ class DurableOrchestrationClient:
         self._show_history_query_key: str = "showHistory"
         self._show_history_output_query_key: str = "showHistoryOutput"
         self._show_input_query_key: str = "showInput"
+        self._function_invocation_id: Optional[str] = function_invocation_id
         self._orchestration_bindings: DurableOrchestrationBindings = \
             DurableOrchestrationBindings.from_json(context)
         self._post_async_request = post_async_request
@@ -84,7 +94,8 @@ class DurableOrchestrationClient:
             request_url,
             self._get_json_input(client_input),
             trace_parent,
-            trace_state)
+            trace_state,
+            self._function_invocation_id)
 
         status_code: int = response[0]
         if status_code <= 202 and response[1]:
@@ -99,6 +110,7 @@ class DurableOrchestrationClient:
             # we surface the stack trace too, since this may be a more involed exception
             ex_message: Any = response[1]
             raise Exception(ex_message)
+
 
     def create_check_status_response(
             self, request: func.HttpRequest, instance_id: str) -> func.HttpResponse:
@@ -256,7 +268,10 @@ class DurableOrchestrationClient:
         request_url = self._get_raise_event_url(
             instance_id, event_name, task_hub_name, connection_name)
 
-        response = await self._post_async_request(request_url, json.dumps(event_data))
+        response = await self._post_async_request(
+            request_url,
+            json.dumps(event_data),
+            function_invocation_id=self._function_invocation_id)
 
         switch_statement = {
             202: lambda: None,
@@ -445,7 +460,10 @@ class DurableOrchestrationClient:
         """
         request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}/" \
                       f"terminate?reason={quote(reason)}"
-        response = await self._post_async_request(request_url, None)
+        response = await self._post_async_request(
+            request_url,
+            None,
+            function_invocation_id=self._function_invocation_id)
         switch_statement = {
             202: lambda: None,  # instance in progress
             410: lambda: None,  # instance failed or terminated
@@ -564,7 +582,8 @@ class DurableOrchestrationClient:
             request_url,
             json.dumps(operation_input) if operation_input else None,
             trace_parent,
-            trace_state)
+            trace_state,
+            self._function_invocation_id)
 
         switch_statement = {
             202: lambda: None  # signal accepted
@@ -714,7 +733,10 @@ class DurableOrchestrationClient:
             raise Exception("The Python SDK only supports RPC endpoints."
                             + "Please remove the `localRpcEnabled` setting from host.json")
 
-        response = await self._post_async_request(request_url, None)
+        response = await self._post_async_request(
+            request_url,
+            None,
+            function_invocation_id=self._function_invocation_id)
         status: int = response[0]
         ex_msg: str = ""
         if status == 200 or status == 202:
@@ -753,7 +775,10 @@ class DurableOrchestrationClient:
         """
         request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}/" \
                       f"suspend?reason={quote(reason)}"
-        response = await self._post_async_request(request_url, None)
+        response = await self._post_async_request(
+            request_url,
+            None,
+            function_invocation_id=self._function_invocation_id)
         switch_statement = {
             202: lambda: None,  # instance is suspended
             410: lambda: None,  # instance completed
@@ -788,7 +813,10 @@ class DurableOrchestrationClient:
         """
         request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}/" \
                       f"resume?reason={quote(reason)}"
-        response = await self._post_async_request(request_url, None)
+        response = await self._post_async_request(
+            request_url,
+            None,
+            function_invocation_id=self._function_invocation_id)
         switch_statement = {
             202: lambda: None,  # instance is resumed
             410: lambda: None,  # instance completed

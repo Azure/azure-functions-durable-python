@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any, List, Union, Optional
 
 import aiohttp
 
@@ -6,7 +6,8 @@ import aiohttp
 async def post_async_request(url: str,
                              data: Any = None,
                              trace_parent: str = None,
-                             trace_state: str = None) -> List[Union[int, Any]]:
+                             trace_state: str = None,
+                             function_invocation_id: str = None) -> List[Union[int, Any]]:
     """Post request with the data provided to the url provided.
 
     Parameters
@@ -19,6 +20,8 @@ async def post_async_request(url: str,
         traceparent header to send with the request
     trace_state: str
         tracestate header to send with the request
+    function_invocation_id: str
+        function invocation ID header to send for correlation
 
     Returns
     -------
@@ -31,6 +34,8 @@ async def post_async_request(url: str,
             headers["traceparent"] = trace_parent
         if trace_state:
             headers["tracestate"] = trace_state
+        if function_invocation_id:
+            headers["X-Azure-Functions-InvocationId"] = function_invocation_id
         async with session.post(url, json=data, headers=headers) as response:
             # We disable aiohttp's input type validation
             # as the server may respond with alternative
@@ -40,13 +45,16 @@ async def post_async_request(url: str,
             return [response.status, data]
 
 
-async def get_async_request(url: str) -> List[Any]:
+async def get_async_request(url: str,
+                            function_invocation_id: str = None) -> List[Any]:
     """Get the data from the url provided.
 
     Parameters
     ----------
     url: str
         url to get the data from
+    function_invocation_id: str
+        function invocation ID header to send for correlation
 
     Returns
     -------
@@ -54,20 +62,26 @@ async def get_async_request(url: str) -> List[Any]:
         Tuple with the Response status code and the data returned from the request
     """
     async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
+        headers = {}
+        if function_invocation_id:
+            headers["X-Azure-Functions-InvocationId"] = function_invocation_id
+        async with session.get(url, headers=headers) as response:
             data = await response.json(content_type=None)
             if data is None:
                 data = ""
             return [response.status, data]
 
 
-async def delete_async_request(url: str) -> List[Union[int, Any]]:
+async def delete_async_request(url: str,
+                               function_invocation_id: str = None) -> List[Union[int, Any]]:
     """Delete the data from the url provided.
 
     Parameters
     ----------
     url: str
         url to delete the data from
+    function_invocation_id: str
+        function invocation ID header to send for correlation
 
     Returns
     -------
@@ -75,6 +89,9 @@ async def delete_async_request(url: str) -> List[Union[int, Any]]:
         Tuple with the Response status code and the data returned from the request
     """
     async with aiohttp.ClientSession() as session:
-        async with session.delete(url) as response:
+        headers = {}
+        if function_invocation_id:
+            headers["X-Azure-Functions-InvocationId"] = function_invocation_id
+        async with session.delete(url, headers=headers) as response:
             data = await response.json(content_type=None)
             return [response.status, data]

@@ -195,7 +195,14 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
             # construct rich object from it,
             # and assign parameter to that rich object
             starter = kwargs[parameter_name]
-            client = client_constructor(starter)
+
+            # Try to extract the function invocation ID from the context for correlation
+            function_invocation_id = None
+            context = kwargs.get('context')
+            if context is not None and hasattr(context, 'invocation_id'):
+                function_invocation_id = context.invocation_id
+
+            client = client_constructor(starter, function_invocation_id)
             kwargs[parameter_name] = client
 
             # Invoke user code with rich DF Client binding
