@@ -55,7 +55,7 @@ setup(
     python_requires='>=3.9,<4',
     install_requires=[
         'azure-functions>=1.12.0',
-        'aiohttp>=3.12.14',
+        'aiohttp>=3.13.3',
         'requests==2.*',
         'python-dateutil>=2.8.0',
         'furl>=2.1.0',
@@ -69,7 +69,6 @@ setup(
         'python-dateutil==2.8.0',
         'requests==2.22.0',
         'jsonschema==4.25.1',
-        'aiohttp==3.6.2',
         'azure-functions>=1.2.0',
         'nox==2019.11.9',
         'furl==2.1.0',
