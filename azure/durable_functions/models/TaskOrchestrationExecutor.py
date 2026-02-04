@@ -276,7 +276,7 @@ class TaskOrchestrationExecutor:
             message contains in it the string representation of the orchestration's
             state
         """
-        if(self.output is not None):
+        if (self.output is not None):
             try:
                 # Attempt to serialize the output. If serialization fails, raise an
                 # error indicating that the orchestration output is not serializable,
