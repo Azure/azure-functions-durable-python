@@ -111,7 +111,6 @@ class DurableOrchestrationClient:
             ex_message: Any = response[1]
             raise Exception(ex_message)
 
-
     def create_check_status_response(
             self, request: func.HttpRequest, instance_id: str) -> func.HttpResponse:
         """Create a HttpResponse that contains useful information for \
