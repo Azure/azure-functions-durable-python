@@ -67,7 +67,8 @@ class MockRequest:
         assert url == self._expected_url
         return self._response
 
-    async def post(self, url: str, data: Any = None, trace_parent: str = None, trace_state: str = None):
+    async def post(self, url: str, data: Any = None, trace_parent: str = None,
+                   trace_state: str = None, function_invocation_id: str = None):
         assert url == self._expected_url
         return self._response
 
@@ -739,3 +740,73 @@ async def test_post_500_resume(binding_string):
 
     with pytest.raises(Exception):
         await client.resume(TEST_INSTANCE_ID, raw_reason)
+
+
+# Tests for function_invocation_id parameter
+def test_client_stores_function_invocation_id(binding_string):
+    """Test that the client stores the function_invocation_id parameter."""
+    invocation_id = "test-invocation-123"
+    client = DurableOrchestrationClient(binding_string, function_invocation_id=invocation_id)
+    assert client._function_invocation_id == invocation_id
+
+
+def test_client_stores_none_when_no_invocation_id(binding_string):
+    """Test that the client stores None when no invocation ID is provided."""
+    client = DurableOrchestrationClient(binding_string)
+    assert client._function_invocation_id is None
+
+
+class MockRequestWithInvocationId:
+    """Mock request class that verifies function_invocation_id is passed."""
+
+    def __init__(self, expected_url: str, response: [int, any], expected_invocation_id: str = None):
+        self._expected_url = expected_url
+        self._response = response
+        self._expected_invocation_id = expected_invocation_id
+        self._received_invocation_id = None
+
+    @property
+    def received_invocation_id(self):
+        return self._received_invocation_id
+
+    async def post(self, url: str, data: Any = None, trace_parent: str = None,
+                   trace_state: str = None, function_invocation_id: str = None):
+        assert url == self._expected_url
+        self._received_invocation_id = function_invocation_id
+        if self._expected_invocation_id is not None:
+            assert function_invocation_id == self._expected_invocation_id
+        return self._response
+
+
+@pytest.mark.asyncio
+async def test_start_new_passes_invocation_id(binding_string):
+    """Test that start_new passes the function_invocation_id to the HTTP request."""
+    invocation_id = "test-invocation-456"
+    function_name = "MyOrchestrator"
+
+    mock_request = MockRequestWithInvocationId(
+        expected_url=f"{RPC_BASE_URL}orchestrators/{function_name}",
+        response=[202, {"id": TEST_INSTANCE_ID}],
+        expected_invocation_id=invocation_id)
+
+    client = DurableOrchestrationClient(binding_string, function_invocation_id=invocation_id)
+    client._post_async_request = mock_request.post
+
+    await client.start_new(function_name)
+    assert mock_request.received_invocation_id == invocation_id
+
+
+@pytest.mark.asyncio
+async def test_start_new_passes_none_when_no_invocation_id(binding_string):
+    """Test that start_new passes None when no invocation ID is provided."""
+    function_name = "MyOrchestrator"
+
+    mock_request = MockRequestWithInvocationId(
+        expected_url=f"{RPC_BASE_URL}orchestrators/{function_name}",
+        response=[202, {"id": TEST_INSTANCE_ID}])
+
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = mock_request.post
+
+    await client.start_new(function_name)
+    assert mock_request.received_invocation_id is None
