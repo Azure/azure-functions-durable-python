@@ -246,8 +246,10 @@ class DurableOrchestrationContext:
             The HTTP request method.
         uri: str
             The HTTP request uri.
-        content: Optional[str]
-            The HTTP request content.
+        content: str or dict, optional
+            The HTTP request content. Can be a string or a JSON-serializable dictionary.
+            Note: Although the type hint says 'str', a dictionary is accepted 
+            and will be serialized to JSON.
         headers: Optional[Dict[str, str]]
             The HTTP request headers.
         token_source: TokenSource
