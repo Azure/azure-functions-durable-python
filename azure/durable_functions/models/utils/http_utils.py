@@ -63,7 +63,9 @@ async def _handle_request_error():
 async def _close_session() -> None:
     """Close the shared ClientSession if it exists.
 
-    This function should be called during worker shutdown.
+    Note: This function is currently only called by _handle_request_error().
+    There is no worker shutdown hook available, but process shutdown will
+    clean up all resources automatically.
     """
     global _client_session
 
