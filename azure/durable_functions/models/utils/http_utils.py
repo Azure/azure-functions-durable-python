@@ -1,6 +1,80 @@
-from typing import Any, List, Union
+from typing import Any, List, Union, Optional
+import asyncio
 
 import aiohttp
+
+
+# Global session and lock for thread-safe initialization
+_client_session: Optional[aiohttp.ClientSession] = None
+_session_lock: asyncio.Lock = asyncio.Lock()
+
+
+async def _get_session() -> aiohttp.ClientSession:
+    """Get or create the shared ClientSession.
+
+    Returns
+    -------
+    aiohttp.ClientSession
+        The shared client session with configured timeout and connection pooling.
+    """
+    global _client_session
+
+    # Double-check locking pattern for async
+    if _client_session is None or _client_session.closed:
+        async with _session_lock:
+            # Check again after acquiring lock
+            if _client_session is None or _client_session.closed:
+                # Configure timeout optimized for localhost IPC
+                timeout = aiohttp.ClientTimeout(
+                    total=240,  # 4-minute total timeout for slow operations
+                    sock_connect=10,  # Fast connection over localhost
+                    sock_read=None  # Covered by total timeout
+                )
+
+                # Configure TCP connector optimized for localhost IPC
+                connector = aiohttp.TCPConnector(
+                    limit=30,  # Maximum connections for single host
+                    limit_per_host=30,  # Maximum connections per host
+                    enable_cleanup_closed=True  # Enable cleanup of closed connections
+                )
+
+                _client_session = aiohttp.ClientSession(
+                    timeout=timeout,
+                    connector=connector
+                )
+
+    return _client_session
+
+
+async def _handle_request_error():
+    """Handle connection errors by closing and resetting the session.
+
+    This handles cases where the remote host process recycles.
+    """
+    global _client_session
+    async with _session_lock:
+        if _client_session is not None and not _client_session.closed:
+            try:
+                await _client_session.close()
+            finally:
+                _client_session = None
+
+
+async def _close_session() -> None:
+    """Close the shared ClientSession if it exists.
+
+    Note: This function is currently only called by _handle_request_error().
+    There is no worker shutdown hook available, but process shutdown will
+    clean up all resources automatically.
+    """
+    global _client_session
+
+    async with _session_lock:
+        if _client_session is not None and not _client_session.closed:
+            try:
+                await _client_session.close()
+            finally:
+                _client_session = None
 
 
 async def post_async_request(url: str,
@@ -28,14 +102,16 @@ async def post_async_request(url: str,
     [int, Any]
         Tuple with the Response status code and the data returned from the request
     """
-    async with aiohttp.ClientSession() as session:
-        headers = {}
-        if trace_parent:
-            headers["traceparent"] = trace_parent
-        if trace_state:
-            headers["tracestate"] = trace_state
-        if function_invocation_id:
-            headers["X-Azure-Functions-InvocationId"] = function_invocation_id
+    session = await _get_session()
+    headers = {}
+    if trace_parent:
+        headers["traceparent"] = trace_parent
+    if trace_state:
+        headers["tracestate"] = trace_state
+    if function_invocation_id:
+        headers["X-Azure-Functions-InvocationId"] = function_invocation_id
+
+    try:
         async with session.post(url, json=data, headers=headers) as response:
             # We disable aiohttp's input type validation
             # as the server may respond with alternative
@@ -43,6 +119,10 @@ async def post_async_request(url: str,
             # More here: https://docs.aiohttp.org/en/stable/client_advanced.html
             data = await response.json(content_type=None)
             return [response.status, data]
+    except (aiohttp.ClientError, asyncio.TimeoutError):
+        # On connection errors, close and recreate session for next request
+        await _handle_request_error()
+        raise
 
 
 async def get_async_request(url: str,
@@ -61,15 +141,21 @@ async def get_async_request(url: str,
     [int, Any]
         Tuple with the Response status code and the data returned from the request
     """
-    async with aiohttp.ClientSession() as session:
-        headers = {}
-        if function_invocation_id:
-            headers["X-Azure-Functions-InvocationId"] = function_invocation_id
+    session = await _get_session()
+    headers = {}
+    if function_invocation_id:
+        headers["X-Azure-Functions-InvocationId"] = function_invocation_id
+
+    try:
         async with session.get(url, headers=headers) as response:
             data = await response.json(content_type=None)
             if data is None:
                 data = ""
             return [response.status, data]
+    except (aiohttp.ClientError, asyncio.TimeoutError):
+        # On connection errors, close and recreate session for next request
+        await _handle_request_error()
+        raise
 
 
 async def delete_async_request(url: str,
@@ -88,10 +174,16 @@ async def delete_async_request(url: str,
     [int, Any]
         Tuple with the Response status code and the data returned from the request
     """
-    async with aiohttp.ClientSession() as session:
-        headers = {}
-        if function_invocation_id:
-            headers["X-Azure-Functions-InvocationId"] = function_invocation_id
+    session = await _get_session()
+    headers = {}
+    if function_invocation_id:
+        headers["X-Azure-Functions-InvocationId"] = function_invocation_id
+
+    try:
         async with session.delete(url, headers=headers) as response:
             data = await response.json(content_type=None)
             return [response.status, data]
+    except (aiohttp.ClientError, asyncio.TimeoutError):
+        # On connection errors, close and recreate session for next request
+        await _handle_request_error()
+        raise
