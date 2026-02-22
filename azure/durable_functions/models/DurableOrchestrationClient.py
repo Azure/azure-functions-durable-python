@@ -767,6 +767,44 @@ class DurableOrchestrationClient:
         if error_message:
             raise Exception(error_message)
 
+    async def restart(self, instance_id: str,
+                      restart_with_new_instance_id: bool = True) -> str:
+        """Restart an orchestration instance with its original input.
+
+        Parameters
+        ----------
+        instance_id : str
+            The ID of the orchestration instance to restart.
+        restart_with_new_instance_id : bool
+            If True, the restarted instance will use a new instance ID.
+            If False, the restarted instance will reuse the original instance ID.
+
+        Raises
+        ------
+        Exception:
+            When the instance with the given ID is not found.
+
+        Returns
+        -------
+        str
+            The instance ID of the restarted orchestration.
+        """
+        status = await self.get_status(instance_id, show_input=True)
+
+        if not status or status.name is None:
+            raise Exception(
+                f"An orchestration with the instanceId {instance_id} was not found.")
+
+        if restart_with_new_instance_id:
+            return await self.start_new(
+                orchestration_function_name=status.name,
+                client_input=status.input_)
+        else:
+            return await self.start_new(
+                orchestration_function_name=status.name,
+                instance_id=status.instance_id,
+                client_input=status.input_)
+
     async def resume(self, instance_id: str, reason: str) -> None:
         """Resume the specified orchestration instance.
 

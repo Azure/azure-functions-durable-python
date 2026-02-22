@@ -46,6 +46,8 @@ def get_binding_string():
             "resumePostUri": f"{BASE_URL}/instances/INSTANCEID/resume?reason="
                                 "{text}&taskHub="
                                 f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}",
+            "restartPostUri": f"{BASE_URL}/instances/INSTANCEID/restart?taskHub="
+                                f"{TASK_HUB_NAME}&connection=Storage&code={AUTH_CODE}",
         },
         "rpcBaseUrl": RPC_BASE_URL
     }
