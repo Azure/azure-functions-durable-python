@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- Client operation correlation logging: `FunctionInvocationId` is now propagated via HTTP headers to the host for client operations, enabling correlation with host logs.
+
 ## 1.0.0b6
 
 - [Create timer](https://github.com/Azure/azure-functions-durable-python/issues/35) functionality available
