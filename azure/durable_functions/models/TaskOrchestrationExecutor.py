@@ -95,7 +95,7 @@ class TaskOrchestrationExecutor:
         # Combine the is_played field with the history-based signal:
         # we are replaying if is_played says so OR if we haven't reached new events yet.
         execution_started_event = history[1]
-        history_is_replaying = self._new_events_start_index > 1
+        history_is_replaying = self._new_events_start_index > 0
         self.current_task.is_played = execution_started_event.is_played or history_is_replaying
 
         # If user code is a generator, then it uses `yield` statements (the DF API)
