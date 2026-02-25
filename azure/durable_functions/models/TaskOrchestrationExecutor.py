@@ -47,6 +47,11 @@ class TaskOrchestrationExecutor:
         self.exception: Optional[Exception] = None
         self.orchestrator_returned: bool = False
 
+        # History-based replay detection: tracks whether we are currently
+        # processing old (replayed) events or new events in the current episode.
+        # This is used as an additional signal for backends that don't set IsPlayed.
+        self._is_processing_new_events: bool = False
+
     def execute(self, context: DurableOrchestrationContext,
                 history: List[HistoryEvent], fn) -> str:
         """Execute an orchestration via its history to evaluate Tasks and replay events.
@@ -80,16 +85,28 @@ class TaskOrchestrationExecutor:
                 + "https://github.com/Azure/azure-functions-durable-python/issues."
             raise Exception(err_message)
 
-        # Set initial is_replaing state.
+        # Pre-scan history to find the start of new (non-replayed) events.
+        # The last OrchestratorStarted event marks the boundary: events before
+        # it are old/replayed, events from it onwards are new.
+        # This provides a reliable replay signal for backends that don't set IsPlayed.
+        self._new_events_start_index = self._find_new_events_start_index(history)
+
+        # Set initial is_replaying state.
+        # Combine the is_played field with the history-based signal:
+        # we are replaying if is_played says so OR if we haven't reached new events yet.
         execution_started_event = history[1]
-        self.current_task.is_played = execution_started_event.is_played
+        history_is_replaying = self._new_events_start_index > 0
+        self.current_task.is_played = execution_started_event.is_played or history_is_replaying
 
         # If user code is a generator, then it uses `yield` statements (the DF API)
         # and so we iterate through the DF history, generating tasks and populating
         # them with values when the history provides them
         if isinstance(evaluated_user_code, GeneratorType):
             self.generator = evaluated_user_code
-            for event in history:
+            for index, event in enumerate(history):
+                # Update whether we've crossed into the new events portion of the history.
+                if index >= self._new_events_start_index:
+                    self._is_processing_new_events = True
                 self.process_event(event)
                 if self.has_execution_completed:
                     break
@@ -209,8 +226,12 @@ class TaskOrchestrationExecutor:
             # generate exception
             new_value = Exception(f"{event.Reason} \n {event.Details}")
 
-        # with a yielded task now evaluated, we can try to resume the user code
-        task.set_is_played(event._is_played)
+        # With a yielded task now evaluated, we can try to resume the user code.
+        # Combine the event's is_played field with the history-based signal:
+        # a task is considered "played" (replayed) if either is_played is set
+        # OR we are still processing old events (not yet in the new events section).
+        is_played = event._is_played or not self._is_processing_new_events
+        task.set_is_played(is_played)
         task.set_value(is_error=not is_success, value=new_value)
 
     def resume_user_code(self):
@@ -253,6 +274,31 @@ class TaskOrchestrationExecutor:
                 # user yielded the same task multiple times, continue executing code
                 # until a new/not-previously-yielded task is encountered
                 self.resume_user_code()
+
+    def _find_new_events_start_index(self, history: List[HistoryEvent]) -> int:
+        """Find the index in history where new (non-replayed) events begin.
+
+        The history is structured in episodes delimited by OrchestratorStarted
+        and OrchestratorCompleted events. The last OrchestratorStarted event
+        (which has no matching OrchestratorCompleted after it) marks the start
+        of the current episode containing new events.
+
+        Parameters
+        ----------
+        history : List[HistoryEvent]
+            The orchestration history.
+
+        Returns
+        -------
+        int
+            The index of the last OrchestratorStarted event, which is the
+            boundary between old (replayed) and new events.
+        """
+        last_orchestrator_started_index = -1
+        for i, event in enumerate(history):
+            if event.event_type == HistoryEventType.ORCHESTRATOR_STARTED:
+                last_orchestrator_started_index = i
+        return last_orchestrator_started_index
 
     def _mark_as_scheduled(self, task: TaskBase):
         if isinstance(task, CompoundTask):
