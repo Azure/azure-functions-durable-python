@@ -813,21 +813,27 @@ class DurableOrchestrationClient:
         str
             The instance ID of the restarted orchestration.
         """
-        status = await self.get_status(instance_id, show_input=True)
+        restart_with_new_instance_id_str = str(restart_with_new_instance_id).lower()
+        request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}/" \
+                      f"restart?restartWithNewInstanceId={restart_with_new_instance_id_str}"
+        response = await self._post_async_request(
+            request_url,
+            None,
+            function_invocation_id=self._function_invocation_id)
+        switch_statement = {
+            202: lambda: None,  # instance is restarted
+            410: lambda: None,  # instance completed
+            404: lambda: f"No instance with ID '{instance_id}' found.",
+        }
 
-        if not status or status.name is None:
-            raise Exception(
-                f"An orchestration with the instanceId {instance_id} was not found.")
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
 
-        if restart_with_new_instance_id:
-            return await self.start_new(
-                orchestration_function_name=status.name,
-                client_input=status.input_)
-        else:
-            return await self.start_new(
-                orchestration_function_name=status.name,
-                instance_id=status.instance_id,
-                client_input=status.input_)
+        return response[1] if response[1] else instance_id
 
     async def resume(self, instance_id: str, reason: str) -> None:
         """Resume the specified orchestration instance.

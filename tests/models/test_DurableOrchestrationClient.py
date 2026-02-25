@@ -748,27 +748,14 @@ async def test_post_500_resume(binding_string):
 
 @pytest.mark.asyncio
 async def test_restart_with_new_instance_id(binding_string):
-    """Test restart creates a new instance with a new ID by default."""
-    orchestrator_name = "MyOrchestrator"
-    original_input = {"key": "value"}
+    """Test restart calls the HTTP restart endpoint with restartWithNewInstanceId=true."""
     new_instance_id = "new-instance-id-1234"
 
-    get_mock = MockRequest(
-        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}?showInput=True",
-        response=[200, dict(
-            name=orchestrator_name,
-            instanceId=TEST_INSTANCE_ID,
-            createdTime=TEST_CREATED_TIME,
-            lastUpdatedTime=TEST_LAST_UPDATED_TIME,
-            runtimeStatus="Completed",
-            input=original_input)])
-
     post_mock = MockRequest(
-        expected_url=f"{RPC_BASE_URL}orchestrators/{orchestrator_name}",
-        response=[202, {"id": new_instance_id}])
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/restart?restartWithNewInstanceId=true",
+        response=[202, new_instance_id])
 
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = get_mock.get
     client._post_async_request = post_mock.post
 
     result = await client.restart(TEST_INSTANCE_ID)
@@ -777,26 +764,12 @@ async def test_restart_with_new_instance_id(binding_string):
 
 @pytest.mark.asyncio
 async def test_restart_with_same_instance_id(binding_string):
-    """Test restart reuses the original instance ID when restartWithNewInstanceId is False."""
-    orchestrator_name = "MyOrchestrator"
-    original_input = {"key": "value"}
-
-    get_mock = MockRequest(
-        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}?showInput=True",
-        response=[200, dict(
-            name=orchestrator_name,
-            instanceId=TEST_INSTANCE_ID,
-            createdTime=TEST_CREATED_TIME,
-            lastUpdatedTime=TEST_LAST_UPDATED_TIME,
-            runtimeStatus="Completed",
-            input=original_input)])
-
+    """Test restart calls the HTTP restart endpoint with restartWithNewInstanceId=false."""
     post_mock = MockRequest(
-        expected_url=f"{RPC_BASE_URL}orchestrators/{orchestrator_name}/{TEST_INSTANCE_ID}",
-        response=[202, {"id": TEST_INSTANCE_ID}])
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/restart?restartWithNewInstanceId=false",
+        response=[202, TEST_INSTANCE_ID])
 
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = get_mock.get
     client._post_async_request = post_mock.post
 
     result = await client.restart(TEST_INSTANCE_ID, restart_with_new_instance_id=False)
@@ -806,16 +779,16 @@ async def test_restart_with_same_instance_id(binding_string):
 @pytest.mark.asyncio
 async def test_restart_instance_not_found(binding_string):
     """Test restart raises exception when instance is not found."""
-    get_mock = MockRequest(
-        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}?showInput=True",
-        response=[404, dict(createdTime=None, lastUpdatedTime=None)])
+    post_mock = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/restart?restartWithNewInstanceId=true",
+        response=[404, None])
 
     client = DurableOrchestrationClient(binding_string)
-    client._get_async_request = get_mock.get
+    client._post_async_request = post_mock.post
 
     with pytest.raises(Exception) as ex:
         await client.restart(TEST_INSTANCE_ID)
-    assert f"instanceId {TEST_INSTANCE_ID} was not found" in str(ex.value)
+    assert f"No instance with ID '{TEST_INSTANCE_ID}' found." in str(ex.value)
 # Tests for function_invocation_id parameter
 def test_client_stores_function_invocation_id(binding_string):
     """Test that the client stores the function_invocation_id parameter."""
