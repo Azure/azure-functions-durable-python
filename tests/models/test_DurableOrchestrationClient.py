@@ -157,7 +157,11 @@ def test_create_check_status_response(binding_string):
         "resumePostUri":
             r"http://test_azure.net/runtime/webhooks/durabletask/instances/"
             r"2e2568e7-a906-43bd-8364-c81733c5891e/resume"
-            r"?reason={text}&taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE"
+            r"?reason={text}&taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE",
+        "restartPostUri":
+            r"http://test_azure.net/runtime/webhooks/durabletask/instances/"
+            r"2e2568e7-a906-43bd-8364-c81733c5891e/restart"
+            r"?taskHub=TASK_HUB_NAME&connection=Storage&code=AUTH_CODE"
     }
     for key, _ in http_management_payload.items():
         http_management_payload[key] = replace_stand_in_bits(http_management_payload[key])
@@ -742,6 +746,49 @@ async def test_post_500_resume(binding_string):
         await client.resume(TEST_INSTANCE_ID, raw_reason)
 
 
+@pytest.mark.asyncio
+async def test_restart_with_new_instance_id(binding_string):
+    """Test restart calls the HTTP restart endpoint with restartWithNewInstanceId=true."""
+    new_instance_id = "new-instance-id-1234"
+
+    post_mock = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/restart?restartWithNewInstanceId=true",
+        response=[202, new_instance_id])
+
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = post_mock.post
+
+    result = await client.restart(TEST_INSTANCE_ID)
+    assert result == new_instance_id
+
+
+@pytest.mark.asyncio
+async def test_restart_with_same_instance_id(binding_string):
+    """Test restart calls the HTTP restart endpoint with restartWithNewInstanceId=false."""
+    post_mock = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/restart?restartWithNewInstanceId=false",
+        response=[202, TEST_INSTANCE_ID])
+
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = post_mock.post
+
+    result = await client.restart(TEST_INSTANCE_ID, restart_with_new_instance_id=False)
+    assert result == TEST_INSTANCE_ID
+
+
+@pytest.mark.asyncio
+async def test_restart_instance_not_found(binding_string):
+    """Test restart raises exception when instance is not found."""
+    post_mock = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}/restart?restartWithNewInstanceId=true",
+        response=[404, None])
+
+    client = DurableOrchestrationClient(binding_string)
+    client._post_async_request = post_mock.post
+
+    with pytest.raises(Exception) as ex:
+        await client.restart(TEST_INSTANCE_ID)
+    assert f"No instance with ID '{TEST_INSTANCE_ID}' found." in str(ex.value)
 # Tests for function_invocation_id parameter
 def test_client_stores_function_invocation_id(binding_string):
     """Test that the client stores the function_invocation_id parameter."""

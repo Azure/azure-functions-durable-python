@@ -791,6 +791,50 @@ class DurableOrchestrationClient:
         if error_message:
             raise Exception(error_message)
 
+    async def restart(self, instance_id: str,
+                      restart_with_new_instance_id: bool = True) -> str:
+        """Restart an orchestration instance with its original input.
+
+        Parameters
+        ----------
+        instance_id : str
+            The ID of the orchestration instance to restart.
+        restart_with_new_instance_id : bool
+            If True, the restarted instance will use a new instance ID.
+            If False, the restarted instance will reuse the original instance ID.
+
+        Raises
+        ------
+        Exception:
+            When the instance with the given ID is not found.
+
+        Returns
+        -------
+        str
+            The instance ID of the restarted orchestration.
+        """
+        restart_with_new_instance_id_str = str(restart_with_new_instance_id).lower()
+        request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}/" \
+                      f"restart?restartWithNewInstanceId={restart_with_new_instance_id_str}"
+        response = await self._post_async_request(
+            request_url,
+            None,
+            function_invocation_id=self._function_invocation_id)
+        switch_statement = {
+            202: lambda: None,  # instance is restarted
+            410: lambda: None,  # instance completed
+            404: lambda: f"No instance with ID '{instance_id}' found.",
+        }
+
+        has_error_message = switch_statement.get(
+            response[0],
+            lambda: f"The operation failed with an unexpected status code {response[0]}")
+        error_message = has_error_message()
+        if error_message:
+            raise Exception(error_message)
+
+        return response[1] if response[1] else instance_id
+
     async def resume(self, instance_id: str, reason: str) -> None:
         """Resume the specified orchestration instance.
 
