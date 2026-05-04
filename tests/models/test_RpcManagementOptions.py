@@ -75,5 +75,12 @@ def test_datetime_status():
     to_as_string = created_time_to.strftime(DATETIME_STRING_FORMAT)
     expected = f"{RPC_BASE_URL}instances/?createdTimeFrom={from_as_string}" \
                f"&createdTimeTo={to_as_string}"
+    assert_urls_match(expected=expected, result=result)
+
+
+def test_instance_id_prefix():
+    options = RpcManagementOptions(instance_id_prefix='940c5f519eb0')
+    result = options.to_url(RPC_BASE_URL)
+    expected = f"{RPC_BASE_URL}instances/?instanceIdPrefix=940c5f519eb0"
 
     assert_urls_match(expected=expected, result=result)
