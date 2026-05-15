@@ -3,6 +3,7 @@ from tests.orchestrator.test_fan_out_fan_in import add_completed_event, add_fail
 from tests.orchestrator.orchestrator_test_utils import assert_orchestration_state_equals, get_orchestration_state_result
 from tests.test_utils.ContextBuilder import ContextBuilder
 from azure.durable_functions.models.actions.WaitForExternalEventAction import WaitForExternalEventAction
+from azure.durable_functions.models.utils.df_serialization import df_dumps
 
 def generator_function(context):
     result = yield context.wait_for_external_event("A")
@@ -52,3 +53,36 @@ def test_succeeds_on_out_of_order_payload():
     expected_state._is_done = True
     expected = expected_state.to_json()
     assert_orchestration_state_equals(expected, result)
+
+
+class _Payload:
+    """Simple custom class for testing expected_type on external events."""
+    def __init__(self, value: str):
+        self.value = value
+
+    @staticmethod
+    def to_json(obj):
+        return {"value": obj.value}
+
+    @staticmethod
+    def from_json(data):
+        return _Payload(data["value"])
+
+
+def generator_function_with_expected_type(context):
+    result = yield context.wait_for_external_event("A", expected_type=_Payload)
+    return result.value
+
+
+def test_external_event_with_expected_type():
+    """wait_for_external_event(expected_type=...) decodes custom objects."""
+    timestamp = datetime.now()
+    json_input = df_dumps(_Payload("hello"))
+    context_builder = ContextBuilder()
+    context_builder.add_event_raised_event(
+        "A", input_=json_input, timestamp=timestamp, id_=-1)
+    result = get_orchestration_state_result(
+        context_builder, generator_function_with_expected_type)
+
+    assert result["isDone"] is True
+    assert result["output"] == "hello"

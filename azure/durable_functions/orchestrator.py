@@ -66,7 +66,12 @@ class Orchestrator:
             context_body = getattr(context, "body", None)
             if context_body is None:
                 context_body = context
-            return Orchestrator(fn).handle(DurableOrchestrationContext.from_json(context_body))
+            ctx = DurableOrchestrationContext.from_json(context_body)
+            # Propagate the decorator-declared input type (set by
+            # @app.orchestration_trigger(input_type=...)) so that
+            # context.get_input() can decode the payload type-safely.
+            ctx._input_expected_type = getattr(handle, "_df_input_type", None)
+            return Orchestrator(fn).handle(ctx)
 
         handle.orchestrator_function = fn
 

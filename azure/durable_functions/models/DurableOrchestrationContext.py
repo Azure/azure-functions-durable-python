@@ -34,7 +34,11 @@ from .history import HistoryEvent, HistoryEventType
 from .actions import Action
 from ..models.TokenSource import TokenSource
 from .utils.entity_utils import EntityId
-from azure.functions._durable_functions import _deserialize_custom_object
+from .utils.df_serialization import df_loads
+from .utils.type_discovery import (
+    activity_output_type,
+    sub_orchestrator_output_type,
+)
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 from azure.durable_functions.decorators.metadata import OrchestrationTrigger, ActivityTrigger
 from azure.functions.decorators.function_app import FunctionBuilder
@@ -167,7 +171,8 @@ class DurableOrchestrationContext:
         """
         self._is_replaying = is_replaying
 
-    def call_activity(self, name: Union[str, Callable], input_: Optional[Any] = None) -> TaskBase:
+    def call_activity(self, name: Union[str, Callable], input_: Optional[Any] = None,
+                      expected_type: Optional[type] = None) -> TaskBase:
         """Schedule an activity for execution.
 
         Parameters
@@ -177,6 +182,10 @@ class DurableOrchestrationContext:
             in the Python V2 programming model, the activity function itself.
         input_: Optional[Any]
             The JSON-serializable input to pass to the activity function.
+        expected_type: Optional[type]
+            The type to decode the activity result as. Takes precedence
+            over the type discovered from the activity's return
+            annotation.
 
         Returns
         -------
@@ -191,16 +200,21 @@ class DurableOrchestrationContext:
                 "decorator. Otherwise, provide in the name of the activity as a string."
             raise ValueError(error_message)
 
+        # Discover the activity's return type from its annotation, if any,
+        # so the result can be decoded without consulting sys.modules.
+        resolved_type = expected_type or activity_output_type(name)
         if isinstance(name, FunctionBuilder):
             name = self._get_function_name(name, ActivityTrigger)
 
         action = CallActivityAction(name, input_)
         task = self._generate_task(action)
+        task._expected_output_type = resolved_type
         return task
 
     def call_activity_with_retry(self,
                                  name: Union[str, Callable], retry_options: RetryOptions,
-                                 input_: Optional[Any] = None) -> TaskBase:
+                                 input_: Optional[Any] = None,
+                                 expected_type: Optional[type] = None) -> TaskBase:
         """Schedule an activity for execution with retry options.
 
         Parameters
@@ -212,6 +226,10 @@ class DurableOrchestrationContext:
             The retry options for the activity function.
         input_: Optional[Any]
             The JSON-serializable input to pass to the activity function.
+        expected_type: Optional[type]
+            The type to decode the activity result as. Takes precedence
+            over the type discovered from the activity's return
+            annotation.
 
         Returns
         -------
@@ -227,11 +245,13 @@ class DurableOrchestrationContext:
                 "decorator. Otherwise, provide in the name of the activity as a string."
             raise ValueError(error_message)
 
+        resolved_type = expected_type or activity_output_type(name)
         if isinstance(name, FunctionBuilder):
             name = self._get_function_name(name, ActivityTrigger)
 
         action = CallActivityWithRetryAction(name, retry_options, input_)
         task = self._generate_task(action, retry_options)
+        task._expected_output_type = resolved_type
         return task
 
     def call_http(self, method: str, uri: str, content: Optional[str] = None,
@@ -288,7 +308,8 @@ class DurableOrchestrationContext:
     def call_sub_orchestrator(self,
                               name: Union[str, Callable], input_: Optional[Any] = None,
                               instance_id: Optional[str] = None,
-                              version: Optional[str] = None) -> TaskBase:
+                              version: Optional[str] = None,
+                              expected_type: Optional[type] = None) -> TaskBase:
         """Schedule sub-orchestration function named `name` for execution.
 
         Parameters
@@ -302,6 +323,10 @@ class DurableOrchestrationContext:
         version: Optional[str]
             The version to assign to the sub-orchestration instance. If not specified,
             the defaultVersion from host.json will be used.
+        expected_type: Optional[type]
+            The type to decode the sub-orchestrator result as. Takes
+            precedence over the type discovered from the
+            sub-orchestrator's return annotation.
 
         Returns
         -------
@@ -316,18 +341,21 @@ class DurableOrchestrationContext:
                 "decorator. Otherwise, provide in the name of the activity as a string."
             raise ValueError(error_message)
 
+        resolved_type = expected_type or sub_orchestrator_output_type(name)
         if isinstance(name, FunctionBuilder):
             name = self._get_function_name(name, OrchestrationTrigger)
 
         action = CallSubOrchestratorAction(name, input_, instance_id, version)
         task = self._generate_task(action)
+        task._expected_output_type = resolved_type
         return task
 
     def call_sub_orchestrator_with_retry(self,
                                          name: Union[str, Callable], retry_options: RetryOptions,
                                          input_: Optional[Any] = None,
                                          instance_id: Optional[str] = None,
-                                         version: Optional[str] = None) -> TaskBase:
+                                         version: Optional[str] = None,
+                                         expected_type: Optional[type] = None) -> TaskBase:
         """Schedule sub-orchestration function named `name` for execution, with retry-options.
 
         Parameters
@@ -343,6 +371,10 @@ class DurableOrchestrationContext:
         version: Optional[str]
             The version to assign to the sub-orchestration instance. If not specified,
             the defaultVersion from host.json will be used.
+        expected_type: Optional[type]
+            The type to decode the sub-orchestrator result as. Takes
+            precedence over the type discovered from the
+            sub-orchestrator's return annotation.
 
         Returns
         -------
@@ -357,18 +389,31 @@ class DurableOrchestrationContext:
                 "decorator. Otherwise, provide in the name of the activity as a string."
             raise ValueError(error_message)
 
+        resolved_type = expected_type or sub_orchestrator_output_type(name)
         if isinstance(name, FunctionBuilder):
             name = self._get_function_name(name, OrchestrationTrigger)
 
         action = CallSubOrchestratorWithRetryAction(
             name, retry_options, input_, instance_id, version)
         task = self._generate_task(action, retry_options)
+        task._expected_output_type = resolved_type
         return task
 
-    def get_input(self) -> Optional[Any]:
-        """Get the orchestration input."""
-        return None if self._input is None else json.loads(self._input,
-                                                           object_hook=_deserialize_custom_object)
+    def get_input(self, expected_type: Optional[type] = None) -> Optional[Any]:
+        """Get the orchestration input.
+
+        Parameters
+        ----------
+        expected_type : Optional[type]
+            The type to decode the input as. Takes precedence over
+            the ``input_type`` declared on the orchestration trigger
+            decorator. When neither is set, decoding falls back to
+            module-only class resolution.
+        """
+        if self._input is None:
+            return None
+        resolved = expected_type or getattr(self, "_input_expected_type", None)
+        return df_loads(self._input, expected_type=resolved)
 
     def new_uuid(self) -> str:
         """Create a new UUID that is safe for replay within an orchestration or operation.
@@ -535,7 +580,8 @@ class DurableOrchestrationContext:
         return self._function_context
 
     def call_entity(self, entityId: EntityId,
-                    operationName: str, operationInput: Optional[Any] = None):
+                    operationName: str, operationInput: Optional[Any] = None,
+                    expected_type: Optional[type] = None):
         """Get the result of Durable Entity operation given some input.
 
         Parameters
@@ -546,6 +592,10 @@ class DurableOrchestrationContext:
             The operation to execute
         operationInput: Optional[Any]
             The input for tne operation, defaults to None.
+        expected_type: Optional[type]
+            The type to decode the entity response as. When set, the
+            codec uses this type directly without consulting
+            ``sys.modules``.
 
         Returns
         -------
@@ -554,6 +604,7 @@ class DurableOrchestrationContext:
         """
         action = CallEntityAction(entityId, operationName, operationInput)
         task = self._generate_task(action)
+        task._expected_output_type = expected_type
         return task
 
     def _record_fire_and_forget_action(self, action: Action):
@@ -627,13 +678,18 @@ class DurableOrchestrationContext:
         task = self._generate_task(action, task_constructor=TimerTask)
         return task
 
-    def wait_for_external_event(self, name: str) -> TaskBase:
+    def wait_for_external_event(self, name: str,
+                                expected_type: Optional[type] = None) -> TaskBase:
         """Wait asynchronously for an event to be raised with the name `name`.
 
         Parameters
         ----------
         name : str
             The event name of the event that the task is waiting for.
+        expected_type : Optional[type]
+            The type to decode the event payload as. When set, the
+            codec uses this type directly without consulting
+            ``sys.modules``.
 
         Returns
         -------
@@ -642,6 +698,7 @@ class DurableOrchestrationContext:
         """
         action = WaitForExternalEventAction(name)
         task = self._generate_task(action, id_=name)
+        task._expected_output_type = expected_type
         return task
 
     def continue_as_new(self, input_: Any):

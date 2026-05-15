@@ -9,7 +9,7 @@ import warnings
 from collections import namedtuple
 import json
 from ..models.entities.ResponseMessage import ResponseMessage
-from azure.functions._durable_functions import _deserialize_custom_object
+from .utils.df_serialization import df_loads
 
 
 class TaskOrchestrationExecutor:
@@ -181,18 +181,21 @@ class TaskOrchestrationExecutor:
                 raise ValueError("EventType is not found in task object")
 
             # We provide the ability to deserialize custom objects, because the output of this
-            # will be passed directly to the orchestrator as the output of some activity
+            # will be passed directly to the orchestrator as the output of some activity.
+            # The expected type (when discoverable from the activity / sub-orchestrator's
+            # return annotation) lets ``df_loads`` decode custom classes without consulting
+            # ``sys.modules`` / ``importlib``.
+            expected_type = getattr(task, "_expected_output_type", None)
             if (event_type == HistoryEventType.SUB_ORCHESTRATION_INSTANCE_COMPLETED
                     and directive_result.Result is not None):
-                return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
+                return df_loads(directive_result.Result, expected_type=expected_type)
             if (event_type == HistoryEventType.TASK_COMPLETED
                     and directive_result.Result is not None):
-                return json.loads(directive_result.Result, object_hook=_deserialize_custom_object)
+                return df_loads(directive_result.Result, expected_type=expected_type)
             if (event_type == HistoryEventType.EVENT_RAISED
                     and directive_result.Input is not None):
                 # TODO: Investigate why the payload is in "Input" instead of "Result"
-                response = json.loads(directive_result.Input,
-                                      object_hook=_deserialize_custom_object)
+                response = df_loads(directive_result.Input, expected_type=expected_type)
                 return response
             return None
 
@@ -217,7 +220,8 @@ class TaskOrchestrationExecutor:
             new_value = parse_history_event(event)
             if task._api_name == "CallEntityAction":
                 event_payload = ResponseMessage.from_dict(new_value)
-                new_value = json.loads(event_payload.result)
+                entity_expected = getattr(task, "_expected_output_type", None)
+                new_value = df_loads(event_payload.result, expected_type=entity_expected)
 
                 if event_payload.is_exception:
                     new_value = Exception(new_value)

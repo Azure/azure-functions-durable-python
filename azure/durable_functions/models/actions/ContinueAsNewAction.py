@@ -3,8 +3,7 @@ from typing import Dict, Union
 from .Action import Action
 from .ActionType import ActionType
 from ..utils.json_utils import add_attrib
-from json import dumps
-from azure.functions._durable_functions import _serialize_custom_object
+from ..utils.df_serialization import df_dumps
 
 
 class ContinueAsNewAction(Action):
@@ -15,7 +14,7 @@ class ContinueAsNewAction(Action):
     """
 
     def __init__(self, input_=None):
-        self.input_ = dumps(input_, default=_serialize_custom_object)
+        self.input_ = df_dumps(input_)
 
     @property
     def action_type(self) -> int:

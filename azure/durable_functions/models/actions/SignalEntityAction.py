@@ -3,8 +3,7 @@ from typing import Any, Dict
 from .Action import Action
 from .ActionType import ActionType
 from ..utils.json_utils import add_attrib
-from json import dumps
-from azure.functions._durable_functions import _serialize_custom_object
+from ..utils.df_serialization import df_dumps
 from ..utils.entity_utils import EntityId
 
 
@@ -23,7 +22,7 @@ class SignalEntityAction(Action):
 
         self.instance_id: str = EntityId.get_scheduler_id(entity_id)
         self.operation: str = operation
-        self.input_: str = dumps(input_, default=_serialize_custom_object)
+        self.input_: str = df_dumps(input_)
 
     @property
     def action_type(self) -> int:

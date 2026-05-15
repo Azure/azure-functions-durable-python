@@ -16,7 +16,7 @@ from .OrchestrationRuntimeStatus import OrchestrationRuntimeStatus
 from ..models.DurableOrchestrationBindings import DurableOrchestrationBindings
 from .utils.http_utils import get_async_request, post_async_request, delete_async_request
 from .utils.entity_utils import EntityId
-from azure.functions._durable_functions import _serialize_custom_object
+from .utils.df_serialization import df_dumps
 
 
 class DurableOrchestrationClient:
@@ -633,7 +633,7 @@ class DurableOrchestrationClient:
             If the JSON serialization failed, see `serialize_custom_object`
         """
         if client_input is not None:
-            return json.dumps(client_input, default=_serialize_custom_object)
+            return df_dumps(client_input)
         return None
 
     @staticmethod
