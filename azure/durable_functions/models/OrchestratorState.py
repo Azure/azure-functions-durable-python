@@ -1,10 +1,9 @@
-import json
 from typing import List, Any, Dict, Optional
 
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 
 from .utils.json_utils import add_attrib
-from .utils.df_serialization import _get_serialize_default
+from .utils.df_serialization import df_dumps
 from azure.durable_functions.models.actions.Action import Action
 
 
@@ -114,4 +113,4 @@ class OrchestratorState:
             The instance of the object in json string format
         """
         json_dict = self.to_json()
-        return json.dumps(json_dict, default=_get_serialize_default())
+        return df_dumps(json_dict)

@@ -108,13 +108,9 @@ class DurableEntityContext:
         json_dict["key"] = json_dict["self"]["key"]
         json_dict.pop("self")
 
+        # Keep the raw serialized state (a JSON string) so get_state() can
+        # deserialize lazily with an expected_type supplied by the user.
         serialized_state = json_dict["state"]
-        if serialized_state is not None:
-            # Keep the raw serialized form so get_state() can deserialize
-            # lazily with an expected_type supplied by the user.
-            json_dict["state"] = serialized_state
-        else:
-            json_dict["state"] = None
 
         batch = json_dict.pop("batch")
         ctx = cls(**json_dict)
@@ -134,6 +130,10 @@ class DurableEntityContext:
 
         # should only serialize the state at the end of the batch
         self._state = state
+        # The new state is a live Python value, not the raw JSON string
+        # loaded from the payload. Clear the raw flag so a subsequent
+        # get_state() in the same batch does not try to re-decode it.
+        self._state_is_raw = False
 
     def get_state(self, initializer: Optional[Callable[[], Any]] = None,
                   expected_type: Optional[type] = None) -> Any:
@@ -145,7 +145,11 @@ class DurableEntityContext:
             A 0-argument function to provide an initial state. Defaults to None.
         expected_type: Optional[type]
             The type to decode the state as. When set, the codec uses
-            this type directly without consulting ``sys.modules``.
+            this type directly without consulting ``sys.modules``. Note that
+            the persisted state is decoded lazily on the **first** get_state
+            call within a batch; an ``expected_type`` supplied on a later
+            call (after the state has already been decoded or replaced via
+            set_state) has no effect.
 
         Returns
         -------
@@ -199,6 +203,7 @@ class DurableEntityContext:
         """Delete this entity after the operation completes."""
         self._exists = False
         self._state = None
+        self._state_is_raw = False
 
 
 def from_json_util(json_str: str, expected_type: Optional[type] = None) -> Any:
