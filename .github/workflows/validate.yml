@@ -45,6 +45,12 @@ jobs:
         if: matrix.functions-sdk != ''
         run: pip install "${{ matrix.functions-sdk }}"
       - name: Run Linter
+        # Lint only on the canonical Python version. On Python 3.12+, PEP 701
+        # changed f-string tokenization so pycodestyle inspects tokens inside
+        # f-strings, producing false positives (e.g. the ':' in 'http://' or
+        # the indentation of multi-line f-string concatenations). Linting is
+        # environment-agnostic, so running it once on 3.9 is sufficient.
+        if: matrix.python-version == '3.9'
         run: |
           cd azure
           flake8 . --count --show-source --statistics
