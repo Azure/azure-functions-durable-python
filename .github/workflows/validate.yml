@@ -13,6 +13,22 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Fallback path: on Python 3.9 the SDK's df_dumps / df_loads cannot
+          # be installed (azure-functions 2.x requires >=3.13 and the 1.26.0
+          # line requires >=3.10), so this leg exercises the legacy
+          # serialization fallback in df_serialization.
+          - python-version: "3.9"
+            functions-sdk: ""
+          # SDK path: Python 3.13 with the beta that first ships df_dumps /
+          # df_loads, exercising the SDK-delegated serialization branch.
+          # TODO: change to "azure-functions>=2.2.0" once 2.2.0 GA ships, and
+          # drop the explicit override step below.
+          - python-version: "3.13"
+            functions-sdk: "azure-functions>=2.2.0b5"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -20,11 +36,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Install Functions SDK override
+        if: matrix.functions-sdk != ''
+        run: pip install "${{ matrix.functions-sdk }}"
       - name: Run Linter
         run: |
           cd azure
