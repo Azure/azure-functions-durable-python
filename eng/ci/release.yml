@@ -1,0 +1,60 @@
+pr: none
+trigger: none
+
+resources:
+  repositories:
+    - repository: 1ESPipelineTemplates
+      type: git
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
+  pipelines:
+    - pipeline: DurableFunctionsPythonBuildPipeline
+      source: durable-python.official
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: 1es-pool-azfunc
+      image: 1es-ubuntu-22.04
+      os: linux
+
+    stages:
+      - stage: release
+        jobs:
+          - job: azure_functions_durable
+            displayName: "Release azure-functions-durable"
+            templateContext:
+              type: releaseJob
+              isProduction: true
+              environment: durabletask-pypi-prod
+              inputs:
+                - input: pipelineArtifact
+                  pipeline: DurableFunctionsPythonBuildPipeline
+                  artifactName: drop
+                  targetPath: $(System.DefaultWorkingDirectory)/drop
+
+            steps:
+              - task: SFP.release-tasks.custom-build-release-task.EsrpRelease@9
+                displayName: "ESRP Release azure-functions-durable"
+                inputs:
+                  connectedservicename: "dtfx-internal-esrp-prod"
+                  usemanagedidentity: true
+                  keyvaultname: "durable-esrp-akv"
+                  signcertname: "dts-esrp-cert"
+                  clientid: "0b3ed1a4-0727-4a50-b82a-02c2bd9dec89"
+                  intent: "PackageDistribution"
+                  contenttype: "PyPi"
+                  contentsource: "Folder"
+                  folderlocation: "$(System.DefaultWorkingDirectory)/drop"
+                  waitforreleasecompletion: true
+                  # Auto-populate from the build queuer's identity so we don't
+                  # hardcode personal emails in source. ESRP will send the
+                  # release notification / approval link to whoever clicked
+                  # "Run pipeline". This matches the pattern used by
+                  # Azure/azure-sdk-for-python and microsoft/mcp pipelines.
+                  owners: $(Build.RequestedForEmail)
+                  approvers: $(Build.RequestedForEmail)
+                  serviceendpointurl: "https://api.esrp.microsoft.com"
+                  mainpublisher: "durabletask-java"
+                  domaintenantid: "33e01921-4d64-4f8c-a055-5bdaffd5e33d"
