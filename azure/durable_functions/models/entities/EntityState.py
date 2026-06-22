@@ -15,9 +15,15 @@ class EntityState:
                  results: List[OperationResult],
                  signals: List[Signal],
                  entity_exists: bool = False,
-                 state: Optional[str] = None):
+                 state: Optional[str] = None,
+                 state_is_raw: bool = False):
         self.entity_exists = entity_exists
         self.state = state
+        # When True, ``state`` is still the raw JSON string loaded from the
+        # incoming payload (it was never decoded because the batch never
+        # called get_state/set_state). In that case it must be written back
+        # verbatim instead of being re-encoded, which would double-encode it.
+        self.state_is_raw = state_is_raw
         self._results = results
         self._signals = signals
 
@@ -56,7 +62,7 @@ class EntityState:
         serialized_results = list(map(lambda x: x.to_json(), self.results))
 
         json_dict["entityExists"] = self.entity_exists
-        json_dict["entityState"] = df_dumps(self.state)
+        json_dict["entityState"] = self.state if self.state_is_raw else df_dumps(self.state)
         json_dict["results"] = serialized_results
         json_dict["signals"] = self.signals
         return json_dict

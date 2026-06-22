@@ -6,7 +6,6 @@ from unittest.mock import MagicMock
 from azure.durable_functions.models.utils.type_discovery import (
     activity_output_type,
     sub_orchestrator_output_type,
-    entity_operation_input_type,
 )
 
 
@@ -64,18 +63,3 @@ def test_sub_orchestrator_output_type_returns_annotation():
 
 def test_sub_orchestrator_output_type_returns_none_for_string():
     assert sub_orchestrator_output_type("orch_name") is None
-
-
-# ---------------------------------------------------------------------------
-# entity_operation_input_type (always None today)
-# ---------------------------------------------------------------------------
-
-def test_entity_operation_input_type_returns_none():
-    def my_entity(ctx):
-        pass
-    assert entity_operation_input_type(my_entity, "add") is None
-
-
-def test_entity_operation_input_type_returns_none_for_missing_inputs():
-    assert entity_operation_input_type(None, "add") is None
-    assert entity_operation_input_type(lambda ctx: None, "") is None

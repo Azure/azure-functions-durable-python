@@ -195,10 +195,10 @@ def test_shim_prefers_sdk_serializers_when_available():
         assert df_loads.__module__.endswith("df_serialization")
 
 
-def test_fallback_path_warns_at_import():
-    """When the SDK lacks df_dumps/df_loads, importing the shim must emit a
-    single UserWarning prompting an upgrade. When the SDK provides them, no
-    such warning is emitted."""
+def test_fallback_path_does_not_warn_at_import():
+    """Importing the shim must never emit a UserWarning, even on the
+    fallback path: the upgrade hint is deferred to first use and logged at
+    debug level rather than raised as a warning at import time."""
     import importlib
     import warnings
 
@@ -213,9 +213,30 @@ def test_fallback_path_warns_at_import():
         if issubclass(w.category, UserWarning)
         and "df_dumps" in str(w.message)
     ]
+    assert upgrade_warnings == []
 
+
+def test_fallback_path_logs_once_on_first_use(monkeypatch):
+    """On the fallback path, the first serialize/deserialize call logs the
+    upgrade hint once at debug level; the SDK path logs nothing."""
+    import importlib
+
+    from azure.durable_functions.models.utils import df_serialization
+    importlib.reload(df_serialization)
+
+    records = []
+    monkeypatch.setattr(
+        df_serialization.logger, "debug",
+        lambda msg, *a, **k: records.append(msg),
+    )
+
+    df_serialization.df_dumps({"a": 1})
+    df_serialization.df_loads(df_serialization.df_dumps({"a": 1}))
+
+    fallback_logs = [m for m in records if "df_dumps" in str(m)]
     if hasattr(_sdk, "df_dumps"):
-        assert upgrade_warnings == []
+        assert fallback_logs == []
     else:
-        assert len(upgrade_warnings) == 1
+        # Logged exactly once despite multiple fallback calls.
+        assert len(fallback_logs) == 1
 

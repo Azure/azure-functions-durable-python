@@ -87,22 +87,3 @@ def sub_orchestrator_output_type(name_or_callable: Any) -> Optional[type]:
     if fn is None:
         return None
     return _return_annotation(fn)
-
-
-def entity_operation_input_type(entity_user_fn: Optional[Callable],
-                                operation_name: str) -> Optional[type]:
-    """Best-effort discovery of an entity operation's input type.
-
-    Entities in the V2 model are typically a single function that
-    dispatches on ``context.operation_name``. There is no general way to
-    statically associate an operation name with a parameter type; this
-    helper currently returns ``None`` for all such functions and exists
-    as the extension point for richer entity-dispatch patterns we may
-    add in the future (e.g. class-based entities with one method per
-    operation).
-    """
-    if entity_user_fn is None or not operation_name:
-        return None
-    # Future work: inspect class-based entity dispatch tables. For now,
-    # signal "unknown" so the codec falls back to module-only resolution.
-    return None

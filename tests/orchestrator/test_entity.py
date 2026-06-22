@@ -106,6 +106,13 @@ def set_then_get_entity(context):
     elif operation == "get":
         context.set_result(context.get_state(lambda: 0))
 
+def noop_entity(context):
+    """Entity operation that never reads or writes state. Used to verify that
+    pre-existing persisted state is passed through verbatim (and not
+    re-encoded) when a batch never touches state.
+    """
+    context.set_result("noop")
+
 def test_entity_raises_exception():
     # Create input batch
     batch = []
@@ -208,6 +215,29 @@ def test_entity_set_then_get_with_preexisting_raw_state():
     expected = expected_state.to_json()
 
     assert_entity_state_equals(expected, result)
+
+def test_entity_untouched_raw_state_is_not_double_encoded():
+    """Regression test: when a batch never calls get_state/set_state, the
+    persisted state must be written back exactly as it was received.
+
+    ``from_json`` keeps the persisted state in its raw (single-encoded JSON)
+    form and only decodes it lazily inside ``get_state``. If an operation
+    never touches the state, end-of-batch serialization must pass that raw
+    string through verbatim -- re-encoding it via ``df_dumps`` would
+    double-encode it and corrupt the stored value.
+    """
+    batch = []
+    add_to_batch(batch, name="noop")
+    # Pre-existing persisted state: a single-encoded JSON payload.
+    raw_state = json.dumps({"count": 5})
+    context_builder = EntityContextBuilder(batch=batch, state=raw_state)
+
+    result = get_entity_state_result(context_builder, noop_entity)
+
+    # The stored state must be byte-for-byte the same single-encoded payload...
+    assert result["entityState"] == raw_state
+    # ...and must still round-trip back to the original value.
+    assert json.loads(result["entityState"]) == {"count": 5}
 
 def test_entity_signal_then_call_with_pystein():
     """Tests that a simple counter entity outputs the correct value

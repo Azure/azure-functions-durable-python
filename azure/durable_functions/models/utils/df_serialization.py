@@ -32,12 +32,24 @@ convention that the Durable extension and downstream consumers expect.
 from __future__ import annotations
 
 import json
-import warnings
+import logging
 from typing import Any, Optional
 
 from azure.functions._durable_functions import (
     _deserialize_custom_object,
     _serialize_custom_object,
+)
+
+logger = logging.getLogger(__name__)
+
+_FALLBACK_MESSAGE = (
+    "The installed 'azure-functions' package does not provide the "
+    "centralized 'df_dumps' / 'df_loads' serializers. Durable Functions "
+    "is falling back to the legacy serialization pipeline; the wire "
+    "format is unchanged, but payload type validation (the 'expected_type' "
+    "argument and strict typing mode) is unavailable. Upgrade to "
+    "azure-functions>=2.2.0 on Python>=3.13, or azure-functions>=1.26.0 "
+    "on Python 3.10-3.12, to enable type-validated serialization."
 )
 
 try:
@@ -49,19 +61,21 @@ try:
         df_loads,
     )
 except ImportError:
-    warnings.warn(
-        "The installed 'azure-functions' package does not provide the "
-        "centralized 'df_dumps' / 'df_loads' serializers. Durable Functions "
-        "is falling back to the legacy serialization pipeline; the wire "
-        "format is unchanged, but payload type validation (the 'expected_type' "
-        "argument and strict typing mode) is unavailable. Upgrade to "
-        "azure-functions>=2.2.0 on Python>=3.13, or azure-functions>=1.26.0 "
-        "on Python 3.10-3.12, to enable type-validated serialization.",
-        stacklevel=2,
-    )
+    # The warning is deferred to first use (and logged at debug level)
+    # rather than emitted at import time: that way users who never exercise
+    # the fallback serializers are not spammed, while those who do still get
+    # an actionable, one-time hint.
+    _warned = False
+
+    def _warn_fallback_once() -> None:
+        global _warned
+        if not _warned:
+            _warned = True
+            logger.debug(_FALLBACK_MESSAGE)
 
     def df_dumps(value: Any) -> str:
         """Serialize *value* to JSON via the legacy custom-object hook."""
+        _warn_fallback_once()
         return json.dumps(value, default=_serialize_custom_object)
 
     def df_loads(s: str, expected_type: Optional[type] = None) -> Any:
@@ -71,6 +85,7 @@ except ImportError:
         ignored on this fallback path; type validation is only performed
         by the SDK's ``df_loads`` when it is available.
         """
+        _warn_fallback_once()
         return json.loads(s, object_hook=_deserialize_custom_object)
 
 
@@ -89,4 +104,4 @@ except ImportError:
         return _serialize_custom_object
 
 
-__all__ = ["df_dumps", "df_loads", "_get_serialize_default"]
+__all__ = ["df_dumps", "df_loads"]
