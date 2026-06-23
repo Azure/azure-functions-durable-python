@@ -3,8 +3,7 @@ from typing import Any, Dict, Optional, Union
 from .Action import Action
 from .ActionType import ActionType
 from ..utils.json_utils import add_attrib
-from json import dumps
-from azure.functions._durable_functions import _serialize_custom_object
+from ..utils.df_serialization import df_dumps
 
 
 class CallSubOrchestratorAction(Action):
@@ -13,7 +12,7 @@ class CallSubOrchestratorAction(Action):
     def __init__(self, function_name: str, _input: Optional[Any] = None,
                  instance_id: Optional[str] = None, version: Optional[str] = None):
         self.function_name: str = function_name
-        self._input: str = dumps(_input, default=_serialize_custom_object)
+        self._input: str = df_dumps(_input)
         self.instance_id: Optional[str] = instance_id
         self.version: Optional[str] = version
 

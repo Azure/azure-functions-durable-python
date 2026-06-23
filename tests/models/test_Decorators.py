@@ -34,6 +34,22 @@ def test_orchestration_trigger(app):
         ]
     })
 
+def test_orchestration_trigger_input_type_stashed(app):
+    """Verify that input_type= on the decorator is stashed on the handle."""
+
+    class MyInput:
+        pass
+
+    @app.orchestration_trigger(context_name="my_context", input_type=MyInput)
+    def dummy_function(my_context):
+        pass
+
+    user_code = get_user_code(app)
+    assert user_code.get_function_name() == "dummy_function"
+    # The input type is stashed on the inner callable (the Orchestrator
+    # handle) which lives at Function._func.
+    assert getattr(user_code._func, "_df_input_type", None) is MyInput
+
 def test_activity_trigger(app):
 
     @app.activity_trigger(input_name="my_input")

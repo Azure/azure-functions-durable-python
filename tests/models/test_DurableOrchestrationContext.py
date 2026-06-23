@@ -101,6 +101,77 @@ def test_get_input_json_str():
 
     assert 'Seattle' == result['city']
 
+
+class _Order:
+    """Test fixture for expected_type round-trips."""
+    def __init__(self, item: str, qty: int):
+        self.item = item
+        self.qty = qty
+
+    @staticmethod
+    def to_json(obj):
+        return {"item": obj.item, "qty": obj.qty}
+
+    @staticmethod
+    def from_json(data):
+        return _Order(data["item"], data["qty"])
+
+
+def test_get_input_with_expected_type_kwarg():
+    from azure.durable_functions.models.utils.df_serialization import df_dumps
+    builder = ContextBuilder('test_function_context')
+    builder.input_ = df_dumps(_Order("widget", 5))
+    context = DurableOrchestrationContext.from_json(builder.to_json_string())
+
+    result = context.get_input(expected_type=_Order)
+    assert isinstance(result, _Order)
+    assert result.item == "widget"
+    assert result.qty == 5
+
+
+def test_get_input_with_decorator_input_type():
+    from azure.durable_functions.models.utils.df_serialization import df_dumps
+    builder = ContextBuilder('test_function_context')
+    builder.input_ = df_dumps(_Order("widget", 5))
+    context = DurableOrchestrationContext.from_json(builder.to_json_string())
+    # Simulate what Orchestrator.create does when input_type is set
+    context._input_expected_type = _Order
+
+    result = context.get_input()
+    assert isinstance(result, _Order)
+    assert result.item == "widget"
+
+
+def test_get_input_kwarg_overrides_decorator_type():
+    """Call-site expected_type takes precedence over decorator input_type."""
+    from azure.durable_functions.models.utils.df_serialization import df_dumps
+
+    class _Alt:
+        def __init__(self, item, qty):
+            self.item = item
+            self.qty = qty
+
+        @staticmethod
+        def to_json(obj):
+            return {"item": obj.item, "qty": obj.qty}
+
+        @staticmethod
+        def from_json(data):
+            return _Alt(data["item"], data["qty"])
+
+    builder = ContextBuilder('test_function_context')
+    builder.input_ = df_dumps(_Order("widget", 5))
+    context = DurableOrchestrationContext.from_json(builder.to_json_string())
+    context._input_expected_type = _Order  # decorator says _Order
+
+    # expected_type is used for pre-validation only; the legacy decoder
+    # still uses the payload's declared class. A warning is emitted
+    # because _Alt != _Order.
+    result = context.get_input(expected_type=_Alt)
+    assert isinstance(result, _Order)  # legacy decoder uses payload class
+    assert result.item == "widget"
+
+
 def test_version_equals_version_from_execution_started_event():
     builder = ContextBuilder('test_function_context')
     builder.history_events = []

@@ -80,6 +80,7 @@ class Entity:
             response.results.append(operation_result)
 
         response.state = context._state
+        response.state_is_raw = context._state_is_raw
         response.entity_exists = context._exists
         return response.to_json_string()
 

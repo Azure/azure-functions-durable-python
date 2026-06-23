@@ -1,6 +1,5 @@
 from typing import Optional, Dict, Any
-from azure.functions._durable_functions import _serialize_custom_object
-import json
+from ..utils.df_serialization import df_dumps
 
 
 class OperationResult:
@@ -90,5 +89,5 @@ class OperationResult:
         to_json["isError"] = self.is_error
         to_json["duration"] = self.duration
         to_json["startTime"] = self.execution_start_time_ms
-        to_json["result"] = json.dumps(self.result, default=_serialize_custom_object)
+        to_json["result"] = df_dumps(self.result)
         return to_json
