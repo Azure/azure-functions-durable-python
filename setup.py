@@ -77,7 +77,7 @@ setup(
         'azure-functions>=1.2.0',
         'nox==2019.11.9',
         'furl==2.1.0',
-        'pytest-asyncio==0.20.2'
+        'pytest-asyncio==1.4.0'
     ],
     include_package_data=True,
     data_files= [
