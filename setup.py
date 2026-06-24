@@ -55,8 +55,8 @@ setup(
     python_requires='>=3.9,<4',
     install_requires=[
         'azure-functions>=1.12.0',
-        'aiohttp>=3.13.3',
-        'requests==2.*',
+        'aiohttp>=3.14.1',
+        'requests>=2.33.0,<3',
         'python-dateutil>=2.8.0',
         'furl>=2.1.0',
         'opentelemetry-api>=1.32.1',
@@ -65,9 +65,9 @@ setup(
     extra_requires=[
         'flake8==3.7.8',
         'flake8-docstrings==1.5.0',
-        'pytest==7.1.2',
+        'pytest==9.0.3',
         'python-dateutil==2.8.0',
-        'requests==2.22.0',
+        'requests==2.33.0',
         'jsonschema==4.25.1',
         'azure-functions>=1.2.0',
         'nox==2019.11.9',
