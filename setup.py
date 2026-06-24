@@ -68,8 +68,8 @@ setup(
         'opentelemetry-sdk>=1.32.1'
     ],
     extra_requires=[
-        'flake8==3.7.8',
-        'flake8-docstrings==1.5.0',
+        'flake8==7.1.1',
+        'flake8-docstrings==1.7.0',
         'pytest==9.0.3',
         'python-dateutil==2.8.0',
         'requests==2.33.0',
