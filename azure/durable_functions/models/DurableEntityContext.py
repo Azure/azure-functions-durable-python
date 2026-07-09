@@ -1,5 +1,5 @@
 from typing import Optional, Any, Dict, Tuple, List, Callable
-from azure.functions._durable_functions import _deserialize_custom_object
+from .utils.df_serialization import df_loads
 import json
 
 
@@ -36,6 +36,7 @@ class DurableEntityContext:
         self._is_newly_constructed: bool = False
 
         self._state: Any = state
+        self._state_is_raw: bool = False
         self._input: Any = None
         self._operation: Optional[str] = None
         self._result: Any = None
@@ -107,12 +108,15 @@ class DurableEntityContext:
         json_dict["key"] = json_dict["self"]["key"]
         json_dict.pop("self")
 
+        # Keep the raw serialized state (a JSON string) so get_state() can
+        # deserialize lazily with an expected_type supplied by the user.
         serialized_state = json_dict["state"]
-        if serialized_state is not None:
-            json_dict["state"] = from_json_util(serialized_state)
 
         batch = json_dict.pop("batch")
-        return cls(**json_dict), batch
+        ctx = cls(**json_dict)
+        if serialized_state is not None:
+            ctx._state_is_raw = True
+        return ctx, batch
 
     def set_state(self, state: Any) -> None:
         """Set the state of the entity.
@@ -126,20 +130,35 @@ class DurableEntityContext:
 
         # should only serialize the state at the end of the batch
         self._state = state
+        # The new state is a live Python value, not the raw JSON string
+        # loaded from the payload. Clear the raw flag so a subsequent
+        # get_state() in the same batch does not try to re-decode it.
+        self._state_is_raw = False
 
-    def get_state(self, initializer: Optional[Callable[[], Any]] = None) -> Any:
+    def get_state(self, initializer: Optional[Callable[[], Any]] = None,
+                  expected_type: Optional[type] = None) -> Any:
         """Get the current state of this entity.
 
         Parameters
         ----------
         initializer: Optional[Callable[[], Any]]
             A 0-argument function to provide an initial state. Defaults to None.
+        expected_type: Optional[type]
+            The type to decode the state as. When set, the codec uses
+            this type directly without consulting ``sys.modules``. Note that
+            the persisted state is decoded lazily on the **first** get_state
+            call within a batch; an ``expected_type`` supplied on a later
+            call (after the state has already been decoded or replaced via
+            set_state) has no effect.
 
         Returns
         -------
         Any
             The current state of the entity
         """
+        if self._state is not None and self._state_is_raw:
+            self._state = from_json_util(self._state, expected_type=expected_type)
+            self._state_is_raw = False
         state = self._state
         if state is not None:
             return state
@@ -149,8 +168,14 @@ class DurableEntityContext:
             state = initializer()
         return state
 
-    def get_input(self) -> Any:
+    def get_input(self, expected_type: Optional[type] = None) -> Any:
         """Get the input for this operation.
+
+        Parameters
+        ----------
+        expected_type: Optional[type]
+            The type to decode the input as. When set, the codec uses
+            this type directly without consulting ``sys.modules``.
 
         Returns
         -------
@@ -160,7 +185,7 @@ class DurableEntityContext:
         input_ = None
         req_input = self._input
         req_input = json.loads(req_input)
-        input_ = None if req_input is None else from_json_util(req_input)
+        input_ = None if req_input is None else df_loads(req_input, expected_type=expected_type)
         return input_
 
     def set_result(self, result: Any) -> None:
@@ -178,9 +203,10 @@ class DurableEntityContext:
         """Delete this entity after the operation completes."""
         self._exists = False
         self._state = None
+        self._state_is_raw = False
 
 
-def from_json_util(json_str: str) -> Any:
+def from_json_util(json_str: str, expected_type: Optional[type] = None) -> Any:
     """Load an arbitrary datatype from its JSON representation.
 
     The Out-of-proc SDK has a special JSON encoding strategy
@@ -192,10 +218,12 @@ def from_json_util(json_str: str) -> Any:
     ----------
     json_str: str
         A JSON-formatted string, from durable-extension
+    expected_type: Optional[type]
+        The type to decode the value as.
 
     Returns
     -------
     Any:
         The original datatype that was serialized
     """
-    return json.loads(json_str, object_hook=_deserialize_custom_object)
+    return df_loads(json_str, expected_type=expected_type)

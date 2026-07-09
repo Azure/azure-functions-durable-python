@@ -76,7 +76,7 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
 
         return decorator
 
-    def _configure_orchestrator_callable(self, wrap) -> Callable:
+    def _configure_orchestrator_callable(self, wrap, input_type=None) -> Callable:
         """Obtain decorator to construct an Orchestrator class from a user-defined Function.
 
         In the old programming model, this decorator's logic was unavoidable boilerplate
@@ -86,6 +86,9 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
         ----------
         wrap: Callable
             The next decorator to be applied.
+        input_type: Optional[type]
+            The expected type for orchestration input, forwarded from
+            the orchestration_trigger decorator.
 
         Returns
         -------
@@ -99,12 +102,16 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
 
             # invoke next decorator, with the Orchestrator as input
             handle.__name__ = orchestrator_func.__name__
+            # Stash the decorator-declared input type so the runtime
+            # can feed it to df_loads via context.get_input().
+            handle._df_input_type = input_type
             return wrap(handle)
 
         return decorator
 
     def orchestration_trigger(self, context_name: str,
-                              orchestration: Optional[str] = None):
+                              orchestration: Optional[str] = None,
+                              input_type: Optional[type] = None):
         """Register an Orchestrator Function.
 
         Parameters
@@ -114,8 +121,13 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
         orchestration: Optional[str]
             Name of Orchestrator Function.
             The value is None by default, in which case the name of the method is used.
+        input_type: Optional[type]
+            The expected type for the orchestration input. When set,
+            ``context.get_input()`` will use this type to decode the
+            input payload without consulting ``sys.modules``. A
+            call-site ``expected_type`` argument on ``get_input``
+            takes precedence over this value.
         """
-        @self._configure_orchestrator_callable
         @self._configure_function_builder
         def wrap(fb):
 
@@ -127,7 +139,7 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
 
             return decorator()
 
-        return wrap
+        return self._configure_orchestrator_callable(wrap, input_type=input_type)
 
     def activity_trigger(self, input_name: str,
                          activity: Optional[str] = None):

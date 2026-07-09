@@ -1,7 +1,7 @@
 from azure.durable_functions.models.actions.WhenAnyAction import WhenAnyAction
 from azure.durable_functions.models.actions.WhenAllAction import WhenAllAction
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from .orchestrator_test_utils \
     import assert_orchestration_state_equals, get_orchestration_state_result, assert_valid_schema
 from tests.test_utils.ContextBuilder import ContextBuilder
@@ -703,7 +703,7 @@ def test_utc_time_is_never_none():
 def test_utc_time_updates_correctly():
     """Tests that current_utc_datetime updates correctly"""
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     # the first orchestrator-started event starts 1 second after `now`
     context_builder = ContextBuilder('test_simple_function', starting_time=now)
     add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")

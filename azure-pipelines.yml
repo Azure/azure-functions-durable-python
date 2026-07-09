@@ -13,7 +13,7 @@ trigger:
     - v*
 
 variables:     
-  python.version: '3.9'
+  python.version: '3.10'
   baseFolder: .
   componentArtifactName: 'azure_functions_durable'
   #componentArtifactName: 'dist'
@@ -37,7 +37,12 @@ stages:
     - script: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install wheel
+        pip install "setuptools>=69.3.0" setuptools_scm wheel
+        # Pin an older azure-functions (< 1.26.0) that predates the
+        # centralized df_dumps / df_loads serializers so this job exercises
+        # the legacy serialization fallback in df_serialization. The
+        # Test_Functions_Sdk_Path job covers the SDK-delegated branch.
+        pip install "azure-functions<1.26.0"
       workingDirectory: $(baseFolder) 
       displayName: 'Install dependencies'
 
@@ -65,5 +70,33 @@ stages:
       inputs:
         PathtoPublish: dist
         ArtifactName: $(componentArtifactName)
+
+  - job: Test_Functions_Sdk_Path
+    displayName: Test SDK Serialization Path (Py 3.13)
+    # The Build_Durable_Functions job runs on Python 3.10 with an older
+    # azure-functions (< 1.26.0) pinned, so it only exercises the legacy
+    # serialization fallback.  This job runs on Python 3.13 with the beta
+    # that first ships df_dumps / df_loads to cover the SDK-delegated branch
+    # in df_serialization.
+    # TODO: change the override to 'azure-functions>=2.2.0' once 2.2.0 GA
+    # ships, and drop the explicit install step.
+    pool:
+      name: "1ES-Hosted-AzFunc"
+      demands:
+          - ImageOverride -equals MMSUbuntu20.04TLS
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.13'
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install "azure-functions>=2.2.0b5"
+      workingDirectory: $(baseFolder)
+      displayName: 'Install dependencies (SDK serializers)'
+    - script: |
+        pip install pytest pytest-azurepipelines
+        pytest --ignore=samples-v2
+      displayName: 'pytest'
     
 

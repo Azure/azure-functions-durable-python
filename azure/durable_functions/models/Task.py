@@ -58,6 +58,13 @@ class TaskBase:
         self.action_repr: Union[List[Action], Action] = actions
         self.is_played = False
         self._is_scheduled_flag = False
+        # The expected return type discovered from the user function's
+        # annotation, when the task was scheduled with a V2 FunctionBuilder.
+        # Forwarded to ``df_loads`` so custom objects can be decoded without
+        # touching ``sys.modules``/``importlib``. ``None`` means "no type
+        # info available" -- the codec then falls back to module lookup
+        # and, ultimately, the legacy decoder with a warning.
+        self._expected_output_type: Optional[type] = None
 
     @property
     def _is_scheduled(self) -> bool:

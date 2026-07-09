@@ -1,11 +1,10 @@
-from json import dumps
 from typing import Dict, Union
 
 from .Action import Action
 from .ActionType import ActionType
 from ..RetryOptions import RetryOptions
 from ..utils.json_utils import add_attrib, add_json_attrib
-from azure.functions._durable_functions import _serialize_custom_object
+from ..utils.df_serialization import df_dumps
 
 
 class CallActivityWithRetryAction(Action):
@@ -18,7 +17,7 @@ class CallActivityWithRetryAction(Action):
                  retry_options: RetryOptions, input_=None):
         self.function_name: str = function_name
         self.retry_options: RetryOptions = retry_options
-        self.input_ = dumps(input_, default=_serialize_custom_object)
+        self.input_ = df_dumps(input_)
 
         if not self.function_name:
             raise ValueError("function_name cannot be empty")
