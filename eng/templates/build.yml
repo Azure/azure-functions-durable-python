@@ -16,11 +16,7 @@ jobs:
         - script: |
             python -m pip install --upgrade pip
             pip install -r requirements.txt
-            # Ensure setuptools >= 69.3.0 so the sdist filename follows the
-            # PEP 625 normalized form (azure_functions_durable-*.tar.gz).
-            # Older setuptools emits the legacy hyphenated name, which ESRP
-            # rejects.
-            pip install "setuptools>=69.3.0" wheel
+            pip install "setuptools>=69.3.0" setuptools_scm wheel
             # Pin an older azure-functions (< 1.26.0) that predates the
             # centralized df_dumps / df_loads serializers so this job
             # exercises the legacy serialization fallback in df_serialization.
