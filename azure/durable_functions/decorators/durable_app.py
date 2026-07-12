@@ -220,6 +220,16 @@ class Blueprint(TriggerApi, BindingApi, SettingsApi):
             # Invoke user code with rich DF Client binding
             return await user_code(*args, **kwargs)
 
+        # functools.wraps on Python 3.14 (PEP 649/749) copies __annotate__ rather than
+        # __annotations__, which re-derives the original client annotation and defeats the
+        # str override above. Re-apply it on the wrapper and drop __annotate__ so both the
+        # dict-based and __annotate__-based readers (the worker uses the latter on 3.14) agree.
+        _ann = dict(getattr(df_client_middleware, "__annotations__", {}))  # materializes on 3.14
+        _ann[parameter_name] = str
+        df_client_middleware.__annotations__ = _ann
+        if hasattr(df_client_middleware, "__annotate__"):
+            df_client_middleware.__annotate__ = None
+
         # Todo: This feels awkward - however, there are two reasons that I can't naively implement
         # this in the same way as entities and orchestrators:
         # 1. We intentionally wrap this exported signature with @wraps, to preserve the original
