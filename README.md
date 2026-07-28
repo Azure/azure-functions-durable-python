@@ -9,6 +9,19 @@
 
  🐍  Find us on PyPi [here](https://pypi.org/project/azure-functions-durable/) 🐍   
 
+## Durable Functions Python 2.0 beta
+
+Version `2.0.0b1` of `azure-functions-durable` is now available from the
+[Durable Task Python SDK](https://github.com/microsoft/durabletask-python).
+This ground-up rewrite builds on the `durabletask` runtime. We encourage users
+to try the beta and share feedback.
+
+See the [Azure Functions Durable 2.x documentation](https://github.com/microsoft/durabletask-python/tree/main/azure-functions-durable)
+for installation guidance and a comprehensive list of changes, including
+breaking changes from 1.x.
+
+When version 2.0.0 is released, this project will receive security patches
+only. An official deprecation date is yet to be determined.
 
 You can find more information at the following links:
 
@@ -32,4 +45,3 @@ Follow these instructions to get started with Durable Functions in Python:
 ## OpenAI Agent SDK Integration with Azure Durable Functions (Preview)
 
 Build resilient, stateful AI agents backed by Durable Functions orchestration—see the full documentation at [docs/openai_agents/README.md](docs/openai_agents/README.md).
-
