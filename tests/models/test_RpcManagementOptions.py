@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from azure.durable_functions.models import OrchestrationRuntimeStatus
 from azure.durable_functions.models.RpcManagementOptions import RpcManagementOptions
+from azure.durable_functions.models.utils.entity_utils import EntityId
 from azure.durable_functions.constants import DATETIME_STRING_FORMAT
 from tests.test_utils.constants import RPC_BASE_URL
 
@@ -82,5 +83,23 @@ def test_instance_id_prefix():
     options = RpcManagementOptions(instance_id_prefix='940c5f519eb0')
     result = options.to_url(RPC_BASE_URL)
     expected = f"{RPC_BASE_URL}instances/?instanceIdPrefix=940c5f519eb0"
+
+    assert_urls_match(expected=expected, result=result)
+
+
+def test_instance_id_prefix_ignored_with_instance_id():
+    options = RpcManagementOptions(instance_id='test1234',
+                                   instance_id_prefix='940c5f519eb0')
+    result = options.to_url(RPC_BASE_URL)
+    expected = f"{RPC_BASE_URL}instances/test1234"
+
+    assert_urls_match(expected=expected, result=result)
+
+
+def test_instance_id_prefix_ignored_with_entity_id():
+    options = RpcManagementOptions(entity_Id=EntityId('Counter', 'myCounter'),
+                                   instance_id_prefix='940c5f519eb0')
+    result = options.to_url(RPC_BASE_URL)
+    expected = f"{RPC_BASE_URL}entities/Counter/myCounter"
 
     assert_urls_match(expected=expected, result=result)
