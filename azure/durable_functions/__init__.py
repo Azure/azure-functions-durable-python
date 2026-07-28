@@ -57,8 +57,28 @@ def validate_extension_bundles():
             warnings.warn(message)
 
 
+def validate_v1_programming_model():
+    """Warn users of the unsupported functions.json programming model."""
+    # No need to validate if we're running tests
+    if "pytest" in sys.modules:
+        return
+
+    if any(Path(".").glob("*/function.json")):
+        message = (
+            "Your application uses the legacy Python v1 programming model, "
+            "which relies on function.json files. This programming model is "
+            "not supported by azure-functions-durable 2.x. Migrate to the "
+            "Python v2 programming model before upgrading, or pin "
+            "`azure-functions-durable<2` in your requirements.txt file."
+        )
+        warnings.warn(message, stacklevel=2)
+
+
 # Validate that users are not in extension bundles V1
 validate_extension_bundles()
+
+# Warn users whose applications will not be compatible with version 2.x
+validate_v1_programming_model()
 
 __all__ = [
     'Orchestrator',

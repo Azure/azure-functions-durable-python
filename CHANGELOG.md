@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- An import-time warning for applications using the legacy `function.json`
+  programming model, with guidance to migrate or pin
+  `azure-functions-durable<2`.
 - Client operation correlation logging: `FunctionInvocationId` is now propagated via HTTP headers to the host for client operations, enabling correlation with host logs.
 - Centralized JSON serialization module (`azure.durable_functions.models.utils.df_serialization`): all serialization/deserialization of user payloads (orchestrator inputs/outputs, activity arguments and results, sub-orchestrator payloads, entity inputs/outputs, and client inputs) now flows through `df_dumps` / `df_loads`, replacing scattered `json.dumps(…, default=_serialize_custom_object)` / `json.loads(…, object_hook=_deserialize_custom_object)` calls. This module is a thin shim over the Azure Functions SDK: when the installed `azure-functions` exposes `df_dumps` / `df_loads` (the centralized serializers with type-validation and strict-typing support), they are used directly so our serialization matches the SDK's `ActivityTriggerConverter` at the host boundary; otherwise it falls back to the legacy `_serialize_custom_object` / `_deserialize_custom_object` hooks, which keeps both sides symmetric. The wire format is **unchanged** — builtins serialize to plain JSON and custom objects continue to use the `{"__class__", "__module__", "__data__"}` convention.
 - Type-hint-driven validation via `df_loads(s, expected_type=...)`: when the V2 programming model provides a return-type annotation for an activity or sub-orchestrator, the annotation is threaded through call sites so the SDK's `df_loads` can validate the deserialized payload against that type (when available). On older `azure-functions` releases the argument is accepted but ignored.
