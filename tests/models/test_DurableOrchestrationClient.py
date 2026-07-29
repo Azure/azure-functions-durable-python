@@ -351,8 +351,11 @@ async def test_delete_500_purge_instance_history(binding_string):
 
 @pytest.mark.asyncio
 async def test_delete_200_purge_instance_history_by(binding_string):
-    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/?runtimeStatus=Running",
-                               response=[200, dict(instancesDeleted=1)])
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/"
+                     "?createdTimeFrom=0001-01-01T00:00:00.000000Z"
+                     "&runtimeStatus=Running",
+        response=[200, dict(instancesDeleted=1)])
     client = DurableOrchestrationClient(binding_string)
     client._delete_async_request = mock_request.delete
 
@@ -364,8 +367,11 @@ async def test_delete_200_purge_instance_history_by(binding_string):
 
 @pytest.mark.asyncio
 async def test_delete_404_purge_instance_history_by(binding_string):
-    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/?runtimeStatus=Running",
-                               response=[404, MESSAGE_404])
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/"
+                     "?createdTimeFrom=0001-01-01T00:00:00.000000Z"
+                     "&runtimeStatus=Running",
+        response=[404, MESSAGE_404])
     client = DurableOrchestrationClient(binding_string)
     client._delete_async_request = mock_request.delete
 
@@ -377,8 +383,11 @@ async def test_delete_404_purge_instance_history_by(binding_string):
 
 @pytest.mark.asyncio
 async def test_delete_500_purge_instance_history_by(binding_string):
-    mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/?runtimeStatus=Running",
-                               response=[500, MESSAGE_500])
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/"
+                     "?createdTimeFrom=0001-01-01T00:00:00.000000Z"
+                     "&runtimeStatus=Running",
+        response=[500, MESSAGE_500])
     client = DurableOrchestrationClient(binding_string)
     client._delete_async_request = mock_request.delete
 

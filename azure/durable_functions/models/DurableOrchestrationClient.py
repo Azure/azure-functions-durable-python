@@ -419,7 +419,8 @@ class DurableOrchestrationClient:
         Parameters
         ----------
         created_time_from : Optional[datetime]
-            Delete orchestration history which were created after this Date.
+            Delete orchestration history which were created after this Date. Defaults to the
+            earliest datetime supported by Python.
         created_time_to: Optional[datetime]
             Delete orchestration history which were created before this Date.
         runtime_status: Optional[List[OrchestrationRuntimeStatus]]
@@ -431,6 +432,9 @@ class DurableOrchestrationClient:
         PurgeHistoryResult
             The results of the request to purge history
         """
+        if created_time_from is None:
+            created_time_from = datetime.min
+
         options = RpcManagementOptions(created_time_from=created_time_from,
                                        created_time_to=created_time_to,
                                        runtime_status=runtime_status)

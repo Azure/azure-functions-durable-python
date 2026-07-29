@@ -77,3 +77,13 @@ def test_datetime_status():
                f"&createdTimeTo={to_as_string}"
 
     assert_urls_match(expected=expected, result=result)
+
+
+def test_min_datetime_status_uses_four_digit_year():
+    options = RpcManagementOptions(created_time_from=datetime.min)
+
+    result = options.to_url(RPC_BASE_URL)
+
+    expected = f"{RPC_BASE_URL}instances/" \
+               "?createdTimeFrom=0001-01-01T00:00:00.000000Z"
+    assert_urls_match(expected=expected, result=result)
