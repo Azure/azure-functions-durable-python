@@ -71,7 +71,7 @@ def test_tokyo_and_seattle_and_london_state():
     expected_state._is_done = True
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 def test_call_suborchestrator_by_name():
@@ -91,5 +91,5 @@ def test_call_suborchestrator_by_name():
     expected_state._is_done = True
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)

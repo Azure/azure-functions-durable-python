@@ -837,5 +837,5 @@ def test_compound_tasks_return_single_action_in_V2():
     expected_state._is_done = False
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
