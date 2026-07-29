@@ -8,9 +8,10 @@ and yanked-release status are based on the
 
 ### Added
 
-- Added an import-time warning for applications using the legacy
-  `function.json` programming model, with guidance to migrate or pin
-  `azure-functions-durable<2`.
+- Added `DurableFunctionsCompatibilityWarning`, emitted at import time for
+  applications using the legacy `function.json` programming model unless
+  `requirements.txt` demonstrably restricts `azure-functions-durable` below
+  version 2.
 
 ## 1.6.0 - 2026-07-09
 
