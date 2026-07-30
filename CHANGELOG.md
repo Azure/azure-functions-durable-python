@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 - Type-hint-driven validation via `df_loads(s, expected_type=...)`: when the V2 programming model provides a return-type annotation for an activity or sub-orchestrator, the annotation is threaded through call sites so the SDK's `df_loads` can validate the deserialized payload against that type (when available). On older `azure-functions` releases the argument is accepted but ignored.
 - Return-type discovery for V2 decorated activities/sub-orchestrators (`azure.durable_functions.models.utils.type_discovery`): resolves the concrete return annotation from the user's registered function, used to supply `expected_type` to `df_loads`.
 
+### Changed
+
+- `purge_instance_history_by` now raises a clear `ValueError` when the required `created_time_from` argument is omitted, instead of sending a request that the Durable extension rejects.
+
 ## 1.0.0b6
 
 - [Create timer](https://github.com/Azure/azure-functions-durable-python/issues/35) functionality available

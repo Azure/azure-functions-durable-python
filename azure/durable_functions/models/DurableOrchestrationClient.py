@@ -423,7 +423,8 @@ class DurableOrchestrationClient:
         Parameters
         ----------
         created_time_from : Optional[datetime]
-            Delete orchestration history which were created after this Date.
+            Delete orchestration history which were created after this Date. This argument
+            is required.
         created_time_to: Optional[datetime]
             Delete orchestration history which were created before this Date.
         runtime_status: Optional[List[OrchestrationRuntimeStatus]]
@@ -434,7 +435,15 @@ class DurableOrchestrationClient:
         -------
         PurgeHistoryResult
             The results of the request to purge history
+
+        Raises
+        ------
+        ValueError
+            When `created_time_from` is not provided.
         """
+        if created_time_from is None:
+            raise ValueError("created_time_from is required when purging instance history")
+
         options = RpcManagementOptions(created_time_from=created_time_from,
                                        created_time_to=created_time_to,
                                        runtime_status=runtime_status)
