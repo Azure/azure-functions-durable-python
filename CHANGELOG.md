@@ -22,8 +22,14 @@ and yanked-release status are based on the
 ### Added
 
 - Added `restart` support to `DurableOrchestrationClient`.
-- Added type-aware payload serialization and deserialization through the
-  centralized `df_dumps` and `df_loads` APIs.
+- Centralized serialization and deserialization of user payloads through
+  `df_dumps` and `df_loads`. When the installed `azure-functions` SDK exposes
+  these APIs, Durable Functions uses its type-validating codec; older SDK
+  versions retain the legacy fallback. The wire format remains unchanged.
+- Added type-hint-driven validation for activity and sub-orchestrator results
+  by passing their expected return types to `df_loads`.
+- Added return-type discovery for activities and sub-orchestrators registered
+  with Python v2 programming model decorators.
 - Added Python 3.13 and 3.14 support.
 
 ### Changed
