@@ -287,6 +287,21 @@ async def test_get_500_get_status_by_failed(binding_string):
 
 
 @pytest.mark.asyncio
+async def test_get_200_get_status_by_with_instance_id_prefix(binding_string):
+    mock_request = MockRequest(
+        expected_url=f"{RPC_BASE_URL}instances/?instanceIdPrefix=940c5f519eb0",
+        response=[200, [dict(createdTime=TEST_CREATED_TIME,
+                             lastUpdatedTime=TEST_LAST_UPDATED_TIME,
+                             runtimeStatus="Running")]])
+    client = DurableOrchestrationClient(binding_string)
+    client._get_async_request = mock_request.get
+
+    result = await client.get_status_by(instance_id_prefix="940c5f519eb0")
+    assert result is not None
+    assert len(result) == 1
+
+
+@pytest.mark.asyncio
 async def test_get_200_get_status_all_success(binding_string):
     mock_request = MockRequest(expected_url=f"{RPC_BASE_URL}instances/",
                                response=[200, [dict(createdTime=TEST_CREATED_TIME,

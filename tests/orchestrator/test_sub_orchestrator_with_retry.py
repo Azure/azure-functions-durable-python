@@ -71,7 +71,7 @@ def test_tokyo_and_seattle_and_london_state():
     expected_state._is_done = True
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -96,7 +96,7 @@ def test_tokyo_and_seattle_and_london_state_partial_failure():
     expected_state._is_done = True
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 def test_tokyo_and_seattle_and_london_state_all_failed():

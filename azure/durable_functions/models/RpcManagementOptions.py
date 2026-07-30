@@ -16,7 +16,8 @@ class RpcManagementOptions:
                  created_time_to: datetime = None,
                  runtime_status: List[OrchestrationRuntimeStatus] = None, show_input: bool = None,
                  operation_name: str = None,
-                 entity_Id: EntityId = None):
+                 entity_Id: EntityId = None,
+                 instance_id_prefix: str = None):
         self._instance_id = instance_id
         self._task_hub_name = task_hub_name
         self._connection_name = connection_name
@@ -28,6 +29,7 @@ class RpcManagementOptions:
         self._show_input = show_input
         self.operation_name = operation_name
         self.entity_Id = entity_Id
+        self._instance_id_prefix = instance_id_prefix
 
     @staticmethod
     def _add_arg(query: List[str], name: str, value: Any):
@@ -76,6 +78,8 @@ class RpcManagementOptions:
         self._add_date_arg(query, 'createdTimeFrom', self._created_time_from)
         self._add_date_arg(query, 'createdTimeTo', self._created_time_to)
         self._add_arg(query, 'op', self.operation_name)
+        if not self.entity_Id and not self._instance_id:
+            self._add_arg(query, 'instanceIdPrefix', self._instance_id_prefix)
         if self._runtime_status is not None and len(self._runtime_status) > 0:
             runtime_status = ",".join(r.value for r in self._runtime_status)
             self._add_arg(query, 'runtimeStatus', runtime_status)

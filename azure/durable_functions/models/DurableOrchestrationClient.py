@@ -354,7 +354,8 @@ class DurableOrchestrationClient:
 
     async def get_status_by(self, created_time_from: datetime = None,
                             created_time_to: datetime = None,
-                            runtime_status: List[OrchestrationRuntimeStatus] = None) \
+                            runtime_status: List[OrchestrationRuntimeStatus] = None,
+                            instance_id_prefix: str = None) \
             -> List[DurableOrchestrationStatus]:
         """Get the status of all orchestration instances that match the specified conditions.
 
@@ -367,6 +368,8 @@ class DurableOrchestrationClient:
         runtime_status: List[OrchestrationRuntimeStatus]
             Return orchestration instances which match any of the runtimeStatus values
             in this list.
+        instance_id_prefix: str
+            Return orchestration instances whose instance ID starts with this prefix.
 
         Returns
         -------
@@ -376,7 +379,8 @@ class DurableOrchestrationClient:
         # TODO: do we really want folks to us this without specifying all the args?
         options = RpcManagementOptions(created_time_from=created_time_from,
                                        created_time_to=created_time_to,
-                                       runtime_status=runtime_status)
+                                       runtime_status=runtime_status,
+                                       instance_id_prefix=instance_id_prefix)
         request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
         response = await self._get_async_request(request_url)
         switch_statement = {
