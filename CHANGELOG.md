@@ -6,8 +6,12 @@ and yanked-release status are based on the
 
 ## Unreleased
 
+## 1.7.0 - 2026-07-30
+
 ### Added
 
+- Added `instance_id_prefix` filtering to
+  `DurableOrchestrationClient.get_status_by`.
 - Added `DurableFunctionsCompatibilityWarning`, emitted at import time for
   applications using the legacy `function.json` programming model unless
   `requirements.txt` demonstrably restricts `azure-functions-durable` below
@@ -15,7 +19,13 @@ and yanked-release status are based on the
 
 ### Changed
 
-- `purge_instance_history_by` now raises a clear `ValueError` when the required `created_time_from` argument is omitted, instead of sending a request that the Durable extension rejects.
+- `purge_instance_history_by` now raises a clear `ValueError` when the required
+  `created_time_from` argument is omitted, instead of sending a request that
+  the Durable extension rejects.
+
+### Fixed
+
+- Fixed `durableClient` binding validation on Python 3.14.
 
 ## 1.6.0 - 2026-07-09
 
