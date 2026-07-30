@@ -5,6 +5,7 @@ from jsonschema import validate
 from azure.durable_functions.models import DurableOrchestrationContext, DurableEntityContext
 from azure.durable_functions.orchestrator import Orchestrator
 from azure.durable_functions.entity import Entity
+from .schemas.EntityStateSchema import schema as entity_state_schema
 from .schemas.OrchetrationStateSchema import schema
 
 
@@ -119,6 +120,13 @@ def get_orchestration_property(
 
 def assert_valid_schema(orchestration_state):
     validation_results = validate(instance=orchestration_state, schema=schema)
+    assert validation_results is None
+
+
+def assert_valid_entity_schema(entity_state):
+    validation_results = validate(
+        instance=entity_state,
+        schema=entity_state_schema)
     assert validation_results is None
 
 

@@ -76,9 +76,7 @@ def test_timers_comparison_with_relaxed_precision():
     expected_state._is_done = True
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
-    # TODO: getting the following error when validating the schema
-    # "Additional properties are not allowed ('fireAt', 'isCanceled' were unexpected)">
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 def test_timers_can_be_cancelled():

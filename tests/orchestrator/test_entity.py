@@ -1,7 +1,13 @@
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
-from .orchestrator_test_utils \
-    import assert_orchestration_state_equals, assert_results_are_equal, get_orchestration_state_result, assert_valid_schema, \
-            get_entity_state_result, assert_entity_state_equals
+from .orchestrator_test_utils import (
+    assert_entity_state_equals,
+    assert_orchestration_state_equals,
+    assert_results_are_equal,
+    assert_valid_entity_schema,
+    assert_valid_schema,
+    get_entity_state_result,
+    get_orchestration_state_result
+)
 from tests.test_utils.ContextBuilder import ContextBuilder
 from tests.test_utils.EntityContextBuilder import EntityContextBuilder
 from azure.durable_functions.models.OrchestratorState import OrchestratorState
@@ -131,7 +137,7 @@ def test_entity_raises_exception():
     expected = expected_state.to_json()
 
     # Ensure expectation matches observed behavior
-    #assert_valid_schema(result)
+    assert_valid_entity_schema(result)
     assert_entity_state_equals(expected, result)
 
 def test_entity_raises_exception_with_pystein():
@@ -153,7 +159,7 @@ def test_entity_raises_exception_with_pystein():
     expected = expected_state.to_json()
 
     # Ensure expectation matches observed behavior
-    #assert_valid_schema(result)
+    assert_valid_entity_schema(result)
     assert_entity_state_equals(expected, result)
 
 def test_entity_signal_then_call():
@@ -179,7 +185,7 @@ def test_entity_signal_then_call():
     expected = expected_state.to_json()
 
     # Ensure expectation matches observed behavior
-    #assert_valid_schema(result)
+    assert_valid_entity_schema(result)
     assert_entity_state_equals(expected, result)
 
 def test_entity_set_then_get_with_preexisting_raw_state():
@@ -263,7 +269,7 @@ def test_entity_signal_then_call_with_pystein():
     expected = expected_state.to_json()
 
     # Ensure expectation matches observed behavior
-    #assert_valid_schema(result)
+    assert_valid_entity_schema(result)
     assert_entity_state_equals(expected, result)
 
 def apply_operation(entity_state: EntityState, result: Any, state: Any, is_error: bool = False):
@@ -365,7 +371,7 @@ def test_call_entity_sent():
     add_call_entity_action(expected_state, entityId, "add", 3)
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
     
 def test_signal_entity_sent():
@@ -380,7 +386,7 @@ def test_signal_entity_sent():
     add_call_entity_action(expected_state, entityId, "get", None)
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 def test_signal_entity_sent_and_response_received():
@@ -398,7 +404,7 @@ def test_signal_entity_sent_and_response_received():
     expected_state._is_done = True
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
 
 
@@ -418,7 +424,7 @@ def test_call_entity_raised():
     expected_state._is_done = True
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
+    assert_valid_schema(result)
 
     assert_orchestration_state_equals(expected, result)
 

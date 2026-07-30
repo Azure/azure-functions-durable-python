@@ -791,7 +791,7 @@ def test_reducing_when_any_pattern():
 
     assert_orchestration_state_equals(expected, result)
 
-def test_reducing_when_any_pattern():
+def test_reusing_task_in_when_any_pattern():
     """Tests that a user can call when_any on a progressively smaller list of already scheduled tasks"""
     context_builder = ContextBuilder('generator_function_reuse_task_in_whenany', replay_schema=ReplaySchema.V2)
     add_hello_completed_events(context_builder, 0, "\"Hello Tokyo!\"")
@@ -837,5 +837,5 @@ def test_compound_tasks_return_single_action_in_V2():
     expected_state._is_done = False
     expected = expected_state.to_json()
 
-    #assert_valid_schema(result)
+    assert_valid_schema(result)
     assert_orchestration_state_equals(expected, result)
