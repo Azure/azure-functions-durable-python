@@ -13,6 +13,10 @@ and yanked-release status are based on the
   `requirements.txt` demonstrably restricts `azure-functions-durable` below
   version 2.
 
+### Changed
+
+- `purge_instance_history_by` now raises a clear `ValueError` when the required `created_time_from` argument is omitted, instead of sending a request that the Durable extension rejects.
+
 ## 1.6.0 - 2026-07-09
 
 ### Added
