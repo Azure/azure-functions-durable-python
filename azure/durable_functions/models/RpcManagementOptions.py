@@ -37,8 +37,7 @@ class RpcManagementOptions:
     @staticmethod
     def _add_date_arg(query: List[str], name: str, value: Optional[datetime]):
         if value:
-            date_format = DATETIME_STRING_FORMAT.replace("%Y", f"{value.year:04d}", 1)
-            date_as_string = value.strftime(date_format)
+            date_as_string = value.strftime(DATETIME_STRING_FORMAT)
             RpcManagementOptions._add_arg(query, name, date_as_string)
 
     def to_url(self, base_url: Optional[str]) -> str:

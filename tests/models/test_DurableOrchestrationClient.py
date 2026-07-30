@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from typing import Any
 
 import pytest
@@ -353,13 +354,14 @@ async def test_delete_500_purge_instance_history(binding_string):
 async def test_delete_200_purge_instance_history_by(binding_string):
     mock_request = MockRequest(
         expected_url=f"{RPC_BASE_URL}instances/"
-                     "?createdTimeFrom=0001-01-01T00:00:00.000000Z"
+                     "?createdTimeFrom=2000-01-01T00:00:00.000000Z"
                      "&runtimeStatus=Completed",
         response=[200, dict(instancesDeleted=1)])
     client = DurableOrchestrationClient(binding_string)
     client._delete_async_request = mock_request.delete
 
     result = await client.purge_instance_history_by(
+        created_time_from=datetime(2000, 1, 1),
         runtime_status=[OrchestrationRuntimeStatus.Completed])
     assert result is not None
     assert result.instances_deleted == 1
@@ -369,13 +371,14 @@ async def test_delete_200_purge_instance_history_by(binding_string):
 async def test_delete_404_purge_instance_history_by(binding_string):
     mock_request = MockRequest(
         expected_url=f"{RPC_BASE_URL}instances/"
-                     "?createdTimeFrom=0001-01-01T00:00:00.000000Z"
+                     "?createdTimeFrom=2000-01-01T00:00:00.000000Z"
                      "&runtimeStatus=Completed",
         response=[404, MESSAGE_404])
     client = DurableOrchestrationClient(binding_string)
     client._delete_async_request = mock_request.delete
 
     result = await client.purge_instance_history_by(
+        created_time_from=datetime(2000, 1, 1),
         runtime_status=[OrchestrationRuntimeStatus.Completed])
     assert result is not None
     assert result.instances_deleted == 0
@@ -385,13 +388,23 @@ async def test_delete_404_purge_instance_history_by(binding_string):
 async def test_delete_500_purge_instance_history_by(binding_string):
     mock_request = MockRequest(
         expected_url=f"{RPC_BASE_URL}instances/"
-                     "?createdTimeFrom=0001-01-01T00:00:00.000000Z"
+                     "?createdTimeFrom=2000-01-01T00:00:00.000000Z"
                      "&runtimeStatus=Completed",
         response=[500, MESSAGE_500])
     client = DurableOrchestrationClient(binding_string)
     client._delete_async_request = mock_request.delete
 
     with pytest.raises(Exception):
+        await client.purge_instance_history_by(
+            created_time_from=datetime(2000, 1, 1),
+            runtime_status=[OrchestrationRuntimeStatus.Completed])
+
+
+@pytest.mark.asyncio
+async def test_purge_instance_history_by_requires_created_time_from(binding_string):
+    client = DurableOrchestrationClient(binding_string)
+
+    with pytest.raises(ValueError, match="created_time_from is required"):
         await client.purge_instance_history_by(
             runtime_status=[OrchestrationRuntimeStatus.Completed])
 
