@@ -97,6 +97,22 @@ def test_v1_programming_model_warns_during_pytest(monkeypatch, tmp_path):
         df.validate_v1_programming_model()
 
 
+def test_undecodable_requirements_does_not_break_import(monkeypatch, tmp_path):
+    create_function_app(tmp_path, "azure-functions-durable")
+    (tmp_path / "requirements.txt").write_bytes(b"\xff")
+
+    monkeypatch.chdir(tmp_path)
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        importlib.reload(df)
+
+    assert any(
+        warning.category is df.DurableFunctionsCompatibilityWarning
+        for warning in caught
+    )
+
+
 def test_directory_without_host_json_does_not_warn(monkeypatch, tmp_path):
     function_dir = tmp_path / "MyFunction"
     function_dir.mkdir()

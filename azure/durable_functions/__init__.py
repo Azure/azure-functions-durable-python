@@ -126,7 +126,7 @@ def _requirements_exclude_v2(app_root):
         requirements = requirements_path.read_text(encoding="utf-8")
     except FileNotFoundError:
         return False
-    except OSError:
+    except (OSError, UnicodeError):
         _LOGGER.debug(
             "Unable to inspect %s for an azure-functions-durable version constraint.",
             requirements_path,
