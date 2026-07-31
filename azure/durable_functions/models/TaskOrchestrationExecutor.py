@@ -9,7 +9,7 @@ import warnings
 from collections import namedtuple
 import json
 from ..models.entities.ResponseMessage import ResponseMessage
-from .utils.df_serialization import df_loads
+from .utils.df_serialization import df_dumps, df_loads
 
 
 class TaskOrchestrationExecutor:
@@ -326,14 +326,18 @@ class TaskOrchestrationExecutor:
             message contains in it the string representation of the orchestration's
             state
         """
-        if (self.output is not None):
+        state_output = self.output
+        if self.output is not None:
             try:
-                # Attempt to serialize the output. If serialization fails, raise an
-                # error indicating that the orchestration output is not serializable,
-                # which is not permitted in durable Python functions.
-                json.dumps(self.output)
+                # Serialize the output before nesting it in OrchestratorState. In
+                # strict mode, custom objects must be top-level df_dumps values.
+                # Keeping their envelope in the output field preserves the wire
+                # format used by activity results and enables typed sub-orchestrator
+                # decoding without wrapping the OrchestratorState protocol itself.
+                state_output = json.loads(df_dumps(self.output))
             except Exception as e:
                 self.output = None
+                state_output = None
                 self.exception = e
 
         exception_str = None
@@ -345,7 +349,7 @@ class TaskOrchestrationExecutor:
         state = OrchestratorState(
             is_done=self.orchestration_invocation_succeeded,
             actions=self.context._actions,
-            output=self.output,
+            output=state_output,
             replay_schema=self.context._replay_schema,
             error=exception_str,
             custom_status=self.context.custom_status

@@ -6,6 +6,15 @@ and yanked-release status are based on the
 
 ## Unreleased
 
+### Fixed
+
+- Orchestrators can now return custom objects supported by the Durable Functions
+  JSON codec. Their output is encoded before it is nested in the orchestration
+  state, preserving the same class metadata envelope used by activity results
+  so strict-mode sub-orchestrator callers can reconstruct the declared type.
+  Strict-mode callers must supply `expected_type` or use a Python v2
+  sub-orchestrator whose return annotation can be discovered automatically.
+
 ## 1.7.0 - 2026-07-30
 
 ### Added
