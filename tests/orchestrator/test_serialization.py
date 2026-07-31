@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 import pytest
 
+import azure.functions._durable_functions as _sdk
 from azure.durable_functions.models.ReplaySchema import ReplaySchema
 from tests.test_utils.ContextBuilder import ContextBuilder
 from .orchestrator_test_utils import (
@@ -119,6 +120,9 @@ def test_strict_custom_output_can_be_decoded_by_sub_orchestrator(monkeypatch):
         message="Custom serialization test")
 
 
+@pytest.mark.skipif(
+    not hasattr(_sdk, "df_loads"),
+    reason="strict typing is unavailable with the legacy SDK serializer")
 def test_strict_custom_output_requires_sub_orchestrator_type(monkeypatch):
     monkeypatch.setenv("AZURE_FUNCTIONS_DURABLE_STRICT_TYPING", "true")
     child_state = get_orchestration_state_result(
