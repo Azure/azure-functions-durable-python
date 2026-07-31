@@ -5,9 +5,6 @@ on:
     branches:
     - master
 
-env:
-  PIP_INDEX_URL: https://pkgs.dev.azure.com/azfunc/public/_packaging/upstream-public/pypi/simple/
-
 jobs:
   build:
 
