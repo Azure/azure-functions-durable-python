@@ -31,6 +31,11 @@ stages:
       demands:
           - ImageOverride -equals MMSUbuntu20.04TLS
     steps:
+    - task: PipAuthenticate@1
+      displayName: 'Authenticate to CFS PyPI feed'
+      inputs:
+        artifactFeeds: 'public/upstream-public'
+        onlyAddExtraIndex: false
     - task: UsePythonVersion@0
       inputs:
         versionSpec: '$(python.version)'
@@ -85,6 +90,11 @@ stages:
       demands:
           - ImageOverride -equals MMSUbuntu20.04TLS
     steps:
+    - task: PipAuthenticate@1
+      displayName: 'Authenticate to CFS PyPI feed'
+      inputs:
+        artifactFeeds: 'public/upstream-public'
+        onlyAddExtraIndex: false
     - task: UsePythonVersion@0
       inputs:
         versionSpec: '3.13'
@@ -99,4 +109,3 @@ stages:
         pytest --ignore=samples-v2
       displayName: 'pytest'
     
-

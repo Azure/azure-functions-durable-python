@@ -10,6 +10,9 @@ on:
       - main
       - dev
 
+env:
+  PIP_INDEX_URL: https://pkgs.dev.azure.com/azfunc/public/_packaging/upstream-public/pypi/simple/
+
 jobs:
   validate:
     runs-on: ubuntu-latest

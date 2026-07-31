@@ -56,6 +56,15 @@ The general flow for making a change to the library is:
 
 ## Development Setup
 
+Repository development dependency installs use the Central Feed Service:
+
+```bash
+export PIP_INDEX_URL="https://pkgs.dev.azure.com/azfunc/public/_packaging/upstream-public/pypi/simple/"
+unset PIP_EXTRA_INDEX_URL
+```
+
+The repository `NuGet.config` routes .NET package restores through the corresponding CFS feed.
+
 ### Visual Studio Code Extensions
 
 The following extensions should be installed if using Visual Studio Code for debugging:
@@ -119,7 +128,7 @@ Note: Conda based environments are not yet supported in Azure Functions.
 6. For debugging, install the code using an editable pip install like this, in the VS Code Terminal:
 
 ```
-pip install -e $REPOSITORY_ROOT/
+pip install -e "$REPOSITORY_ROOT/"
 ```
 where REPOSITORY_ROOT is the root folder of the azure-functions-durable-python repository 
 
@@ -185,5 +194,4 @@ This project uses a combination of Azure DevOps and GitHub Actions for CI/CD.
 
 ### Requesting a release
 - If you need a release into PyPI, request it by raising an issue and tagging @anthonychu or @davidmrdavid
-
 
