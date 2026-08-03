@@ -10,6 +10,11 @@ jobs:
                 sbomPackageName: 'Durable Functions Python'
 
       steps:
+        - task: PipAuthenticate@1
+          displayName: 'Authenticate to CFS PyPI feed'
+          inputs:
+            artifactFeeds: 'public/upstream-public'
+            onlyAddExtraIndex: false
         - task: UsePythonVersion@0
           inputs:
             versionSpec: '3.10'
@@ -57,6 +62,11 @@ jobs:
       # TODO: change the override to 'azure-functions>=2.2.0' once 2.2.0 GA
       # ships, and drop the explicit install step.
       steps:
+        - task: PipAuthenticate@1
+          displayName: 'Authenticate to CFS PyPI feed'
+          inputs:
+            artifactFeeds: 'public/upstream-public'
+            onlyAddExtraIndex: false
         - task: UsePythonVersion@0
           inputs:
             versionSpec: '3.13'

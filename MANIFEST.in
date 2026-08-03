@@ -1,1 +1,3 @@
 include ./_manifest/*
+exclude NuGet.config
+global-exclude .npmrc pip.conf pip.ini

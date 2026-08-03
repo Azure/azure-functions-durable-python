@@ -1,4 +1,9 @@
- #!/bin/bash
+#!/bin/bash
+
+REPOSITORY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CFS_PYPI_INDEX="https://pkgs.dev.azure.com/azfunc/public/_packaging/upstream-public/pypi/simple/"
+export PIP_INDEX_URL="$CFS_PYPI_INDEX"
+unset PIP_EXTRA_INDEX_URL
 
 echo "Checking for prerequisites..."
 if ! type npm > /dev/null; then
@@ -21,21 +26,21 @@ echo "Pre-requisites satisfied..."
 echo "Creating sample folders..."
 DIRECTORY=/tmp/df_test
 if [ ! -d "$DIRECTORY" ]; then
-  mkdir /tmp/df_test
+  mkdir "$DIRECTORY"
 else
-  rm -rf /tmp/df_test/*
+  rm -rf "$DIRECTORY"/*
 fi
 
 SAMPLE=function_chaining
-cp -r ../samples/$SAMPLE $DIRECTORY/
-cd $DIRECTORY/$SAMPLE
+cp -r "$REPOSITORY_ROOT/samples/$SAMPLE" "$DIRECTORY/"
+cp "$REPOSITORY_ROOT/NuGet.config" "$DIRECTORY/NuGet.config"
+cd "$DIRECTORY/$SAMPLE"
 python -m venv env
 source env/bin/activate
 
 echo "Provide local path to azure-functions-durable-python clone:"
 read lib_path
-pip install $lib_path/azure-functions-durable-python
+pip install "$lib_path/azure-functions-durable-python"
 func init .
 func extensions install
 echo "Done"
-
