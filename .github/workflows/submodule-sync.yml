@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
         with:
           repository: azure-functions-python-library
           submodules: true
@@ -18,7 +18,7 @@ jobs:
           git add .
       - name: Create Pull Request
         id: createPullRequest
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@38e0b6e68b4c852a5500a94740f0e535e0d7ba54 # v4.2.4
         with:
           commit-message: Update durable submodule
           committer: GitHub <noreply@github.com>
