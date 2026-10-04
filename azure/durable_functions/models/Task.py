@@ -380,6 +380,8 @@ class LongTimerTask(WhenAllTask):
         if (self.result):
             raise Exception("Cannot cancel a completed task.")
         self.action.is_cancelled = True
+        for timer in self.pending_tasks:
+            timer.cancel()
 
     def try_set_value(self, child: TimerTask):
         """Transition this LongTimer Task to a terminal state and set its value.
@@ -394,7 +396,7 @@ class LongTimerTask(WhenAllTask):
         """
         current_time = self._orchestration_context.current_utc_datetime
         final_fire_time = self.action.fire_at
-        if final_fire_time > current_time:
+        if not self.is_canceled() and final_fire_time > current_time:
             next_timer = self.get_next_timer_task(final_fire_time, current_time)
             self.add_new_child(next_timer)
         return super().try_set_value(child)
