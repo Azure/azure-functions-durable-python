@@ -410,7 +410,9 @@ class DurableOrchestrationClient:
             The results of the request to delete the orchestration instance
         """
         request_url = f"{self._orchestration_bindings.rpc_base_url}instances/{instance_id}"
-        response = await self._delete_async_request(request_url)
+        response = await self._delete_async_request(
+            request_url,
+            function_invocation_id=self._function_invocation_id)
         return self._parse_purge_instance_history_response(response)
 
     async def purge_instance_history_by(
@@ -448,7 +450,9 @@ class DurableOrchestrationClient:
                                        created_time_to=created_time_to,
                                        runtime_status=runtime_status)
         request_url = options.to_url(self._orchestration_bindings.rpc_base_url)
-        response = await self._delete_async_request(request_url)
+        response = await self._delete_async_request(
+            request_url,
+            function_invocation_id=self._function_invocation_id)
         return self._parse_purge_instance_history_response(response)
 
     async def terminate(self, instance_id: str, reason: str) -> None:
