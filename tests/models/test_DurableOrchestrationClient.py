@@ -64,7 +64,7 @@ class MockRequest:
         assert url == self._expected_url
         return self._response
 
-    async def delete(self, url: str):
+    async def delete(self, url: str, function_invocation_id: str = None):
         assert url == self._expected_url
         return self._response
 
@@ -861,6 +861,13 @@ class MockRequestWithInvocationId:
             assert function_invocation_id == self._expected_invocation_id
         return self._response
 
+    async def delete(self, url: str, function_invocation_id: str = None):
+        assert url == self._expected_url
+        self._received_invocation_id = function_invocation_id
+        if self._expected_invocation_id is not None:
+            assert function_invocation_id == self._expected_invocation_id
+        return self._response
+
 
 @pytest.mark.asyncio
 async def test_start_new_passes_invocation_id(binding_string):
@@ -893,4 +900,80 @@ async def test_start_new_passes_none_when_no_invocation_id(binding_string):
     client._post_async_request = mock_request.post
 
     await client.start_new(function_name)
+    assert mock_request.received_invocation_id is None
+
+
+@pytest.mark.asyncio
+async def test_purge_instance_history_passes_invocation_id(binding_string):
+    """Test that purge_instance_history passes the function_invocation_id to the HTTP request."""
+    invocation_id = "test-invocation-456"
+
+    mock_request = MockRequestWithInvocationId(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}",
+        response=[200, dict(instancesDeleted=1)],
+        expected_invocation_id=invocation_id)
+
+    client = DurableOrchestrationClient(
+        binding_string, function_invocation_id=invocation_id)
+    client._delete_async_request = mock_request.delete
+
+    result = await client.purge_instance_history(TEST_INSTANCE_ID)
+    assert result.instances_deleted == 1
+    assert mock_request.received_invocation_id == invocation_id
+
+
+@pytest.mark.asyncio
+async def test_purge_instance_history_passes_none_when_no_invocation_id(binding_string):
+    """Test that purge_instance_history passes None when no invocation ID is provided."""
+    mock_request = MockRequestWithInvocationId(
+        expected_url=f"{RPC_BASE_URL}instances/{TEST_INSTANCE_ID}",
+        response=[200, dict(instancesDeleted=1)])
+
+    client = DurableOrchestrationClient(binding_string)
+    client._delete_async_request = mock_request.delete
+
+    result = await client.purge_instance_history(TEST_INSTANCE_ID)
+    assert result.instances_deleted == 1
+    assert mock_request.received_invocation_id is None
+
+
+@pytest.mark.asyncio
+async def test_purge_instance_history_by_passes_invocation_id(binding_string):
+    """Test that purge_instance_history_by passes invocation_id to the HTTP request."""
+    invocation_id = "test-invocation-456"
+
+    mock_request = MockRequestWithInvocationId(
+        expected_url=f"{RPC_BASE_URL}instances/"
+                     "?createdTimeFrom=2000-01-01T00:00:00.000000Z"
+                     "&runtimeStatus=Completed",
+        response=[200, dict(instancesDeleted=1)],
+        expected_invocation_id=invocation_id)
+
+    client = DurableOrchestrationClient(
+        binding_string, function_invocation_id=invocation_id)
+    client._delete_async_request = mock_request.delete
+
+    result = await client.purge_instance_history_by(
+        created_time_from=datetime(2000, 1, 1),
+        runtime_status=[OrchestrationRuntimeStatus.Completed])
+    assert result.instances_deleted == 1
+    assert mock_request.received_invocation_id == invocation_id
+
+
+@pytest.mark.asyncio
+async def test_purge_instance_history_by_passes_none_when_no_invocation_id(binding_string):
+    """Test that purge_instance_history_by passes None when no invocation ID is given."""
+    mock_request = MockRequestWithInvocationId(
+        expected_url=f"{RPC_BASE_URL}instances/"
+                     "?createdTimeFrom=2000-01-01T00:00:00.000000Z"
+                     "&runtimeStatus=Completed",
+        response=[200, dict(instancesDeleted=1)])
+
+    client = DurableOrchestrationClient(binding_string)
+    client._delete_async_request = mock_request.delete
+
+    result = await client.purge_instance_history_by(
+        created_time_from=datetime(2000, 1, 1),
+        runtime_status=[OrchestrationRuntimeStatus.Completed])
+    assert result.instances_deleted == 1
     assert mock_request.received_invocation_id is None
