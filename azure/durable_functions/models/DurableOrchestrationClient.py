@@ -142,7 +142,12 @@ class DurableOrchestrationClient:
         return func.HttpResponse(**response_args)
 
     def create_http_management_payload(self, instance_id: str) -> Dict[str, str]:
-        """Create a dictionary of orchestrator management urls.
+        """Create a dictionary of orchestrator management URLs.
+
+        The host's ``httpSettings.excludeManagementKeyFromUrls`` option defaults
+        to false. When enabled, HTTP callers must obtain a key independently and
+        send it through ``x-functions-key``. The SDK does not return credentials;
+        SDK management operations use the local RPC endpoint.
 
         Parameters
         ----------
@@ -152,7 +157,7 @@ class DurableOrchestrationClient:
         Returns
         -------
         Dict[str, str]
-            a dictionary object of orchestrator instance management urls
+            A dictionary of orchestrator instance management URLs.
         """
         return self.get_client_response_links(None, instance_id)
 
@@ -209,7 +214,7 @@ class DurableOrchestrationClient:
     def get_client_response_links(
             self,
             request: Optional[func.HttpRequest], instance_id: str) -> Dict[str, str]:
-        """Create a dictionary of orchestrator management urls.
+        """Create a dictionary of orchestrator management URLs.
 
         Parameters
         ----------
@@ -221,15 +226,14 @@ class DurableOrchestrationClient:
         Returns
         -------
         Dict[str, str]
-            a dictionary object of orchestrator instance management urls
+            A dictionary of orchestrator instance management URLs.
         """
         payload = self._orchestration_bindings.management_urls.copy()
-
         for key, _ in payload.items():
             if not (request is None) and request.url:
                 payload[key] = self._replace_url_origin(request.url, payload[key])
             payload[key] = payload[key].replace(
-                self._orchestration_bindings.management_urls["id"], instance_id)
+                self._orchestration_bindings.management_urls["id"], instance_id, 1)
 
         return payload
 
