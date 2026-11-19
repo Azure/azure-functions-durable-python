@@ -232,6 +232,7 @@ class DurableOrchestrationClient:
         for key, _ in payload.items():
             if not (request is None) and request.url:
                 payload[key] = self._replace_url_origin(request.url, payload[key])
+            # Replace only the ID placeholder, preserving matching text in query values.
             payload[key] = payload[key].replace(
                 self._orchestration_bindings.management_urls["id"], instance_id, 1)
 
