@@ -216,6 +216,9 @@ class DurableOrchestrationClient:
             request: Optional[func.HttpRequest], instance_id: str) -> Dict[str, str]:
         """Create a dictionary of orchestrator management URLs.
 
+        The request overrides the URL scheme and authority without changing
+        host-provided query strings.
+
         Parameters
         ----------
         request : Optional[HttpRequest]
@@ -658,10 +661,12 @@ class DurableOrchestrationClient:
     def _replace_url_origin(request_url: str, value_url: str) -> str:
         request_parsed_url = urlparse(request_url)
         value_parsed_url = urlparse(value_url)
-        request_url_origin = '{url.scheme}://{url.netloc}/'.format(url=request_parsed_url)
-        value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
-        value_url = value_url.replace(value_url_origin, request_url_origin)
-        return value_url
+        # Management payloads also contain a plain instance ID.
+        if not value_parsed_url.scheme or not value_parsed_url.netloc:
+            return value_url
+        return value_parsed_url._replace(
+            scheme=request_parsed_url.scheme,
+            netloc=request_parsed_url.netloc).geturl()
 
     @staticmethod
     def _parse_purge_instance_history_response(

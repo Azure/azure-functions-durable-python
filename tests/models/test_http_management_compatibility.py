@@ -18,6 +18,8 @@ QUERIES = [
     "CoDe=synthetic-INSTANCEID%2Bkey%2F%3D&site=value%2Bone",
     "%63ode=synthetic-INSTANCEID%2Bkey%2F%3D&CODE=duplicate",
     "taskHub=hub&connection=storage",
+    "taskHub=hub&connection=storage&metadata=https://notification.test/info",
+    "code=synthetic-INSTANCEID%2Bkey%2F%3D&metadata=https://notification.test/INSTANCEID",
     "",
 ]
 
@@ -42,6 +44,27 @@ def binding(query):
     }
 
 
+@pytest.mark.parametrize(
+    "value_url, expected_url",
+    [
+        (
+            "https://notification.test/https://notification.test/path"
+            "?metadata=https://notification.test/info#https://notification.test/fragment",
+            "http://frontend.test:8080/https://notification.test/path"
+            "?metadata=https://notification.test/info#https://notification.test/fragment",
+        ),
+        (
+            "https://notification.test?metadata=https://notification.test/info",
+            "http://frontend.test:8080?metadata=https://notification.test/info",
+        ),
+        ("INSTANCEID", "INSTANCEID"),
+    ])
+def test_replace_url_origin_changes_only_scheme_and_authority(value_url, expected_url):
+    request_url = "http://frontend.test:8080/api/start?code=starter-key#request-fragment"
+
+    assert DurableOrchestrationClient._replace_url_origin(request_url, value_url) == expected_url
+
+
 @pytest.mark.parametrize("query", QUERIES)
 def test_binding_preserves_host_urls_and_query_strings(query):
     data = binding(query)
@@ -64,15 +87,21 @@ def test_response_preserves_host_query_and_string_only_payload(query):
     response = client.create_check_status_response(request, "instance")
     payload = json.loads(response.get_body())
 
+    notification_origin = "https://notification.test"
     expected = {
-        key: value.replace("https://notification.test/", "https://frontend.test/")
-        .replace("INSTANCEID", "instance", 1)
+        key: (
+            "https://frontend.test" + value[len(notification_origin):]
+            if value.startswith(notification_origin) else value
+        ).replace("INSTANCEID", "instance", 1)
         for key, value in data["managementUrls"].items()
     }
     assert response.status_code == 202
     assert response.headers["Location"] == payload["statusQueryGetUri"]
     assert response.headers["Retry-After"] == "10"
     assert payload == expected
+    for key, original_url in data["managementUrls"].items():
+        if key != "id":
+            assert urlsplit(payload[key]).query == urlsplit(original_url).query
     assert all(isinstance(value, str) for value in payload.values())
     assert "requiredHeaders" not in payload
     assert "starter-key" not in json.dumps(payload)
