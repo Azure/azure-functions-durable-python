@@ -9,6 +9,9 @@ class DurableOrchestrationBindings:
 
     Provides information relevant to the creation and management of
     durable functions.
+
+    URL query parameters are supplied by the Functions host and preserved as-is.
+    The host controls whether generated URLs contain a system key.
     """
 
     # parameter names are as defined by JSON schema and do not conform to PEP8 naming conventions

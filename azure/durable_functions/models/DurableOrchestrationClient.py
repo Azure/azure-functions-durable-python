@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Any, Optional, Dict, Union
 from time import time
 from asyncio import sleep
-from urllib.parse import urlparse, quote
+from urllib.parse import urlparse, urlsplit, quote
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 import azure.functions as func
@@ -142,7 +142,12 @@ class DurableOrchestrationClient:
         return func.HttpResponse(**response_args)
 
     def create_http_management_payload(self, instance_id: str) -> Dict[str, str]:
-        """Create a dictionary of orchestrator management urls.
+        """Create a dictionary of orchestrator management URLs.
+
+        The host's ``httpSettings.excludeManagementKeyFromUrls`` option defaults
+        to false. When enabled, HTTP callers must obtain a key independently and
+        send it through ``x-functions-key``. The SDK does not return credentials;
+        SDK management operations use the local RPC endpoint.
 
         Parameters
         ----------
@@ -152,7 +157,7 @@ class DurableOrchestrationClient:
         Returns
         -------
         Dict[str, str]
-            a dictionary object of orchestrator instance management urls
+            A dictionary of orchestrator instance management URLs.
         """
         return self.get_client_response_links(None, instance_id)
 
@@ -209,7 +214,10 @@ class DurableOrchestrationClient:
     def get_client_response_links(
             self,
             request: Optional[func.HttpRequest], instance_id: str) -> Dict[str, str]:
-        """Create a dictionary of orchestrator management urls.
+        """Create a dictionary of orchestrator management URLs.
+
+        The request overrides the URL scheme and authority without changing
+        host-provided query strings.
 
         Parameters
         ----------
@@ -221,15 +229,14 @@ class DurableOrchestrationClient:
         Returns
         -------
         Dict[str, str]
-            a dictionary object of orchestrator instance management urls
+            A dictionary of orchestrator instance management URLs.
         """
         payload = self._orchestration_bindings.management_urls.copy()
-
-        for key, _ in payload.items():
+        placeholder = self._orchestration_bindings.management_urls["id"]
+        for key, value in payload.items():
             if not (request is None) and request.url:
-                payload[key] = self._replace_url_origin(request.url, payload[key])
-            payload[key] = payload[key].replace(
-                self._orchestration_bindings.management_urls["id"], instance_id)
+                value = self._replace_url_origin(request.url, value)
+            payload[key] = self._replace_instance_id(value, placeholder, instance_id)
 
         return payload
 
@@ -653,10 +660,26 @@ class DurableOrchestrationClient:
     def _replace_url_origin(request_url: str, value_url: str) -> str:
         request_parsed_url = urlparse(request_url)
         value_parsed_url = urlparse(value_url)
-        request_url_origin = '{url.scheme}://{url.netloc}/'.format(url=request_parsed_url)
-        value_url_origin = '{url.scheme}://{url.netloc}/'.format(url=value_parsed_url)
-        value_url = value_url.replace(value_url_origin, request_url_origin)
-        return value_url
+        # Management payloads also contain a plain instance ID.
+        if not value_parsed_url.scheme or not value_parsed_url.netloc:
+            return value_url
+        return value_parsed_url._replace(
+            scheme=request_parsed_url.scheme,
+            netloc=request_parsed_url.netloc).geturl()
+
+    @staticmethod
+    def _replace_instance_id(value: str, placeholder: str, instance_id: str) -> str:
+        url = urlsplit(value)
+        if not url.scheme or not url.netloc:
+            # The payload's plain "id" value.
+            return value.replace(placeholder, instance_id, 1)
+        # The host appends only fixed operations after the instance segment, so the last
+        # path match is the instance ID. The authority and query remain unchanged.
+        index = url.path.rfind(placeholder)
+        if index < 0:
+            return value
+        path = url.path[:index] + instance_id + url.path[index + len(placeholder):]
+        return url._replace(path=path).geturl()
 
     @staticmethod
     def _parse_purge_instance_history_response(
