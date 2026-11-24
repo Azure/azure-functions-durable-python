@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Any, Optional, Dict, Union
 from time import time
 from asyncio import sleep
-from urllib.parse import urlparse, quote
+from urllib.parse import urlparse, urlsplit, quote
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 import azure.functions as func
@@ -232,12 +232,11 @@ class DurableOrchestrationClient:
             A dictionary of orchestrator instance management URLs.
         """
         payload = self._orchestration_bindings.management_urls.copy()
-        for key, _ in payload.items():
+        placeholder = self._orchestration_bindings.management_urls["id"]
+        for key, value in payload.items():
             if not (request is None) and request.url:
-                payload[key] = self._replace_url_origin(request.url, payload[key])
-            # Replace only the ID placeholder, preserving matching text in query values.
-            payload[key] = payload[key].replace(
-                self._orchestration_bindings.management_urls["id"], instance_id, 1)
+                value = self._replace_url_origin(request.url, value)
+            payload[key] = self._replace_instance_id(value, placeholder, instance_id)
 
         return payload
 
@@ -667,6 +666,20 @@ class DurableOrchestrationClient:
         return value_parsed_url._replace(
             scheme=request_parsed_url.scheme,
             netloc=request_parsed_url.netloc).geturl()
+
+    @staticmethod
+    def _replace_instance_id(value: str, placeholder: str, instance_id: str) -> str:
+        url = urlsplit(value)
+        if not url.scheme or not url.netloc:
+            # The payload's plain "id" value.
+            return value.replace(placeholder, instance_id, 1)
+        # The host appends only fixed operations after the instance segment, so the last
+        # path match is the instance ID. The authority and query remain unchanged.
+        index = url.path.rfind(placeholder)
+        if index < 0:
+            return value
+        path = url.path[:index] + instance_id + url.path[index + len(placeholder):]
+        return url._replace(path=path).geturl()
 
     @staticmethod
     def _parse_purge_instance_history_response(

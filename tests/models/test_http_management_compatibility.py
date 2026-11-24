@@ -65,6 +65,39 @@ def test_replace_url_origin_changes_only_scheme_and_authority(value_url, expecte
     assert DurableOrchestrationClient._replace_url_origin(request_url, value_url) == expected_url
 
 
+@pytest.mark.parametrize(
+    "request_url, base_url, expected_base",
+    [
+        (
+            "https://INSTANCEID.example.test/api/start",
+            BASE_URL,
+            "https://INSTANCEID.example.test/runtime/webhooks/durabletask",
+        ),
+        (
+            None,
+            "https://notification.test/INSTANCEID-base/runtime/webhooks/durabletask",
+            "https://notification.test/INSTANCEID-base/runtime/webhooks/durabletask",
+        ),
+    ])
+def test_instance_id_replaces_only_the_instance_path_segment(
+        request_url, base_url, expected_base):
+    query = "?taskHub=hub&code=synthetic-INSTANCEID"
+    data = binding("")
+    data["managementUrls"] = {
+        "id": "INSTANCEID",
+        "statusQueryGetUri": base_url + "/instances/INSTANCEID" + query,
+        "sendEventPostUri": base_url + "/instances/INSTANCEID/raiseEvent/{eventName}" + query,
+    }
+    client = DurableOrchestrationClient(json.dumps(data))
+    request = None if request_url is None else func.HttpRequest("GET", request_url, body=b"")
+
+    assert client.get_client_response_links(request, "actual") == {
+        "id": "actual",
+        "statusQueryGetUri": expected_base + "/instances/actual" + query,
+        "sendEventPostUri": expected_base + "/instances/actual/raiseEvent/{eventName}" + query,
+    }
+
+
 @pytest.mark.parametrize("query", QUERIES)
 def test_binding_preserves_host_urls_and_query_strings(query):
     data = binding(query)
